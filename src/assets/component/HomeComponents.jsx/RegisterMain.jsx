@@ -81,7 +81,7 @@ function RegisterMain() {
       name: fullName,
       email,
       password,
-      role: 'member',
+      role: 'client',
       phoneNumber,
       gender,
     });
