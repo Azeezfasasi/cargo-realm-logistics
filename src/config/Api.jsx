@@ -1,2 +1,2 @@
-export const BACKEND_URL = 'https://cac-lightway-backend.onrender.com';
-export const API_BASE_URL = 'https://cac-lightway-backend.onrender.com/api';
+export const BACKEND_URL = 'https://cargo-realm-backend.onrender.com';
+export const API_BASE_URL = 'https://cargo-realm-backend.onrender.com/api';
