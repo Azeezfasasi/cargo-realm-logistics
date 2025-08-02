@@ -12,7 +12,7 @@ import GearIcon from '@rsuite/icons/Gear';
 import { useProfile } from '../../context-api/ProfileContext';
 
 function DashMenu() {
-    const {isMember, isPastor, isAdmin} = useProfile()
+    const {isAdmin, isAgent, isEmployee, isClient} = useProfile()
     const location = useLocation();
 
   // Map route paths to eventKeys
@@ -51,87 +51,84 @@ function DashMenu() {
         <Sidenav>
             <Sidenav.Body>
                 <Nav activeKey={activeKey}>
-                    {(isPastor || isAdmin || isMember) && (
+                    {(isAdmin || isEmployee) && (
                     <Nav.Item eventKey="1" icon={<DashboardIcon />} as={Link} to="/app/dashboard">
                         Dashboard
                     </Nav.Item>
                     )}
-                    {(isPastor || isAdmin || isMember) && (
+                    {(isAdmin || isEmployee || isClient || isAgent) && (
+                    <Nav.Menu eventKey="2" title="Shipments" icon={<ListIcon />}>
+                        {(isAdmin || isEmployee) && (
+                        <Nav.Item eventKey="2-1" as={Link} to="">All Shipments</Nav.Item>
+                        )}
+                        {(isAdmin || isAgent || isEmployee) && (
+                        <Nav.Item eventKey="2-2" as={Link} to="">Create Shipment</Nav.Item>
+                        )}
+                        {(isAdmin || isAgent || isClient || isEmployee) && (
+                        <Nav.Item eventKey="2-3" as={Link} to="">My Shipment</Nav.Item>
+                        )}
+                        {(isAdmin || isAgent || isClient || isEmployee) && (
+                        <Nav.Item eventKey="2-3" as={Link} to="">Track Shipment</Nav.Item>
+                        )}
+                    </Nav.Menu>
+                    )}
+                    {(isAdmin || isEmployee || isClient) && (
                     <Nav.Menu eventKey="2" title="Blog Post" icon={<ListIcon />}>
                         <Nav.Item eventKey="2-1" as={Link} to="/app/account/allposts">All Posts</Nav.Item>
-                        {(isPastor || isAdmin) && (
+                        {(isAdmin || isAgent|| isEmployee) && (
                         <Nav.Item eventKey="2-2" as={Link} to="/app/account/allblogpost">Manage Blog Posts</Nav.Item>
                         )}
-                        {(isPastor || isAdmin) && (
+                        {(isAdmin || isAgent || isEmployee) && (
                         <Nav.Item eventKey="2-3" as={Link} to="/app/account/addnewpost">Add New Post</Nav.Item>
                         )}
                     </Nav.Menu>
                     )}
-                    {(isPastor || isAdmin) && (
+                    {(isAdmin || isEmployee) && (
                     <Nav.Menu eventKey="3" title="Events" icon={<ListIcon />}>
                         <Nav.Item eventKey="3-1" as={Link} to="/app/account/allevents">Manage All Events</Nav.Item>
                         <Nav.Item eventKey="3-2" as={Link} to="/app/account/addevent">Add New Event</Nav.Item>
                     </Nav.Menu>
                     )}
-                    {(isPastor || isAdmin) && (
+                    {(isAdmin || isEmployee) && (
                     <Nav.Menu eventKey="4" title="Newsletter" icon={<MessageIcon />}>
                         <Nav.Item eventKey="4-1" as={Link} to="/app/account/sendnewsletter">Send Newsletter</Nav.Item>
                         <Nav.Item eventKey="4-2" as={Link} to="/app/account/allnewsletter">All Newsletters</Nav.Item>
                         <Nav.Item eventKey="4-3" as={Link} to="/app/account/Newslettersubscribers">Subscribers</Nav.Item>
                     </Nav.Menu>
                     )}
-                    {(isPastor || isAdmin || isMember) && (
-                    <Nav.Menu eventKey="5" title="Prayer Requests" icon={<GridIcon />}>
-                        {(isPastor || isAdmin) && (
-                        <Nav.Item eventKey="5-1" as={Link} to="/app/account/allprayers">All Prayer Request</Nav.Item>
-                        )}
-                        <Nav.Item eventKey="5-2" as={Link} to="/app/account/sendprayer">Send Prayer Requests</Nav.Item>
-                    </Nav.Menu>
-                    )}
-                    {(isPastor || isAdmin) && (
+                    {(isAdmin || isEmployee) && (
                     <Nav.Menu eventKey="6" title="Gallery" icon={<GridIcon />}>
                         <Nav.Item eventKey="6-1" as={Link} to="/app/account/allgalleryimages">All Gallery</Nav.Item>
                         <Nav.Item eventKey="6-2" as={Link} to="/app/account/addnewgallery">Add New Gallery</Nav.Item>
                     </Nav.Menu>
                     )}
-                    {(isPastor || isAdmin) && (
-                    <Nav.Menu eventKey="7" title="Manage Members" icon={<PeoplesIcon />}>
-                        <Nav.Item eventKey="7-1" as={Link} to="/app/account/allusers">All Members</Nav.Item>
-                        <Nav.Item eventKey="7-2" as={Link} to="/app/account/addnewuser">Add New Member</Nav.Item>
-                        <Nav.Item eventKey="7-3" as={Link} to="/app/account/changeuserpassword">Change Member Password</Nav.Item>
+                    {(isAdmin || isEmployee) && (
+                    <Nav.Menu eventKey="7" title="Manage Users" icon={<PeoplesIcon />}>
+                        <Nav.Item eventKey="7-1" as={Link} to="/app/account/allusers">All Users</Nav.Item>
+                        <Nav.Item eventKey="7-2" as={Link} to="/app/account/addnewuser">Add New User</Nav.Item>
+                        <Nav.Item eventKey="7-3" as={Link} to="/app/account/changeuserpassword">Change User Password</Nav.Item>
                     </Nav.Menu>
                     )}
-                    {(isPastor || isAdmin || isMember) && (
-                    <Nav.Menu eventKey="8" title="Donations" icon={<PeoplesIcon />}>
-                        {(isPastor || isAdmin) && (
-                        <Nav.Item eventKey="8-1" as={Link} to="/app/account/alldonations">All Donations</Nav.Item>
-                        )}
-                        <Nav.Item eventKey="8-2" as={Link} to="/app/account/senddonation">Send Donation</Nav.Item>
-                        {(isPastor || isAdmin) && (
-                        <Nav.Item eventKey="8-3" as={Link} to="/app/account/donors">Donors</Nav.Item>
-                        )}
-                    </Nav.Menu>
-                    )}
-                    {(isPastor || isAdmin || isMember) && (
+                    {(isAdmin || isAgent || isEmployee || isClient) && (
                     <Nav.Menu eventKey="9" title="Appointments" icon={<PeoplesIcon />}>
                         <Nav.Item eventKey="9-1" as={Link} to="/app/account/myappointments">My Appointments</Nav.Item>
                         <Nav.Item eventKey="9-2" as={Link} to="/app/account/bookappointment">Book Appointment</Nav.Item>
-                        {(isPastor || isAdmin) && (
+                        {(isAdmin || isEmployee) && (
                         <Nav.Item eventKey="9-3" as={Link} to="/app/account/allappointments">All Appointments</Nav.Item>
                         )}
                     </Nav.Menu>
                     )}
-                    {(isPastor || isAdmin) && (
+                    {(isAdmin || isEmployee) && (
                     <Nav.Item eventKey="10" icon={<TagIcon />} as={Link} to="/app/account/contactformresponses">
                         Contact Responses
                     </Nav.Item>
                     )}
-                    {(isPastor || isAdmin || isMember) && (
+                    {(isAdmin || isAgent || isEmployee || isClient) && (
                     <Nav.Item eventKey="11" icon={<UserInfoIcon />} as={Link} to="/app/account/profile">
                         Profile
                     </Nav.Item>
                     )}
-                    {(isPastor || isAdmin || isMember) && (
+                    {(isAdmin || isAgent || isEmployee || isClient) && (
                     <Nav.Item eventKey="12" icon={<GearIcon />} as={Link} to="/app/account/mysettings">
                         Settings
                     </Nav.Item>

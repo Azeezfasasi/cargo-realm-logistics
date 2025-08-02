@@ -47,6 +47,7 @@ import BlogDetail from "./app/account/BlogDetail"
 import Services from "./app/Services"
 import TrackShipment from "./app/TrackShipment"
 import RequestQuote from "./app/RequestQuote"
+import CreateShipment from "./app/account/CreateShipment"
 
 function App() {
 
@@ -74,8 +75,8 @@ function App() {
           <Route path="/app/worshipwithus" element={<WorshipWithUs />} />
           <Route path="/app/services" element={<Services />} />
           <Route path="/app/trackshipment" element={<TrackShipment/>} />
-          <Route path="/app/requestquote" element={<RequestQuote/>} />
-
+          <Route path="/app/requestquote" element={<RequestQuote />} />
+          
           {/* Private Routes */}
           <Route path="/app/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/app/account/allblogpost" element={<PrivateRoute><AllBlogPost /></PrivateRoute>} />
@@ -102,6 +103,7 @@ function App() {
           <Route path="/app/account/senddonation" element={<PrivateRoute><SendDonation /></PrivateRoute>} />
           <Route path="/app/account/sendnewsletter" element={<PrivateRoute><SendNewsletter /></PrivateRoute>} />
           <Route path="/app/account/sendprayer" element={<PrivateRoute><SendPrayers /></PrivateRoute>} />
+          <Route path="/app/account/createshipment" element={<CreateShipment />} />
         </Routes>
       </ProfileProvider>
     </>
