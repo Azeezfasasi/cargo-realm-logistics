@@ -59,10 +59,10 @@ function DashMenu() {
                     {(isAdmin || isEmployee || isClient || isAgent) && (
                     <Nav.Menu eventKey="2" title="Shipments" icon={<ListIcon />}>
                         {(isAdmin || isEmployee) && (
-                        <Nav.Item eventKey="2-1" as={Link} to="">All Shipments</Nav.Item>
+                        <Nav.Item eventKey="2-1" as={Link} to="/app/account/allshipments">All Shipments</Nav.Item>
                         )}
                         {(isAdmin || isAgent || isEmployee) && (
-                        <Nav.Item eventKey="2-2" as={Link} to="">Create Shipment</Nav.Item>
+                        <Nav.Item eventKey="2-2" as={Link} to="/app/account/createshipment">Create Shipment</Nav.Item>
                         )}
                         {(isAdmin || isAgent || isClient || isEmployee) && (
                         <Nav.Item eventKey="2-3" as={Link} to="">My Shipment</Nav.Item>
