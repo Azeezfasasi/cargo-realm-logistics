@@ -13,6 +13,7 @@ import TagIcon from '@rsuite/icons/Tag';
 import MessageIcon from '@rsuite/icons/Message';
 import GearIcon from '@rsuite/icons/Gear';
 import caclogo2 from '../../images/caclogo2.png'
+import logo2 from '../../images/logo2.png'
 
 function DashHeader() {
   const {currentUser, isAdmin, isAgent, isEmployee, isClient} = useProfile();
@@ -71,11 +72,10 @@ function DashHeader() {
       <div className="container mx-auto flex justify-between items-center py-2">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          {/* Using a placeholder image or simple text for the logo */}
           <img
-            src={caclogo2}
-            alt="Logo"
-            className="h-13 w-14 rounded-full mr-0"
+            src={logo2}
+            alt="Adesola Plastic Stores Logo"
+            className="h-[45px] w-[180px] md:h-[52px] md:w-[250px] rounded-full mr-0"
           />
         </Link>
 

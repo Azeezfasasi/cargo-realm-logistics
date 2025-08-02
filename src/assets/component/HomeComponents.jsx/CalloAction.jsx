@@ -1,5 +1,6 @@
 import React from 'react';
 import cargo1 from '../../images/cargo1.jpg';
+import { Link } from 'react-router-dom';
 
 export default function CallToAction() {
   return (
@@ -27,9 +28,9 @@ export default function CallToAction() {
           <p className="text-gray-700 text-lg mb-8">
             Need a custom solution to make your supply chain faster, leaner, and more efficient? Drop us a line and {`we'll`} provide you with a custom quote tailored to your cargo shipment requirements!
           </p>
-          <button className="px-8 py-4 bg-green-600 text-white font-bold rounded-full shadow-md hover:bg-green-700 transition duration-300 ease-in-out self-center lg:self-start">
-            CONTACT US
-          </button>
+          <Link to="/app/requestquote" className="px-8 py-4 bg-green-600 text-white font-bold rounded-full shadow-md hover:bg-green-700 transition duration-300 ease-in-out self-center lg:self-start cursor-pointer">
+            REQUEST A QUOTE
+          </Link>
         </div>
       </div>
     </section>

@@ -61,8 +61,8 @@ const DashboardStats = () => {
         cacheTime: 10 * 60 * 1000,
       },
       {
-        queryKey: ['prayerRequestsCount'],
-        queryFn: () => fetchData(`${API_BASE_URL}/prayer-requests`),
+        queryKey: ['shipmentCount'],
+        queryFn: () => fetchData(`${API_BASE_URL}/shipments`),
         select: (data) => data.length,
         staleTime: 5 * 60 * 1000,
         cacheTime: 10 * 60 * 1000,
@@ -102,7 +102,7 @@ const DashboardStats = () => {
   // Destructure results for easier access
   const [
     usersQuery,
-    prayerRequestsQuery,
+    shipmentsQuery,
     eventsQuery,
     appointmentsQuery,
     donationsQuery,
@@ -145,11 +145,11 @@ const DashboardStats = () => {
             />
             <StatCard
               icon={FaPrayingHands}
-              title="Prayer Requests"
-              value={prayerRequestsQuery.data !== undefined ? prayerRequestsQuery.data : '--'}
-              isLoading={prayerRequestsQuery.isLoading}
-              isError={prayerRequestsQuery.isError}
-              error={prayerRequestsQuery.error}
+              title="Total Shipments"
+              value={shipmentsQuery.data !== undefined ? shipmentsQuery.data : '--'}
+              isLoading={shipmentsQuery.isLoading}
+              isError={shipmentsQuery.isError}
+              error={shipmentsQuery.error}
             />
             <StatCard
               icon={FaCalendarAlt}

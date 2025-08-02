@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import donate2 from '../../images/donate2.svg';
 import account from '../../images/account.svg';
 import caclogo2 from '../../images/caclogo2.png';
+import logo1 from '../../images/logo1.png';
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +19,7 @@ function Header() {
         <div className="flex items-center">
           {/* Using a placeholder image or simple text for the logo */}
           <img
-            src={caclogo2}
+            src={logo1}
             alt="Adesola Plastic Stores Logo"
             className="h-13 w-14 rounded-full mr-0"
           />

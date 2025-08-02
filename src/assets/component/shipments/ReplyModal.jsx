@@ -33,7 +33,7 @@ export default function ReplyModal({ shipment, onSendReply, onClose }) {
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={handleSend}>
+        <Button variant="outline" onClick={handleSend}>
           Send Reply
         </Button>
       </div>

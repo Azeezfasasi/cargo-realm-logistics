@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import user from '../../images/user.svg';
+import logo2 from '../../images/logo2.png';
 
 export default function HeaderSection() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -20,21 +21,11 @@ export default function HeaderSection() {
       <div className="container mx-auto flex items-center justify-between">
         {/* Logo Section */}
         <Link to="/" className="flex items-center space-x-2">
-          <svg
-            className="w-10 h-10 text-green-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001 1h3v-3m-3 3h3v-3m-3 0V9a1 1 0 011-1h2a1 1 0 011 1v10m-6 0h6"
-            ></path>
-          </svg>
-          <span className="text-xl font-semibold text-gray-800">Cargo Tracking</span>
+          <img
+            src={logo2}
+            alt="Adesola Plastic Stores Logo"
+            className="h-[45px] w-[180px] md:h-[52px] md:w-[250px] rounded-full mr-0"
+          />
         </Link>
 
         {/* Desktop Navigation */}
