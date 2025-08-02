@@ -3,14 +3,15 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 
 const statusOptions = [
-  'Pending',
-  'Processing',
-  'In Transit',
-  'Arrived at Destination',
-  'Out for Delivery',
-  'Delivered',
-  'Returned',
-  'Cancelled'
+  'pending',
+  'processing',
+  'in-transit',
+  'arrived-at-hub',
+  'departed-from-hub',
+  'out-for-delivery',
+  'delivered',
+  'failed-delivery-attempt',
+  'cancelled'
 ];
 
 export default function ChangeStatusModal({ shipment, onClose, onStatusChange }) {
@@ -39,11 +40,13 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange })
           <SelectValue placeholder="Select status" />
         </SelectTrigger>
         <SelectContent>
-          {statusOptions.map((option) => (
+          <div className='bg-green-100'>
+            {statusOptions.map((option) => (
             <SelectItem key={option} value={option}>
-              {option}
+              <div className='capitalize'>{option.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
             </SelectItem>
           ))}
+          </div>
         </SelectContent>
       </Select>
       <div className="flex justify-end gap-2 pt-4">

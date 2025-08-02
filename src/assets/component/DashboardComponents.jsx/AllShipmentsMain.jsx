@@ -95,6 +95,29 @@ export default function AllShipmentsMain({ token }) {
     }
     };
 
+    // const handleStatusChange = async ({ shipmentId, newStatus }) => {
+    // try {
+    //     await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: newStatus });
+    //     // Optionally refetch or update local state
+    // } catch (err) {
+    //     console.error("Failed to update status", err);
+    // }
+    // };
+    const handleStatusChange = async ({ shipmentId, newStatus }) => {
+        try {
+            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: newStatus }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            });
+            await fetchShipments(); // Refresh shipment list after update
+        } catch (err) {
+            console.error("Failed to update status", err);
+        }
+    };
+
+
+
   return (
     <div className="p-4 space-y-6">
       {/* Toolbar and Filters */}
@@ -148,11 +171,17 @@ export default function AllShipmentsMain({ token }) {
 
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'status'} onClose={closeModal}>
+            {/* <ChangeStatusModal
+            shipment={selectedShipment}
+            onClose={closeModal}
+            onStatusChange={fetchShipments}
+            /> */}
             <ChangeStatusModal
-                shipment={selectedShipment}
-                onClose={closeModal}
-                onStatusChange={fetchShipments}
+            shipment={selectedShipment}
+            onClose={() => closeModal(false)}
+            onStatusChange={handleStatusChange}
             />
+
         </BasicModal>
         )}
 

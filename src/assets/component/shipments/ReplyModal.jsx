@@ -1,43 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { Textarea } from '@/components/ui/textarea';
-// import { Button } from '@/components/ui/button';
-
-// export default function ReplyModal({ shipment, onSendReply, onClose }) {
-//   const [message, setMessage] = useState('');
-
-//   useEffect(() => {
-//     setMessage('');  // Clear message when modal is opened
-//   }, [shipment]);
-
-//   const handleSend = () => {
-//     if (!message.trim()) return;
-//     onSendReply({ shipmentId: shipment._id, message });
-//     onClose();
-//   };
-
-//   return (
-//     <div className="space-y-4">
-//       <h2 className="text-lg font-semibold">Reply to Shipment Message</h2>
-//       <p className="text-sm text-muted-foreground">
-//         Add a reply or internal note related to this shipment:
-//       </p>
-//       <Textarea
-//         placeholder="Type your reply here..."
-//         value={message}
-//         onChange={(e) => setMessage(e.target.value)}
-//       />
-//       <div className="flex justify-end gap-2 pt-4">
-//         <Button variant="outline" onClick={onClose}>
-//           Cancel
-//         </Button>
-//         <Button onClick={handleSend}>
-//           Send Reply
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// }
-
 import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -83,16 +43,21 @@ export default function ReplyModal({ shipment, onSendReply, onClose }) {
         <div className="pt-4">
           <h3 className="text-md font-medium mb-2">Previous Replies</h3>
           <div className="space-y-3">
-            {shipment.replies.map((reply) => (
+            
+            {shipment.replies.map((reply, index) => (
               <div
-                key={reply._id}
+                key={reply._id || index}
                 className="border rounded p-3 bg-muted"
               >
                 <div className="text-sm">{reply.message}</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {reply.user?.name && <span>{reply.user.name} • </span>}
-                  {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
+                    {reply.user?.name && <span>{reply.user.name} • </span>}
+                    {reply.timestamp
+                        ? formatDistanceToNow(new Date(reply.timestamp), { addSuffix: true })
+                        : 'Time unknown'}
+
                 </div>
+
               </div>
             ))}
           </div>
