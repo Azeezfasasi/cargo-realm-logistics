@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
-// import SearchFilterBar from '../shipments/SearchFilterBar';
 import EditShipmentModal from '../shipments/EditShipmentModal';
 import ReplyModal from '../shipments/ReplyModal';
 import ChangeStatusModal from '../shipments/ChangeStatusModal';
@@ -10,6 +9,7 @@ import PrintModal from '../shipments/PrintModal';
 import { exportToExcel } from '../../utils/exportToExcel';
 import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
+import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
 
 export default function AllShipmentsMain({ token }) {
   const [shipments, setShipments] = useState([]);
@@ -64,18 +64,32 @@ export default function AllShipmentsMain({ token }) {
     setModalType(null);
   };
 
-  const handleDeleteShipment = async (id) => {
-    try {
-      await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      fetchShipments();
-    } catch (err) {
-      console.error('Failed to delete shipment:', err);
-    }
-  };
+  // const handleDeleteShipment = async (id) => {
+  //   try {
+  //     await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     fetchShipments();
+  //   } catch (err) {
+  //     console.error('Failed to delete shipment:', err);
+  //   }
+  // };
+    const handleDeleteShipment = async (id) => {
+    console.log("Trying to delete shipment:", id);
+      try {
+        const res = await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("Delete success:", res.data);
+        fetchShipments();
+      } catch (err) {
+        console.error("Delete failed:", err.response?.data || err.message);
+      }
+    };
 
     const handleSendReply = async ({ shipmentId, message }) => {
     try {
@@ -95,14 +109,6 @@ export default function AllShipmentsMain({ token }) {
     }
     };
 
-    // const handleStatusChange = async ({ shipmentId, newStatus }) => {
-    // try {
-    //     await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: newStatus });
-    //     // Optionally refetch or update local state
-    // } catch (err) {
-    //     console.error("Failed to update status", err);
-    // }
-    // };
     const handleStatusChange = async ({ shipmentId, newStatus }) => {
         try {
             await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: newStatus }, {
@@ -115,8 +121,6 @@ export default function AllShipmentsMain({ token }) {
             console.error("Failed to update status", err);
         }
     };
-
-
 
   return (
     <div className="p-4 space-y-6">
@@ -133,10 +137,21 @@ export default function AllShipmentsMain({ token }) {
       <ShipmentTable
         shipments={filteredShipments}
         onActionClick={openModal}
-        onDeleteClick={(shipment) => handleDeleteShipment(shipment._id)}
+        onDeleteClick={(shipment) => openModal(shipment, 'delete')}
       />
 
         {/* Modals */}
+        {selectedShipment && (
+          <BasicModal isOpen={modalType === 'delete'} onClose={closeModal}>
+            <DeleteConfirmationModal
+              isOpen={modalType === 'delete'}
+              shipment={selectedShipment}
+              onClose={closeModal}
+              onConfirm={handleDeleteShipment}
+            />
+          </BasicModal>
+        )}
+
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'edit'} onClose={closeModal}>
             <EditShipmentModal
@@ -171,17 +186,11 @@ export default function AllShipmentsMain({ token }) {
 
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'status'} onClose={closeModal}>
-            {/* <ChangeStatusModal
-            shipment={selectedShipment}
-            onClose={closeModal}
-            onStatusChange={fetchShipments}
-            /> */}
-            <ChangeStatusModal
-            shipment={selectedShipment}
-            onClose={() => closeModal(false)}
-            onStatusChange={handleStatusChange}
-            />
-
+          <ChangeStatusModal
+          shipment={selectedShipment}
+          onClose={() => closeModal(false)}
+          onStatusChange={handleStatusChange}
+          />
         </BasicModal>
         )}
 

@@ -13,13 +13,6 @@ export default function ShipmentTable({ shipments, onActionClick }) {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this shipment?')) {
-      console.log('Delete ID:', id);
-      // handle deletion logic here
-    }
-  };
-
   return (
     <div className="rounded-xl border bg-white dark:bg-gray-900 shadow-md overflow-x-auto">
       <table className="w-full text-sm text-left">
@@ -39,7 +32,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
             <tr key={shipment._id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
               <td className="p-3">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
               <td className="p-3 font-medium">{shipment.trackingNumber}</td>
-              <td className="p-3">{shipment.customerName}</td>
+              <td className="p-3">{shipment.senderName}</td>
               <td className="p-3">{shipment.status}</td>
               <td className="p-3">{shipment.destination}</td>
               <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>
@@ -53,7 +46,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'status')}>
                   <RefreshCcw size={16} />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => handleDelete(shipment._id)}>
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')}>
                   <Trash2 size={16} className="text-red-500" />
                 </Button>
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')}>

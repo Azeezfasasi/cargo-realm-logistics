@@ -19,15 +19,22 @@ export default function PrintModalContent({ shipment, onClose }) {
         <div ref={printRef} className="bg-white text-black p-4 text-sm">
           <h2 className="text-xl font-semibold mb-2">Shipment Information</h2>
           <p><strong>Tracking Number:</strong> {shipment.trackingNumber}</p>
-          <p><strong>Sender:</strong> {shipment.senderName} ({shipment.senderEmail})</p>
-          <p><strong>Receiver:</strong> {shipment.receiverName} ({shipment.receiverPhone})</p>
+          <p><strong>Sender:</strong> {shipment.senderName} ({shipment.senderPhone}) ({shipment.senderEmail})</p>
+          <p><strong>Sender Address:</strong> {shipment.senderAddress}</p>
+          <p><strong>Receiver:</strong> {shipment.recipientName} ({shipment.recipientPhone}) ({shipment.receiverEmail})</p>
+          <p><strong>Receiver Address:</strong> {shipment.recipientAddress}</p>
           <p><strong>Origin:</strong> {shipment.origin}</p>
           <p><strong>Destination:</strong> {shipment.destination}</p>
           <p><strong>Status:</strong> {shipment.status}</p>
-          <p><strong>Weight:</strong> {shipment.weight}</p>
+          <p><strong>Weight:</strong> {shipment.weight} kg</p>
+          <p><strong>Length:</strong> {shipment.length} cm</p>
+          <p><strong>Width:</strong> {shipment.width} cm</p>
+          <p><strong>Height:</strong> {shipment.height} cm</p>
+          <p><strong>Volume:</strong> {shipment.volume}</p>
+          <p><strong>Cost:</strong> ₦{shipment.cost}</p>
           <p><strong>Date Created:</strong> {new Date(shipment.createdAt).toLocaleString()}</p>
           <hr className="my-3" />
-          <p><strong>Description:</strong> {shipment.description || 'N/A'}</p>
+          <p><strong>Description:</strong> {shipment.notes || 'N/A'}</p>
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-4">

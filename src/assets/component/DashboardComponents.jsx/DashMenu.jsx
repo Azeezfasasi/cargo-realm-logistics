@@ -65,7 +65,7 @@ function DashMenu() {
                         <Nav.Item eventKey="2-2" as={Link} to="/app/account/createshipment">Create Shipment</Nav.Item>
                         )}
                         {(isAdmin || isAgent || isClient || isEmployee) && (
-                        <Nav.Item eventKey="2-3" as={Link} to="">My Shipment</Nav.Item>
+                        <Nav.Item eventKey="2-3" as={Link} to="/app/account/myshipments">My Shipment</Nav.Item>
                         )}
                         {(isAdmin || isAgent || isClient || isEmployee) && (
                         <Nav.Item eventKey="2-3" as={Link} to="">Track Shipment</Nav.Item>

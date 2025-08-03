@@ -12,7 +12,6 @@ import GridIcon from '@rsuite/icons/Grid';
 import TagIcon from '@rsuite/icons/Tag';
 import MessageIcon from '@rsuite/icons/Message';
 import GearIcon from '@rsuite/icons/Gear';
-import caclogo2 from '../../images/caclogo2.png'
 import logo2 from '../../images/logo2.png'
 
 function DashHeader() {
@@ -199,7 +198,7 @@ function DashHeader() {
                     <Nav.Item eventKey="2-2" as={Link} to="/app/account/createshipment">Create Shipment</Nav.Item>
                     )}
                     {(isAdmin || isAgent || isClient || isEmployee) && (
-                    <Nav.Item eventKey="2-3" as={Link} to="">My Shipment</Nav.Item>
+                    <Nav.Item eventKey="2-3" as={Link} to="/app/account/myshipments">My Shipment</Nav.Item>
                     )}
                     {(isAdmin || isAgent || isClient || isEmployee) && (
                     <Nav.Item eventKey="2-3" as={Link} to="">Track Shipment</Nav.Item>

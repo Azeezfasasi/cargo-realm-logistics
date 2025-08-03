@@ -6,16 +6,21 @@ import { toast } from 'react-hot-toast';
 
 const generateTrackingNumber = () => {
   const rand = Math.floor(10000000000 + Math.random() * 90000000000);
-  return `Car${rand}`;
+  return `CAR${rand}`;
 };
 
 export default function CreateShipmentForm({ token }) {
   const [form, setForm] = useState({
     trackingNumber: generateTrackingNumber(),
     sender: '',
+    senderName: '',
+    senderPhone: '',
+    senderEmail: '',
+    senderAddress: '',
     recipientName: '',
     recipientPhone: '',
     recipientAddress: '',
+    receiverEmail: '',
     origin: '',
     destination: '',
     status: 'pending',
@@ -23,6 +28,11 @@ export default function CreateShipmentForm({ token }) {
     shipmentDate: '',
     deliveryDate: '',
     notes: '',
+    length: '',
+    width: '',
+    height: '',
+    volume: '',
+    cost: '',
   });
 
   const { data: users } = useQuery({
@@ -51,15 +61,26 @@ export default function CreateShipmentForm({ token }) {
       setForm((prev) => ({
         ...prev,
         trackingNumber: generateTrackingNumber(), // reset tracking number
+        senderName: '',
+        senderPhone: '',
+        senderEmail: '',
+        senderAddress: '',
         recipientName: '',
         recipientPhone: '',
         recipientAddress: '',
+        receiverEmail: '',
         origin: '',
         destination: '',
+        status: 'pending',
         weight: '',
         shipmentDate: '',
         deliveryDate: '',
         notes: '',
+        length: '',
+        width: '',
+        height: '',
+        volume: '',
+        cost: '',
       }));
     },
     onError: (err) => {
@@ -113,34 +134,97 @@ export default function CreateShipmentForm({ token }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Recipient Name</label>
+          <label className="block text-sm font-medium mb-1">Sender Name</label>
           <input
             type="text"
-            name="recipientName"
-            value={form.recipientName}
+            name="senderName"
+            value={form.senderName}
+            placeholder='Enter the sender name'
             onChange={handleChange}
             className="w-full border rounded p-2"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Recipient Phone</label>
+          <label className="block text-sm font-medium mb-1">Sender Phone Number</label>
+          <input
+            type="text"
+            name="senderPhone"
+            value={form.senderPhone}
+            onChange={handleChange}
+            placeholder='Enter the sender Phone Number'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Sender Email Address</label>
+          <input
+            type="email"
+            name="senderEmail"
+            value={form.senderEmail}
+            onChange={handleChange}
+            placeholder='Enter the sender Email Address'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Sender Address</label>
+          <input
+            type="text"
+            name="senderAddress"
+            value={form.senderAddress}
+            onChange={handleChange}
+            placeholder='Enter the sender Home Address'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Receiver Name</label>
+          <input
+            type="text"
+            name="recipientName"
+            value={form.recipientName}
+            onChange={handleChange}
+            placeholder='Enter the receiver name'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Receiver Email</label>
+          <input
+            type="email"
+            name="receiverEmail"
+            value={form.receiverEmail}
+            onChange={handleChange}
+            placeholder='Enter the receiver email'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Receiver Phone</label>
           <input
             type="text"
             name="recipientPhone"
             value={form.recipientPhone}
             onChange={handleChange}
+            placeholder='Enter the receiverphone number'
             className="w-full border rounded p-2"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium mb-1">Recipient Address</label>
+          <label className="block text-sm font-medium mb-1">Receiver Address</label>
           <textarea
             name="recipientAddress"
             value={form.recipientAddress}
             onChange={handleChange}
             className="w-full border rounded p-2"
+            placeholder='Enter the receiver home address'
             rows={2}
           />
         </div>
@@ -152,6 +236,7 @@ export default function CreateShipmentForm({ token }) {
             name="origin"
             value={form.origin}
             onChange={handleChange}
+            placeholder='Enter the country/city of origin'
             className="w-full border rounded p-2"
           />
         </div>
@@ -163,6 +248,7 @@ export default function CreateShipmentForm({ token }) {
             name="destination"
             value={form.destination}
             onChange={handleChange}
+            placeholder='Enter the country/city of destination'
             className="w-full border rounded p-2"
           />
         </div>
@@ -174,6 +260,67 @@ export default function CreateShipmentForm({ token }) {
             name="weight"
             value={form.weight}
             onChange={handleChange}
+            placeholder='Enter the weight of the shipment in kg'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Length (Optional)</label>
+          <input
+            type="number"
+            name="length"
+            value={form.length}
+            onChange={handleChange}
+            placeholder='Optional:Enter the Length of the shipment'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Width (Optional)</label>
+          <input
+            type="number"
+            name="width"
+            value={form.width}
+            onChange={handleChange}
+            placeholder='Optional:Enter the width of the shipment'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Height (Optional)</label>
+          <input
+            type="number"
+            name="height"
+            value={form.height}
+            onChange={handleChange}
+            placeholder='Optional:Enter the height of the shipment'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Volume (Optional)</label>
+          <input
+            type="number"
+            name="volume"
+            value={form.volume}
+            onChange={handleChange}
+            placeholder='Optional: Enter the volume of the shipment'
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Shipping Cost (₦) - (Optional)</label>
+          <input
+            type="text"
+            name="cost"
+            value={form.cost}
+            onChange={handleChange}
+            placeholder='Optional: Enter the total cost of the shipment'
             className="w-full border rounded p-2"
           />
         </div>
@@ -238,6 +385,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.notes}
             onChange={handleChange}
             className="w-full border rounded p-2"
+            placeholder='Enter any notes or comments about the shipment here. You can also include all the items here.'
             rows={3}
           />
         </div>

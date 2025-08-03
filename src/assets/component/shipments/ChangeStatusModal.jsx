@@ -11,7 +11,13 @@ const statusOptions = [
   'out-for-delivery',
   'delivered',
   'failed-delivery-attempt',
-  'cancelled'
+  'cancelled',
+  'pickup-scheduled',
+  'picked-up',
+  'on-hold',
+  'customs-clearance',
+  'Awaiting Pickup',
+  'Awaiting Delivery',
 ];
 
 export default function ChangeStatusModal({ shipment, onClose, onStatusChange }) {
