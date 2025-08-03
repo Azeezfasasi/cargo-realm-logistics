@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/Api'; 
+import { API_BASE_URL } from '../../../config/Api';
 import { Link } from 'react-router-dom';
 
 function ContactForm() {
   // Form states
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState(''); // Mapping "Query Related" to phoneNumber as per model
+  const [phoneNumber, setPhoneNumber] = useState(''); 
+  const [shippingType, setShippingType] = useState('');
+  const [originCountry, setOriginCountry] = useState('');
+  const [destinationCountry, setDestinationCountry] = useState('');
+  const [weight, setWeight] = useState('');
+  const [length, setLength] = useState('');
+  const [height, setHeight] = useState('');
   const [message, setMessage] = useState('');
 
   // UI states
@@ -19,7 +25,7 @@ function ContactForm() {
   useEffect(() => {
     setLocalError('');
     setSuccessMessage('');
-  }, [name, email, phoneNumber, message]);
+  }, [name, email, phoneNumber, message, shippingType, originCountry, destinationCountry, weight, length, height, message]);
 
   // Mutation for submitting the contact form
   const submitContactFormMutation = useMutation({
@@ -37,6 +43,12 @@ function ContactForm() {
       setEmail('');
       setPhoneNumber('');
       setMessage('');
+      setShippingType('');
+      setOriginCountry('');
+      setDestinationCountry('');
+      setWeight('');
+      setLength('');
+      setHeight('');
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 'Failed to send message. Please try again.';
@@ -66,12 +78,18 @@ function ContactForm() {
       email: email.trim(),
       phoneNumber: phoneNumber.trim() || undefined, // Send undefined if empty
       message: message.trim(),
+      shippingType: shippingType.trim() || undefined,
+      originCountry: originCountry.trim() || undefined,
+      destinationCountry: destinationCountry.trim() || undefined, 
+      weight: weight.trim() || undefined, 
+      length: length.trim() || undefined, 
+      height: height.trim() || undefined,
     });
   };
 
   return (
-    <section className="bg-gray-200 py-6 px-4 sm:px-6 lg:px-8 font-inter "> {/* Light gray background */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <section className="bg-gray-200 flex justify-center mx-auto py-6 px-4 sm:px-6 lg:px-8 font-inter "> {/* Light gray background */}
+      <div className="mx-auto flex flex-col justify-center items-center">
 
         {/* Left Section: Contact Form */}
         <div className="text-left">
@@ -91,47 +109,114 @@ function ContactForm() {
             )}
 
             <div>
+              <label>Name</label>
               <input
                 type="text"
                 placeholder="Your full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
                 required
               />
             </div>
             <div>
+              <label>Email</label>
               <input
                 type="email"
                 placeholder="Your Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
                 required
               />
             </div>
             <div>
+              <label>Phone Number</label>
               <input
                 type="text"
-                placeholder="Your Phone Number (Optional)" // Changed placeholder for clarity
+                placeholder="Your Phone Number (Optional)"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
               />
             </div>
             <div>
+              <label>Shipping Type</label>
+              <select name="shippingType" id="shippingType" value={shippingType} onChange={(e) => setShippingType(e.target.value)} className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500">
+                <option value="">Select Shipping Type</option>
+                <option value="Air Freight">Air Freight</option>
+                <option value="Sea Freight">Sea Freight</option>
+                <option value="Road Transport">Road Transport</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label>Origin Country</label>
+              <input
+                type="text"
+                placeholder="Enter origin Country"
+                value={originCountry}
+                onChange={(e) => setOriginCountry(e.target.value)}
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+              />
+            </div>
+            <div>
+              <label>Destination Country</label>
+              <input
+                type="text"
+                placeholder="Enter destination country"
+                value={destinationCountry}
+                onChange={(e) => setDestinationCountry(e.target.value)}
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+              />
+            </div>
+            <div className='grid grid-cols-3 gap-2'>
+              <div>
+                <label>Weight</label>
+                <input
+                  type="text"
+                  placeholder="Enter weight (kg)"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                />
+              </div>
+              <div>
+                <label>Length</label>
+                <input
+                  type="text"
+                  placeholder="Enter length (cm)"
+                  value={length}
+                  onChange={(e) => setLength(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                />
+              </div>
+              <div>
+                <label>Height</label>
+                <input
+                  type="text"
+                  placeholder="Enter height (cm)"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label>Shipping Details <span className='text-green-700 text-[14px]'>(You can list all the items you want to ship here)</span></label>
               <textarea
-                placeholder="Message"
+                placeholder="You can list all the items you want to ship here"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows="6"
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800 placeholder-gray-500 resize-y"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500 resize-y"
                 required
               ></textarea>
             </div>
             <button
               type="submit"
-              className="w-full px-8 py-4 bg-orange-300 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-orange-400 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full px-8 py-4 bg-green-600 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               disabled={submitContactFormMutation.isPending} // Disable button when loading
             >
               {submitContactFormMutation.isPending ? (
@@ -145,54 +230,10 @@ function ContactForm() {
             </button>
           </form>
         </div>
-
-        {/* Right Section: Contact Details */}
-        <div className="text-left lg:pl-12"> {/* Added left padding for larger screens */}
-          <div className="mb-8">
-            <h3 className="text-base font-semibold text-gray-900 mb-2 uppercase">Address</h3>
-            <p className="text-gray-700 text-lg font-bold">
-              23 Kajola Olayinka Street, Off Ogunlewe Road <br /> Igbogbo, Ikorodu, Lagos.
-            </p>
-          </div>
-
-          <div className="flex flex-col mb-8">
-            <h3 className="text-base font-semibold text-gray-900 mb-2 uppercase">Contact Details</h3>
-            <Link to="tel:08069374005" className="text-gray-700 text-lg font-bold w-fit">
-              (+234) 08069374005
-            </Link>
-            <Link to="mailto:info@caclightway.com" className="text-gray-700 text-lg font-bold w-fit">
-              info@caclightway.com
-            </Link>
-          </div>
-
-          <div>
-            <h3 className="text-base font-semibold text-gray-900 mb-4 uppercase">Find us here</h3>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-600 hover:text-orange-500 transition-colors duration-200">
-                {/* Facebook Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.812c-3.274 0-4.188 1.549-4.188 4.035v2.965z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-gray-600 hover:text-orange-500 transition-colors duration-200">
-                {/* Twitter Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.594 0-6.495 2.902-6.495 6.495 0 .509.058 1.007.163 1.489-5.405-.271-10.183-2.868-13.383-6.848-.562.96-.884 2.07-.884 3.259 0 2.254 1.14 4.24 2.873 5.417-.84-.026-1.621-.26-2.31-.641v.08c0 3.154 2.239 5.786 5.207 6.39-.544.148-1.114.225-1.702.225-.418 0-.823-.041-1.22-.116.829 2.572 3.224 4.463 6.077 4.567-2.226 1.748-5.034 2.793-8.09 2.793-1.056 0-2.09-.061-3.105-.18.859.92 1.867 1.745 2.994 2.406 3.429 2.31 7.502 3.665 11.908 3.665 14.269 0 22.07-11.16 22.07-20.834 0-.335-.01-.67-.026-1z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-gray-600 hover:text-orange-500 transition-colors duration-200">
-                {/* LinkedIn Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
-
       </div>
     </section>
   );
 }
 
 export default ContactForm;
+

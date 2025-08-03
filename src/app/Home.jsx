@@ -31,9 +31,8 @@ function Home() {
       <CallToAction />
       <WhoWeAre />
       <HowItWorks />
-      <TestimonialSection />
       <AllBlog />
-      <ContactForm />
+      <TestimonialSection />
       <FooterSection />
     </>
   )
