@@ -29,11 +29,11 @@ function ContactInfo() {
             </h3>
             {/* Description */}
             <p className="text-gray-600 leading-relaxed mb-4">
-              Email us for help with a current product or service
+              Email us for help with a current shipping or service
             </p>
             {/* Link */}
-            <a href="mailto:helpcenter@mail.com" className="text-blue-600 hover:underline font-semibold">
-              helpcenter@mail.com
+            <a href="mailto:info@cargorealmandlogistics.com" className="text-blue-600 hover:underline font-semibold">
+              info@cargorealmandlogistics.com
             </a>
           </div>
 
@@ -51,11 +51,11 @@ function ContactInfo() {
             </h3>
             {/* Description */}
             <p className="text-gray-600 leading-relaxed mb-4">
-              Call us to speak to a member of our team.
+              Call us to speak to our team.
             </p>
             {/* Link */}
             <a href="tel:+16035550123" className="text-blue-600 hover:underline font-semibold">
-              +1 (603) 555-0123
+              (+234) 09074151326
             </a>
           </div>
 

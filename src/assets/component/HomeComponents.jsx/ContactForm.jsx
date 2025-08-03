@@ -94,7 +94,7 @@ function ContactForm() {
         {/* Left Section: Contact Form */}
         <div className="text-left">
           <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wider">
-            CONTACT FORM:
+            REQUEST A QUOTE
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             {localError && (

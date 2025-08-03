@@ -10,7 +10,8 @@ const slides = [
       'Our dedicated team ensures seamless and secure transportation of your cargo across the globe. We are committed to providing efficient, reliable, and stress-free logistics solutions for all your shipping needs.',
     image: cargo1,
     alt: 'Cargo Tracking Hero Image',
-    cta: '/request-quote',
+    cta: '/app/requestquote',
+    buttonText: 'Request Quote',
   },
   {
     headline: 'Fast & Reliable Delivery',
@@ -18,7 +19,8 @@ const slides = [
       'Experience quick and safe delivery with our advanced tracking and logistics network. Your cargo is always in good hands.',
     image: cargo2,
     alt: 'Fast Delivery Image',
-    cta: '/track-shipment',
+    cta: '/app/trackshipment',
+    buttonText: 'Request Quote',
   },
   {
     headline: 'Global Coverage, Local Expertise',
@@ -26,7 +28,8 @@ const slides = [
       'We connect continents and cities, offering tailored solutions for every shipment. Trust us for your international logistics needs.',
     image: cargo1,
     alt: 'Global Coverage Image',
-    cta: '/services',
+    cta: '/',
+    buttonText: 'Book Appointment',
   },
 ];
 
@@ -39,17 +42,22 @@ export default function Hero() {
 
   return (
     <section className="relative bg-green-600 font-sans overflow-hidden">
+      {/* Left Arrow Button */}
+      <button className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white text-red-600 rounded-full p-2 shadow hover:bg-gray-100 z-20" onClick={goToPrev} aria-label="Previous Slide">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+      </button>
+
       <div className="container mx-auto flex flex-col lg:flex-row items-center justify-between py-12 lg:py-20 px-4">
         {/* Left Section: Text Content */}
-        <div className="lg:w-1/2 w-full bg-green-600 text-white p-8 lg:p-16 rounded-lg shadow-lg flex flex-col justify-center relative z-10">
+        <div className="lg:w-1/2 w-full bg-green-600 text-white p-8 lg:p-6 rounded-lg flex flex-col justify-center relative z-10">
           <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
             {slides[current].headline}
           </h1>
           <p className="text-lg lg:text-xl mb-8 opacity-90">
             {slides[current].description}
           </p>
-          <Link href={slides[current].cta} className="flex items-center justify-center px-8 py-4 bg-white text-green-600 font-bold rounded-full shadow-md hover:bg-gray-100 transition duration-300 ease-in-out self-start">
-            Get a Quote
+          <Link to={slides[current].cta} className="flex items-center justify-center px-8 py-4 bg-white text-green-600 font-bold rounded-full shadow-md hover:bg-gray-100 transition duration-300 ease-in-out self-start">
+            {slides[current].buttonText}
             <svg
               className="ml-3 w-5 h-5"
               fill="none"
@@ -77,21 +85,6 @@ export default function Hero() {
             className="rounded-lg shadow-lg w-full h-auto object-cover transition-all duration-700"
           />
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent to-green-600 opacity-10 rounded-lg pointer-events-none"></div>
-          {/* Navigation Arrows */}
-          <button
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white text-red-600 rounded-full p-2 shadow hover:bg-gray-100 z-20"
-            onClick={goToPrev}
-            aria-label="Previous Slide"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <button
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-green-600 rounded-full p-2 shadow hover:bg-gray-100 z-20"
-            onClick={goToNext}
-            aria-label="Next Slide"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-          </button>
         </div>
       </div>
       {/* Indicators */}
@@ -105,6 +98,11 @@ export default function Hero() {
           />
         ))}
       </div>
+      {/* Right Arrow Button */}
+      <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-green-600 rounded-full p-2 shadow hover:bg-gray-100 z-20"
+        onClick={goToNext} aria-label="Next Slide">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+      </button>
     </section>
   );
 }
