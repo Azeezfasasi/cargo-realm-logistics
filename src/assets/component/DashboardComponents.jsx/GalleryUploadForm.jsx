@@ -113,7 +113,7 @@ const GalleryUploadForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-orange-600 text-white px-5 py-2 rounded hover:bg-orange-700 disabled:opacity-50"
+          className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 disabled:opacity-50"
         >
           {isSubmitting ? 'Uploading...' : 'Upload Image'}
         </button>

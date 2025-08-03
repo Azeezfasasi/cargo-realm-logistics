@@ -73,12 +73,6 @@ export default function ShipmentTable({ shipments, onActionClick }) {
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')}>
                   <Trash2 size={16} className="text-red-500" />
                 </Button>
-                {/* <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'invoice')}>
-                  <FileText size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'waybill')}>
-                  <Truck size={16} />
-                </Button> */}
               </td>
             </tr>
           ))}

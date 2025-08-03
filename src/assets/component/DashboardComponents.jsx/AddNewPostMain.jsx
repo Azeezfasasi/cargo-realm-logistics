@@ -74,7 +74,7 @@ function AddNewPostMain() {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center">
         <div className="text-center text-lg text-gray-700 flex items-center">
-          <svg className="animate-spin h-6 w-6 text-orange-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg className="animate-spin h-6 w-6 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
@@ -127,7 +127,7 @@ function AddNewPostMain() {
               value={blogTitle}
               onChange={(e) => setBlogTitle(e.target.value)}
               placeholder="Enter blog title"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
           </div>
@@ -140,15 +140,15 @@ function AddNewPostMain() {
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
               required
             >
-              <option value="RELATIONSHIP">RELATIONSHIP</option>
-              <option value="SPIRITUAL GROWTH">SPIRITUAL GROWTH</option>
-              <option value="COMMUNITY">COMMUNITY</option>
-              <option value="SERMON">SERMON</option>
-              <option value="EVENTS">EVENTS</option>
-              <option value="TESTIMONY">TESTIMONY</option>
+              <option value="RELATIONSHIP">Choose Category</option>
+              <option value="Shipment">Shipment</option>
+              <option value="Air Freight">Air Freight</option>
+              <option value="Cargo">Cargo</option>
+              <option value="Events">Events</option>
+              <option value="Testimony">Testimony</option>
             </select>
           </div>
 
@@ -162,14 +162,14 @@ function AddNewPostMain() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Write your blog post content here..."
               rows="10"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-y"
               required
             ></textarea>
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 px-4 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             disabled={createBlogMutation.isPending}
           >
             {createBlogMutation.isPending ? (

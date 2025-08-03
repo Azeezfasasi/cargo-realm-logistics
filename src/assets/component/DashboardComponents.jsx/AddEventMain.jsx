@@ -137,7 +137,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center">
         <div className="text-center text-lg text-gray-700 flex items-center">
-          <svg className="animate-spin h-6 w-6 text-orange-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg className="animate-spin h-6 w-6 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
@@ -190,7 +190,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
               value={eventTitle}
               onChange={(e) => setEventTitle(e.target.value)}
               placeholder="e.g., Annual Youth Conference"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
           </div>
@@ -203,17 +203,13 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
               required
             >
-              <option value="General">General</option>
-              <option value="Worship">Worship</option>
-              <option value="Youth">Youth</option>
-              <option value="Women">Women</option>
-              <option value="Men">Men</option>
-              <option value="Outreach">Outreach</option>
-              <option value="Conference">Conference</option>
-              <option value="Community">Community</option>
+              <option value="">Choose Category</option>
+              <option value="Shipment">Shipment</option>
+              <option value="Cargo">Cargo</option>
+              <option value="International Travel">International Travel</option>
             </select>
           </div>
 
@@ -227,7 +223,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide a detailed description of the event..."
               rows="6"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-y"
               required
             ></textarea>
           </div>
@@ -242,7 +238,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                 id="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               />
             </div>
@@ -255,7 +251,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                 id="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>
@@ -270,7 +266,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g., Main Auditorium"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -284,7 +280,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="e.g., 123 Church St, City, State, Country"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -298,7 +294,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               placeholder="e.g., 2 hours, 3 days"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -313,7 +309,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                 value={organizer}
                 onChange={(e) => setOrganizer(e.target.value)}
                 placeholder="e.g., Pastor John Doe"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <div>
@@ -326,7 +322,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                 value={coOrganizer}
                 onChange={(e) => setCoOrganizer(e.target.value)}
                 placeholder="e.g., Sister Jane Smith"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>
@@ -339,7 +335,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                 id="isRecurring"
                 checked={isRecurring}
                 onChange={(e) => setIsRecurring(e.target.checked)}
-                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
               />
               <label htmlFor="isRecurring" className="ml-2 block text-sm font-medium text-gray-900">
                 This is a recurring event
@@ -361,7 +357,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                         value="daily"
                         checked={recurrenceType === 'daily'}
                         onChange={(e) => setRecurrenceType(e.target.value)}
-                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                       />
                       <label htmlFor="daily" className="ml-3 block text-sm font-medium text-gray-700">
                         Daily
@@ -375,7 +371,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                         value="weekly"
                         checked={recurrenceType === 'weekly'}
                         onChange={(e) => setRecurrenceType(e.target.value)}
-                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                       />
                       <label htmlFor="weekly" className="ml-3 block text-sm font-medium text-gray-700">
                         Weekly
@@ -389,7 +385,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                         value="monthly_date"
                         checked={recurrenceType === 'monthly_date'}
                         onChange={(e) => setRecurrenceType(e.target.value)}
-                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                       />
                       <label htmlFor="monthly_date" className="ml-3 block text-sm font-medium text-gray-700">
                         Monthly (by date, e.g., 15th of every month)
@@ -403,7 +399,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                         value="monthly_day"
                         checked={recurrenceType === 'monthly_day'}
                         onChange={(e) => setRecurrenceType(e.target.value)}
-                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                       />
                       <label htmlFor="monthly_day" className="ml-3 block text-sm font-medium text-gray-700">
                         Monthly (by day of week, e.g., First Monday, Last Friday)
@@ -422,7 +418,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                         id="monthlyRecurrenceOrdinal"
                         value={monthlyRecurrenceOrdinal}
                         onChange={(e) => setMonthlyRecurrenceOrdinal(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                       >
                         <option value="first">First</option>
                         <option value="second">Second</option>
@@ -439,7 +435,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                         id="monthlyRecurrenceDayOfWeek"
                         value={monthlyRecurrenceDayOfWeek}
                         onChange={(e) => setMonthlyRecurrenceDayOfWeek(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                       >
                         <option value="monday">Monday</option>
                         <option value="tuesday">Tuesday</option>
@@ -462,7 +458,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
                     id="recurrenceEndDate"
                     value={recurrenceEndDate}
                     onChange={(e) => setRecurrenceEndDate(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     min={date} // Ensure end date is not before start date
                     required
                   />
@@ -474,7 +470,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
 
           <button
             type="submit"
-            className="w-full py-3 px-4 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             disabled={createEventMutation.isPending}
           >
             {createEventMutation.isPending ? (
