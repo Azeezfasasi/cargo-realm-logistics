@@ -2,25 +2,15 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Download, Search } from "lucide-react";
-// import { saveAs } from "file-saver";
-import * as XLSX from "xlsx";
 
+// The props have been updated to match the parent component
 const ShipmentToolbar = ({
   searchQuery,
   onSearch,
   onStatusChange,
-  onExportCSV,
-  onExportXLSX,
+  onExport,
   selectedStatus,
 }) => {
-  const handleCSVDownload = () => {
-    if (onExportCSV) onExportCSV();
-  };
-
-  const handleExcelDownload = () => {
-    if (onExportXLSX) onExportXLSX();
-  };
-
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 bg-gray-50 rounded-xl shadow">
       <div className="flex items-center gap-2 w-full md:w-auto">
@@ -41,20 +31,25 @@ const ShipmentToolbar = ({
           className="border border-gray-300 rounded px-3 py-1 text-sm"
         >
           <option value="">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="In Transit">In Transit</option>
-          <option value="Arrived">Arrived</option>
-          <option value="Cleared">Cleared</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Returned">Returned</option>
-          <option value="Cancelled">Cancelled</option>
+          <option value="pending">Pending</option>
+          <option value="in-transit">In Transit</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="processing">Processing</option>
+          <option value="out-for-delivery">Out For Delivery</option>
+          <option value="pickup-scheduled">Pickup Scheduled</option>
+          <option value="picked-up">Picked Up</option>
+          <option value="arrived-at-hub">Arrived at Hub</option>
+          <option value="departed-from-hub">Departed from Hub</option>
+          <option value="on-hold">On Hold</option>
+          <option value="customs-clearance">Customs Clearance</option>
+          <option value="Awaiting Pickup">Awaiting Pickup</option>
+          <option value="failed-delivery-attempt">Failed Delivery Attemptd</option>
+          <option value="Awaiting Delivery">Awaiting Delivery</option>
         </select>
 
-        <Button variant="outline" onClick={handleCSVDownload}>
-          Export CSV
-        </Button>
-        <Button variant="outline" onClick={handleExcelDownload}>
-          Export Excel
+        <Button variant="outline" onClick={onExport}>
+          <Download className="mr-2 h-4 w-4" /> Export
         </Button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Pencil, Mail, Trash2, FileText, Printer, Truck, RefreshCcw } from 'lucide-react';
+import { Pencil, Download, Mail, Eye, Trash2, FileText, Printer, Truck, RefreshCcw } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -33,7 +33,28 @@ export default function ShipmentTable({ shipments, onActionClick }) {
               <td className="p-3">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
               <td className="p-3 font-medium">{shipment.trackingNumber}</td>
               <td className="p-3">{shipment.senderName}</td>
-              <td className="p-3">{shipment.status}</td>
+              <td className="p-3">
+                <span className={`font-medium capitalize w-fit px-2 py-1 rounded-md
+                ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                  shipment.status === 'in-transit' ? 'bg-yellow-100 text-yellow-800' :
+                  shipment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                  shipment.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                  shipment.status === 'pickup-scheduled' ? 'bg-amber-100 text-amber-800' :
+                  shipment.status === 'out-for-delivery' ? 'bg-pink-100 text-pink-800' :
+                  shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
+                  shipment.status === 'arrived-at-hub' ? 'bg-violet-100 text-violet-800' :
+                  shipment.status === 'departed-from-hub' ? 'bg-indigo-100 text-indigo-800' :
+                  shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
+                  shipment.status === 'on-hold' ? 'bg-pink-100 text-pink-800' :
+                  shipment.status === 'customs-clearance' ? 'bg-cyan-100 text-cyan-800' :
+                  shipment.status === 'Awaiting Pickup' ? 'bg-fuchsia-100 text-fuchsia-800' :
+                  shipment.status === 'failed-delivery-attempt' ? 'bg-red-100 text-red-800' :
+                  shipment.status === 'Awaiting Delivery' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'pending' ? 'bg-red-100 text-red-800' :
+                  'bg-gray-100 text-gray-800' }`}>
+                {shipment.status}
+                </span>
+              </td>
               <td className="p-3">{shipment.destination}</td>
               <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>
               <td className="p-3 space-x-1">
@@ -46,18 +67,18 @@ export default function ShipmentTable({ shipments, onActionClick }) {
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'status')}>
                   <RefreshCcw size={16} />
                 </Button>
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')}>
+                  <Eye size={16} />
+                </Button>
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')}>
                   <Trash2 size={16} className="text-red-500" />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')}>
-                  <Printer size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'invoice')}>
+                {/* <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'invoice')}>
                   <FileText size={16} />
                 </Button>
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'waybill')}>
                   <Truck size={16} />
-                </Button>
+                </Button> */}
               </td>
             </tr>
           ))}

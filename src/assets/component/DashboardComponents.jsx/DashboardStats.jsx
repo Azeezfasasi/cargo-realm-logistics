@@ -38,7 +38,7 @@ const StatCard = ({ icon: Icon, title, value, isLoading, isError, error }) => {
       <div className="flex-grow">
         <p className="text-gray-500 text-sm font-medium">{title}</p>
         {isLoading ? (
-          <FaSpinner className="animate-spin text-blue-500 text-xl mt-1" />
+          <FaSpinner className="animate-spin text-green-500 text-xl mt-1" />
         ) : isError ? (
           <FaTimesCircle className="text-red-500 text-xl mt-1" title={error?.message || 'Error'} />
         ) : (
@@ -116,7 +116,7 @@ const DashboardStats = () => {
   if (overallLoading && !overallError) { 
     return (
       <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
-        <FaSpinner className="animate-spin text-blue-600 text-4xl" />
+        <FaSpinner className="animate-spin text-green-600 text-4xl" />
         <p className="ml-3 text-lg text-gray-700">Loading dashboard statistics...</p>
       </section>
     );

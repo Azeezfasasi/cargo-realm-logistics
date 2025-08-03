@@ -1,46 +1,182 @@
 import React, { useState, useContext } from 'react';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { LuSearch, LuChevronLeft, LuChevronRight } from 'react-icons/lu';
+import { LuSearch, LuChevronLeft, LuChevronRight, LuEye, LuX } from 'react-icons/lu';
 import { API_BASE_URL } from '@/config/Api';
-// import { useProfile } from '../../context-api/UseProfile';
 import { ProfileContext } from '@/assets/context-api/ProfileContext';
+import logo2 from '../../images/logo2.png';
+import { FaSpinner } from 'react-icons/fa';
 
 // Configure a new QueryClient
 const queryClient = new QueryClient();
 
-// In a real application, this would be retrieved from a state management
-// system or local storage after the user logs in.
-// const authToken = 'your-auth-token-here';
+// The Modal component to display individual shipment details
+const ShipmentDetailsModal = ({ shipment, onClose }) => {
+  if (!shipment) return null;
 
-// Function to fetch shipments where the authenticated user is the sender.
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 overflow-y-auto p-4">
+      <div className="relative w-full max-w-2xl mx-auto bg-white rounded-xl shadow-2xl transition-all transform scale-100 opacity-100 overflow-y-auto h-[90vh]">
+        <div className="p-6 ">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-red-600 hover:text-red-700 transition-colors border border-solid border-red-600 p-1 rounded-md"
+          >
+            <LuX className="w-6 h-6" />
+          </button>
+
+          <div className='flex flex-row justify-center mb-5'>
+            <img
+              src={logo2}
+              alt="Logo"
+              className='w-[250px] h-[70px]'
+            />
+          </div>
+
+          <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Shipment Details - <span className='text-green-600'>{shipment.trackingNumber}</span></h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-gray-600">
+            {/* Shipment details */}
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Tracking Number</span>
+              <span className="font-medium text-gray-900">{shipment.trackingNumber}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Sender Name</span>
+              <span className="font-medium text-gray-900">{shipment.senderName}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Sender Phone</span>
+              <span className="font-medium text-gray-900">{shipment.senderPhone}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Sender Email</span>
+              <span className="font-medium text-gray-900">{shipment.senderEmail}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Sender Address</span>
+              <span className="font-medium text-gray-900">{shipment.senderAddress}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Status</span>
+              <span className={`font-medium capitalize w-fit px-2 py-1 rounded-md
+                ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                  shipment.status === 'in-transit' ? 'bg-yellow-100 text-yellow-800' :
+                  shipment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                  shipment.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                  shipment.status === 'pickup-scheduled' ? 'bg-amber-100 text-amber-800' :
+                  shipment.status === 'out-for-delivery' ? 'bg-pink-100 text-pink-800' :
+                  shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
+                  shipment.status === 'arrived-at-hub' ? 'bg-violet-100 text-violet-800' :
+                  shipment.status === 'departed-from-hub' ? 'bg-indigo-100 text-indigo-800' :
+                  shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
+                  shipment.status === 'on-hold' ? 'bg-pink-100 text-pink-800' :
+                  shipment.status === 'customs-clearance' ? 'bg-cyan-100 text-cyan-800' :
+                  shipment.status === 'Awaiting Pickup' ? 'bg-fuchsia-100 text-fuchsia-800' :
+                  shipment.status === 'failed-delivery-attempt' ? 'bg-red-100 text-red-800' :
+                  shipment.status === 'Awaiting Delivery' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'pending' ? 'bg-red-100 text-red-800' :
+                  'bg-gray-100 text-gray-800' }`}>
+                {shipment.status}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Receiver Name</span>
+              <span className="font-medium">{shipment.recipientName}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Receiver Phone</span>
+              <span className="font-medium">{shipment.recipientPhone}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Receiver Email</span>
+              <span className="font-medium">{shipment.receiverEmail}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Receiver Address</span>
+              <span className="font-medium">{shipment.recipientAddress}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Origin Address</span>
+              <span className="font-medium">{shipment.origin}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Destination Address</span>
+              <span className="font-medium">{shipment.destination}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Weight</span>
+              <span className="font-medium">{shipment.weight}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Length</span>
+              <span className="font-medium">{shipment.length}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Width</span>
+              <span className="font-medium">{shipment.width}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Height</span>
+              <span className="font-medium">{shipment.height}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Shipment Cost</span>
+              <span className="font-medium">{shipment.cost}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Shipment Date</span>
+              <span className="font-medium">{shipment.shipmentDate}</span>
+            </div>
+            <div className="flex flex-col col-span-2">
+              <span className="text-sm font-semibold text-gray-500 uppercase">Description</span>
+              <span className="font-medium">{shipment.notes}</span>
+            </div>
+          </div>
+          {/* Close button */}
+          <div className='flex flex-row justify-end mt-3'>
+            <button
+              onClick={onClose}
+              className="flex bg-red-500 text-white transition-colors px-4 py-1 rounded-md mr-2 hover:bg-red-600 hover:text-white text-sm font-semibold cursor-pointer"
+            >
+              <LuX className="w-6 h-6" /> Close
+            </button>
+            <button onClick={window.print} className='flex bg-green-500 text-white transition-colors px-4 py-1 rounded-md ml-1 hover:bg-green-600 hover:text-white text-sm font-semibold cursor-pointer'>Print</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 // The main component for displaying the list of a user's shipments
 function MyShipmentsMain() {
-  const {token} = useContext(ProfileContext)
+  const {token} = useContext(ProfileContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedShipment, setSelectedShipment] = useState(null);
   const shipmentsPerPage = 10;
   
-const fetchMyShipments = async () => {
-  if (!token) {
-    throw new Error('Authentication token is missing.');
-  }
+  const fetchMyShipments = async () => {
+    if (!token) {
+      throw new Error('Authentication token is missing.');
+    }
 
-  const response = await fetch(`${API_BASE_URL}/shipments/my-shipments`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+    const response = await fetch(`${API_BASE_URL}/shipments/my-shipments`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to fetch your shipments');
-  }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch your shipments');
+    }
 
-  return response.json();
-};
-
+    return response.json();
+  };
 
   // Fetch the user's shipments using useQuery
   const { data: shipments, isLoading, error } = useQuery({
@@ -51,11 +187,8 @@ const fetchMyShipments = async () => {
   });
 
   // Action button handlers (placeholders for future implementation)
-  const handleEdit = (shipmentId) => console.log('Editing my shipment:', shipmentId);
-  const handleReply = (shipmentId) => console.log('Replying to my shipment:', shipmentId);
-  const handlePrint = (shipmentId) => console.log('Printing my shipment:', shipmentId);
-  const handleGenerateInvoice = (shipmentId) => console.log('Generating invoice for my shipment:', shipmentId);
-  const handleGenerateWaybill = (shipmentId) => console.log('Generating waybill for my shipment:', shipmentId);
+  const handleView = (shipment) => setSelectedShipment(shipment);
+  const closeModal = () => setSelectedShipment(null);
 
   // Filter shipments based on search term
   const filteredShipments = shipments ? shipments.filter((shipment) =>
@@ -100,7 +233,8 @@ const fetchMyShipments = async () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-6 bg-gray-100 min-h-screen">
-        <div className="text-center text-xl font-medium text-gray-600">Loading your shipments...</div>
+        <FaSpinner className="animate-spin text-green-600 text-4xl" />
+        <p className="ml-3 text-lg text-gray-700">Loading your shipments...</p>
       </div>
     );
   }
@@ -186,23 +320,35 @@ const fetchMyShipments = async () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize
-                      ${shipment.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                        shipment.status === 'In Transit' ? 'bg-yellow-100 text-yellow-800' :
-                        shipment.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'}`}>
+                      ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                        shipment.status === 'in-transit' ? 'bg-yellow-100 text-yellow-800' :
+                        shipment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        shipment.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                        shipment.status === 'pickup-scheduled' ? 'bg-amber-100 text-amber-800' :
+                        shipment.status === 'out-for-delivery' ? 'bg-pink-100 text-pink-800' :
+                        shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
+                        shipment.status === 'arrived-at-hub' ? 'bg-violet-100 text-violet-800' :
+                        shipment.status === 'departed-from-hub' ? 'bg-indigo-100 text-indigo-800' :
+                        shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
+                        shipment.status === 'on-hold' ? 'bg-pink-100 text-pink-800' :
+                        shipment.status === 'customs-clearance' ? 'bg-cyan-100 text-cyan-800' :
+                        shipment.status === 'Awaiting Pickup' ? 'bg-fuchsia-100 text-fuchsia-800' :
+                        shipment.status === 'failed-delivery-attempt' ? 'bg-red-100 text-red-800' :
+                        shipment.status === 'Awaiting Delivery' ? 'bg-lime-100 text-lime-800' :
+                        shipment.status === 'pending' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800' }`}>
                       {shipment.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {shipment.shipmentDate}
+                    {new Date(shipment.shipmentDate).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                     <div className="flex flex-wrap gap-2">
-                      <button onClick={() => handleEdit(shipment._id)} className="text-indigo-600 hover:text-indigo-900 transition-colors">Edit</button>
-                      <button onClick={() => handleReply(shipment._id)} className="text-indigo-600 hover:text-indigo-900 transition-colors">Reply</button>
-                      <button onClick={() => handlePrint(shipment._id)} className="text-gray-600 hover:text-gray-900 transition-colors">Print</button>
-                      <button onClick={() => handleGenerateInvoice(shipment._id)} className="text-gray-600 hover:text-gray-900 transition-colors">Invoice</button>
-                      <button onClick={() => handleGenerateWaybill(shipment._id)} className="text-gray-600 hover:text-gray-900 transition-colors">Waybill</button>
+                      <button onClick={() => handleView(shipment)} className="bg-green-50 text-green-600 hover:text-reen-700 transition-colors flex flex-row items-center justify-start gap-1 border border-solid border-green-600 p-1 cursor-pointer rounded-md">
+                        <LuEye className="w-4 h-4" />
+                        View
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -219,6 +365,9 @@ const fetchMyShipments = async () => {
           {renderPaginationButtons()}
         </div>
       </div>
+
+      {/* Render the modal when a shipment is selected */}
+      <ShipmentDetailsModal shipment={selectedShipment} onClose={closeModal} />
     </div>
   );
 }
@@ -231,4 +380,3 @@ export default function App() {
     </QueryClientProvider>
   );
 }
-

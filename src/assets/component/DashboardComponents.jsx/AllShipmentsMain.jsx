@@ -10,40 +10,62 @@ import { exportToExcel } from '../../utils/exportToExcel';
 import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
+import { FaSpinner } from 'react-icons/fa';
 
 export default function AllShipmentsMain({ token }) {
   const [shipments, setShipments] = useState([]);
   const [filteredShipments, setFilteredShipments] = useState([]);
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [modalType, setModalType] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const getTimestamp = (item) => {
+  return new Date(
+    item.createdAt ||
+    item.shipmentDate ||
+    item.timestamp ||
+    item.dateCreated ||
+    item.updatedAt || // fallback
+    0 // default if none found
+  );
+};
 
   const fetchShipments = async () => {
+    setLoading(true); // Start loading
     try {
       const res = await axios.get(`${API_BASE_URL}/shipments`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setShipments(res.data);
-      setFilteredShipments(res.data);
+      const sorted = res.data.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+      setShipments(sorted);
+      setFilteredShipments(sorted);
     } catch (err) {
       console.error('Failed to fetch shipments:', err);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
+
 
   useEffect(() => {
     fetchShipments();
   }, [token]);
 
   const handleSearch = (searchTerm) => {
+    setSearchQuery(searchTerm); // <-- Add this
     const term = searchTerm.toLowerCase();
     const result = shipments.filter((shipment) =>
-      shipment.trackingId.toLowerCase().includes(term) ||
-      shipment.sender.name.toLowerCase().includes(term) ||
-      shipment.recipient.name.toLowerCase().includes(term)
+      shipment.trackingNumber?.toLowerCase().includes(term) ||
+      shipment.senderName?.toLowerCase().includes(term) ||
+      shipment.destination?.toLowerCase().includes(term) ||
+      shipment.status?.toLowerCase().includes(term)
     );
     setFilteredShipments(result);
   };
+
 
   const handleFilter = (status) => {
     if (!status) {
@@ -64,18 +86,6 @@ export default function AllShipmentsMain({ token }) {
     setModalType(null);
   };
 
-  // const handleDeleteShipment = async (id) => {
-  //   try {
-  //     await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     fetchShipments();
-  //   } catch (err) {
-  //     console.error('Failed to delete shipment:', err);
-  //   }
-  // };
     const handleDeleteShipment = async (id) => {
     console.log("Trying to delete shipment:", id);
       try {
@@ -116,22 +126,31 @@ export default function AllShipmentsMain({ token }) {
                 Authorization: `Bearer ${token}`,
             },
             });
-            await fetchShipments(); // Refresh shipment list after update
+            await fetchShipments(); 
         } catch (err) {
             console.error("Failed to update status", err);
         }
     };
+    
+    if (loading) { 
+        return (
+          <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
+            <FaSpinner className="animate-spin text-green-600 text-4xl" />
+            <p className="ml-3 text-lg text-gray-700">Loading all shipments...</p>
+          </section>
+        );
+      }
 
   return (
     <div className="p-4 space-y-6">
       {/* Toolbar and Filters */}
       <ShipmentToolbar
+        searchQuery={searchQuery}
         onSearch={handleSearch}
-        onFilter={handleFilter}
+        onStatusChange={handleFilter}
         onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
       />
 
-      {/* <SearchFilterBar data={shipments} setFiltered={setFilteredShipments} /> */}
 
       {/* Table */}
       <ShipmentTable
