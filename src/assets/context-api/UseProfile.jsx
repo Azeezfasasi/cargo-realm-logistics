@@ -4,10 +4,15 @@ import { ProfileContext } from './ProfileContext';
 import { API_BASE_URL } from '../../config/Api';
 
 export const ProfileProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  // const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token')); 
   const [isLoading, setIsLoading] = useState(true); 
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+  const storedUser = localStorage.getItem('user');
+  return storedUser ? JSON.parse(storedUser) : null;
+});
+
 
   const clearError = useCallback(() => {
     setError(null);
@@ -31,7 +36,9 @@ export const ProfileProvider = ({ children }) => {
       localStorage.setItem('token', receivedToken); // Store the token
       setToken(receivedToken); // Update state
       setCurrentUser(user);
-      
+      localStorage.setItem('token', receivedToken);
+      localStorage.setItem('user', JSON.stringify(user)); // <-- ADD THIS LINE
+
       console.log('Token stored in localStorage and state after login.');
       return { success: true, user };
     } catch (err) {

@@ -1,19 +1,3 @@
-// import React from 'react'
-// import { useProfile } from '@/assets/context-api/ProfileContext'
-
-// function UserDashboardStats() {
-//     const { user } = useProfile()
-//   return (
-//     <>
-//     <div>
-//         <p>Hi {user?.name}, welcome to the dashboard</p>
-//     </div>
-//     </>
-//   )
-// }
-
-// export default UserDashboardStats
-
 import React from 'react';
 import { useProfile } from '@/assets/context-api/ProfileContext';
 import { Link } from 'react-router-dom';

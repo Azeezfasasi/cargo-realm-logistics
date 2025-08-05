@@ -10,9 +10,10 @@ import QuoteChart from '@/assets/component/DashboardComponents.jsx/QuoteChart'
 import UserRolesChart from '@/assets/component/DashboardComponents.jsx/UserChart'
 import { useProfile } from '@/assets/context-api/ProfileContext'
 import UserDashboardStats from '@/assets/component/DashboardComponents.jsx/UserDashboardStats'
+import AdminWelcome from '@/assets/component/DashboardComponents.jsx/AdminWelcome'
 
 function Dashboard() {
-  const { isAdmin, isEmployee, isClient } = useProfile()
+  const { isAdmin, isEmployee, isClient, isAgent } = useProfile()
   return (
     <>
     <Helmet>
@@ -25,8 +26,11 @@ function Dashboard() {
       </div>
       <div className='w-full lg:w-[80%]'>
       {(isAdmin || isEmployee) &&
+        <>
+        <AdminWelcome />
         <DashboardStats />
-          }
+        </>
+      }
       {(isAdmin || isEmployee) &&
       <>
        <UserRolesChart />
@@ -35,7 +39,7 @@ function Dashboard() {
        <AppointmentStatusChart />
        </>
       }
-      {(isClient) &&
+      {(isClient || isAgent) &&
       <>
        <UserDashboardStats />
        </>
