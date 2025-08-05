@@ -126,14 +126,14 @@ export default function PrintModalContent({ shipment, onClose }) {
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
                   <p style={{ fontWeight: '600' }}>Cargo Realm and Logistics</p>
-                  <p>Plot 8A, Ajao Road, Lagos, Nigeria</p>
+                  <p>Nacho Export Warehouse, Murital Muhammad International Airport, Ikeja Lagos.</p>
                   <p>Email: info@cargorealmandlosgistics.com</p>
                 </div>
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1F2937', borderBottom: '1px solid #E5E7EB', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
                 Shipment Details - <span style={{ color: '#22C55E' }}>{shipment.trackingNumber}</span>
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', columnGap: '2rem', rowGap: '1rem', color: '#4B5563' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', columnGap: '3rem', rowGap: '1rem', color: '#4B5563' }}>
                 {/* Shipment details */}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Tracking Number</span>

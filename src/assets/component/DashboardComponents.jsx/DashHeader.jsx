@@ -93,7 +93,7 @@ function DashHeader() {
 
         {/* Icons for Desktop (User, Wishlist, Cart) */}
         <div className="hidden lg:flex items-center space-x-4" ref={menuRef}>
-            <button onClick={() => setOpenDropdown(!openDropdown)} className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-2 duration-300 cursor-pointer">
+            <Link to="/app/dashboard" className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-2 duration-300 cursor-pointer">
                 <img 
                 src={account} 
                 alt={account} 
@@ -103,40 +103,13 @@ function DashHeader() {
                     <div className='text-[14px]'>{currentUser?.name}</div>
                     <div className='text-[12px] capitalize'>{currentUser?.role}</div>
                 </div>
-            </button>
+            </Link>
         </div>
-        {openDropdown && (
-        <div className="absolute top-full mt-0 right-0 bg-white border rounded-md shadow-md z-[9999] w-48">
-          <ul className="py-2">
-            <li>
-              <Link to="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 z-50" onClick={() => setOpenDropdown(false)}>
-                Back to Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/app/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 pointer-events-auto" onClick={() => setOpenDropdown(false)}>
-                Profile
-              </Link>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  // Perform logout logic here
-                  setOpenDropdown(false);
-                }}
-                className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 pointer-events-auto"
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
-        </div>
-      )}
 
         {/* Hamburger Menu for Mobile */}
         <div className="lg:hidden flex items-center" ref={menuRef}>
           {/* Mobile Icons (User, Cart) */}
-          <Link to="/app/dashboard" onClick={() => setOpenDropdown(!openDropdown)} className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-1 duration-300 mr-0">
+          <Link to="/app/dashboard" className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-1 duration-300 mr-0">
             <img 
             src={account} 
             alt={account} 

@@ -9,7 +9,7 @@ export default function BasicModal({ isOpen, onClose, children }) {
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full overflow-y-auto relative"
+        className="bg-white p-6 rounded-lg shadow-xl max-w-[700px] w-full overflow-y-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
