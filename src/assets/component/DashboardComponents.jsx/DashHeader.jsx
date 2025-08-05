@@ -15,6 +15,8 @@ import TextImageIcon from '@rsuite/icons/TextImage';
 import EventDetailIcon from '@rsuite/icons/EventDetail';
 import CalendarIcon from '@rsuite/icons/Calendar';
 import DetailIcon from '@rsuite/icons/Detail';
+import OffRoundIcon from '@rsuite/icons/OffRound';
+import LogoutButton from './LogoutButton';
 
 function DashHeader() {
   const {currentUser, isAdmin, isAgent, isEmployee, isClient} = useProfile();
@@ -265,6 +267,11 @@ function DashHeader() {
                 {(isAdmin || isAgent || isEmployee || isClient) && (
                 <Nav.Item eventKey="11" icon={<GearIcon />} as={Link} to="/app/account/mysettings">
                     Settings
+                </Nav.Item>
+                )}
+                {(isAdmin || isAgent || isEmployee || isClient) && (
+                <Nav.Item icon={<OffRoundIcon />}>
+                    <LogoutButton />
                 </Nav.Item>
                 )}
               </Nav>

@@ -11,7 +11,9 @@ import GearIcon from '@rsuite/icons/Gear';
 import TextImageIcon from '@rsuite/icons/TextImage';
 import CalendarIcon from '@rsuite/icons/Calendar';
 import EventDetailIcon from '@rsuite/icons/EventDetail';
+import OffRoundIcon from '@rsuite/icons/OffRound';
 import { useProfile } from '../../context-api/ProfileContext';
+import LogoutButton from './LogoutButton';
 
 function DashMenu() {
     const {isAdmin, isAgent, isEmployee, isClient} = useProfile()
@@ -132,6 +134,11 @@ function DashMenu() {
                     {(isAdmin || isAgent || isEmployee || isClient) && (
                     <Nav.Item eventKey="11" icon={<GearIcon />} as={Link} to="/app/account/mysettings">
                         Settings
+                    </Nav.Item>
+                    )}
+                    {(isAdmin || isAgent || isEmployee || isClient) && (
+                    <Nav.Item icon={<OffRoundIcon />}>
+                        <LogoutButton />
                     </Nav.Item>
                     )}
                 </Nav>
