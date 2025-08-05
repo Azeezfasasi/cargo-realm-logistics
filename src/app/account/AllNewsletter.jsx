@@ -8,7 +8,7 @@ function AllNewsletter() {
   return (
     <>
     <Helmet>
-        <title>All Newsletter - CAC Lightway Assembly</title>
+        <title>All Newsletter - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

@@ -8,7 +8,7 @@ function MyAppointments() {
   return (
     <>
     <Helmet>
-        <title>My Appointmnets - CAC Lightway Assembly</title>
+        <title>My Appointmnets - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

@@ -8,7 +8,7 @@ function AllEvents() {
   return (
     <>
     <Helmet>
-        <title>All Events - CAC Lightway Assembly</title>
+        <title>All Events - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

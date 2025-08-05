@@ -8,7 +8,7 @@ function ChangeUserPassword() {
   return (
     <>
     <Helmet>
-        <title>Change User Password - CAC Lightway Assembly</title>
+        <title>Change User Password - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

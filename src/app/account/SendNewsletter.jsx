@@ -8,7 +8,7 @@ function SendNewsletter() {
   return (
     <>
     <Helmet>
-        <title>Send Newsletter - CAC Lightway Assembly</title>
+        <title>Send Newsletter - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

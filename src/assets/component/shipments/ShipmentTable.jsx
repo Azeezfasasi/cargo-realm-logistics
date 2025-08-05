@@ -14,7 +14,8 @@ export default function ShipmentTable({ shipments, onActionClick }) {
   );
 
   return (
-    <div className="rounded-xl border bg-white dark:bg-gray-900 shadow-md overflow-x-auto">
+    <div className="rounded-xl border bg-white shadow-md overflow-x-auto">
+      {/* dark:bg-gray-200 */}
       <table className="w-full text-sm text-left">
         <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 uppercase">
           <tr>

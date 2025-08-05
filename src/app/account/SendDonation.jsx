@@ -8,7 +8,7 @@ function SendDonation() {
   return (
     <>
     <Helmet>
-        <title>Send Donation - CAC Lightway Assembly</title>
+        <title>Send Donation - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

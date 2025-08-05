@@ -8,7 +8,7 @@ function AddEvent() {
   return (
     <>
     <Helmet>
-        <title>Add New Event - CAC Lightway Assembly</title>
+        <title>Add New Event - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

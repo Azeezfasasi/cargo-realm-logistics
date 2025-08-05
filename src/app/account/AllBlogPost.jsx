@@ -8,7 +8,7 @@ function AllBlogPost() {
   return (
     <>
     <Helmet>
-        <title>Manage Posts - CAC Lightway Assembly</title>
+        <title>Manage Posts - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

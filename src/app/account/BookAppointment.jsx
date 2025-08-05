@@ -8,7 +8,7 @@ function BookAppointment() {
   return (
     <>
     <Helmet>
-        <title>Book Appointment - CAC Lightway Assembly</title>
+        <title>Book Appointment - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

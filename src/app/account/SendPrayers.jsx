@@ -8,7 +8,7 @@ function SendPrayers() {
   return (
     <>
     <Helmet>
-        <title>Send Prayers - CAC Lightway Assembly</title>
+        <title>Send Prayers - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

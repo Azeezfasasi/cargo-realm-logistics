@@ -8,7 +8,7 @@ function AllUsers() {
   return (
     <>
     <Helmet>
-        <title>All Users - CAC Lightway Assembly</title>
+        <title>All Users - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

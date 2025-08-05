@@ -1,18 +1,18 @@
 import React from 'react'
-import Header from './assets/component/HomeComponents.jsx/Header'
 import ForgetPasswordMain from './assets/component/HomeComponents.jsx/ForgetPasswordMain'
-import Footer from './assets/component/HomeComponents.jsx/Footer'
 import { Helmet } from 'react-helmet'
+import HeaderSection from './assets/component/HomeComponents.jsx/HeaderSection'
+import FooterSection from './assets/component/HomeComponents.jsx/FooterSection'
 
 function ForgetPassword() {
   return (
     <>
     <Helmet>
-      <title>Forgot Password - CAC Lightway Assembly Church</title>
+      <title>Forgot Password - Cargo Realm and Logistics</title>
     </Helmet>
-    <Header />
+    <HeaderSection />
     <ForgetPasswordMain />
-    <Footer />
+    <FooterSection />
     </>
   )
 }

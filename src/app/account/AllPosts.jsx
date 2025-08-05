@@ -9,7 +9,7 @@ function AllPosts() {
   return (
     <>
     <Helmet>
-        <title>All Posts - CAC Lightway Assembly</title>
+        <title>All Posts - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

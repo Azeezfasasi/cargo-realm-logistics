@@ -8,7 +8,7 @@ function Profile() {
   return (
     <>
     <Helmet>
-        <title>Profile - CAC Lightway Assembly</title>
+        <title>Profile - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

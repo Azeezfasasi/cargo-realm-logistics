@@ -8,7 +8,7 @@ function AllGalleryImages() {
   return (
     <>
     <Helmet>
-        <title>All Images - CAC Lightway Assembly</title>
+        <title>All Images - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

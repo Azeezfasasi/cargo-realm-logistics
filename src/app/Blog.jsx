@@ -3,16 +3,18 @@ import Header from '../assets/component/HomeComponents.jsx/Header'
 import Footer from '../assets/component/HomeComponents.jsx/Footer'
 import AllBlog from '../assets/component/HomeComponents.jsx/AllBlog'
 import { Helmet } from 'react-helmet'
+import HeaderSection from '@/assets/component/HomeComponents.jsx/HeaderSection'
+import FooterSection from '@/assets/component/HomeComponents.jsx/FooterSection'
 
 function Blog() {
   return (
     <>
     <Helmet>
-      <title>Blog - CAC Lightway Assembly Church</title>
+      <title>Blog - Cargo Realm and Logistics</title>
     </Helmet>
-    <Header />
+    <HeaderSection />
     <AllBlog />
-    <Footer />
+    <FooterSection />
     </>
   )
 }

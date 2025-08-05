@@ -8,7 +8,7 @@ function ContactFormResponses() {
   return (
     <>
     <Helmet>
-        <title>Contact Form Responses - CAC Lightway Assembly</title>
+        <title>Contact Form Responses - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

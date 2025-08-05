@@ -9,7 +9,7 @@ function BlogDetail() {
   return (
     <>
     <Helmet>
-        <title>Blog Details - CAC Lightway Assembly</title>
+        <title>Blog Details - Cargo Realm and Logistics</title>
     </Helmet>
     <Header />
     <BlogDetailMain />

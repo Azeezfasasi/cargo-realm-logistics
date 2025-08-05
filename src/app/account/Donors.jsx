@@ -8,7 +8,7 @@ function Donors() {
   return (
     <>
     <Helmet>
-        <title>Donors - CAC Lightway Assembly</title>
+        <title>Donors - Cargo Realm and Logistics</title>
     </Helmet>
     <DashHeader />
     <div className='flex flex-row justify-start gap-4'>

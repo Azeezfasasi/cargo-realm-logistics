@@ -2,8 +2,9 @@ import React from 'react';
 import { useQueries } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_BASE_URL } from '../../../config/Api'; // Corrected path to Api.js if needed
-import { FaSpinner, FaTimesCircle, FaUsers, FaPrayingHands, FaCalendarAlt, FaHandshake, FaDollarSign, FaBlog } from 'react-icons/fa'; // Icons for stats
-import { Helmet } from 'react-helmet'; // For page title
+import { FaSpinner, FaTimesCircle, FaUsers, FaPrayingHands, FaCalendarAlt, FaHandshake, FaDollarSign, FaBlog } from 'react-icons/fa';
+import PageIcon from '@rsuite/icons/Page';
+import DocPassIcon from '@rsuite/icons/DocPass';
 
 // Helper function to fetch data with auth token
 const fetchData = async (url) => {
@@ -31,7 +32,7 @@ const StatCard = ({ icon: Icon, title, value, isLoading, isError, error }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 flex items-center space-x-4 border border-gray-100">
       <div className="flex-shrink-0">
-        <div className="h-14 w-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl">
+        <div className="h-14 w-14 rounded-full bg-blue-100 text-green-600 flex items-center justify-center text-2xl">
           {Icon && <Icon />}
         </div>
       </div>
@@ -82,10 +83,9 @@ const DashboardStats = () => {
         cacheTime: 10 * 60 * 1000,
       },
       {
-        queryKey: ['totalDonatedAmount'],
-        queryFn: () => fetchData(`${API_BASE_URL}/donations`),
-        // Sum the 'amount' field from all donations
-        select: (data) => data.reduce((sum, donation) => sum + (donation.amount || 0), 0),
+        queryKey: ['contactCount'],
+        queryFn: () => fetchData(`${API_BASE_URL}/contact`),
+        select: (data) => data.length,
         staleTime: 5 * 60 * 1000,
         cacheTime: 10 * 60 * 1000,
       },
@@ -105,7 +105,7 @@ const DashboardStats = () => {
     shipmentsQuery,
     eventsQuery,
     appointmentsQuery,
-    donationsQuery,
+    contactQuery,
     blogPostsQuery,
   ] = results;
 
@@ -124,10 +124,6 @@ const DashboardStats = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Dashboard Overview - Admin Panel</title>
-      </Helmet>
-
       <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-8 text-center">
@@ -144,12 +140,20 @@ const DashboardStats = () => {
               error={usersQuery.error}
             />
             <StatCard
-              icon={FaPrayingHands}
+              icon={PageIcon}
               title="Total Shipments"
               value={shipmentsQuery.data !== undefined ? shipmentsQuery.data : '--'}
               isLoading={shipmentsQuery.isLoading}
               isError={shipmentsQuery.isError}
               error={shipmentsQuery.error}
+            />
+            <StatCard
+              icon={DocPassIcon}
+              title="Total Quote Requests"
+              value={contactQuery.data !== undefined ? `${contactQuery.data}` : '--'}
+              isLoading={contactQuery.isLoading}
+              isError={contactQuery.isError}
+              error={contactQuery.error}
             />
             <StatCard
               icon={FaCalendarAlt}
@@ -166,14 +170,6 @@ const DashboardStats = () => {
               isLoading={appointmentsQuery.isLoading}
               isError={appointmentsQuery.isError}
               error={appointmentsQuery.error}
-            />
-            <StatCard
-              icon={FaDollarSign}
-              title="Total Donations"
-              value={donationsQuery.data !== undefined ? `₦${donationsQuery.data.toFixed(2)}` : '--'}
-              isLoading={donationsQuery.isLoading}
-              isError={donationsQuery.isError}
-              error={donationsQuery.error}
             />
             <StatCard
               icon={FaBlog}

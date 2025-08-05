@@ -1,18 +1,18 @@
 import React from 'react'
-import Header from './assets/component/HomeComponents.jsx/Header'
 import RegisterMain from './assets/component/HomeComponents.jsx/RegisterMain'
-import Footer from './assets/component/HomeComponents.jsx/Footer'
 import { Helmet } from 'react-helmet'
+import HeaderSection from './assets/component/HomeComponents.jsx/HeaderSection'
+import FooterSection from './assets/component/HomeComponents.jsx/FooterSection'
 
 function Register() {
   return (
     <>
     <Helmet>
-      <title>Register - CAC Lightway Assembly Church</title>
+      <title>Register - Cargo Realm and Logistics</title>
     </Helmet>
-    <Header />
+    <HeaderSection />
     <RegisterMain />
-    <Footer />
+    <FooterSection />
     </>
   )
 }
