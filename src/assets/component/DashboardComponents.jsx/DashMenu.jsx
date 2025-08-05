@@ -6,9 +6,11 @@ import ListIcon from '@rsuite/icons/List';
 import UserInfoIcon from '@rsuite/icons/UserInfo';
 import PeoplesIcon from '@rsuite/icons/Peoples';
 import GridIcon from '@rsuite/icons/Grid';
-import TagIcon from '@rsuite/icons/Tag';
 import MessageIcon from '@rsuite/icons/Message';
 import GearIcon from '@rsuite/icons/Gear';
+import TextImageIcon from '@rsuite/icons/TextImage';
+import CalendarIcon from '@rsuite/icons/Calendar';
+import EventDetailIcon from '@rsuite/icons/EventDetail';
 import { useProfile } from '../../context-api/ProfileContext';
 
 function DashMenu() {
@@ -56,7 +58,7 @@ function DashMenu() {
                     </Nav.Item>
                     )}
                     {(isAdmin || isEmployee || isClient || isAgent) && (
-                    <Nav.Menu eventKey="2" title="Shipments" icon={<ListIcon />}>
+                    <Nav.Menu eventKey="2" title="Shipments" icon={<DetailIcon />}>
                         {(isAdmin || isEmployee) && (
                         <Nav.Item eventKey="2-1" as={Link} to="/app/account/allshipments">All Shipments</Nav.Item>
                         )}
@@ -72,7 +74,7 @@ function DashMenu() {
                     </Nav.Menu>
                     )}
                     {(isAdmin || isEmployee) && (
-                    <Nav.Item eventKey="3" icon={<TagIcon />} as={Link} to="/app/account/contactformresponses">
+                    <Nav.Item eventKey="3" icon={<TextImageIcon />} as={Link} to="/app/account/contactformresponses">
                         Quote Request Responses
                     </Nav.Item>
                     )}
@@ -88,13 +90,13 @@ function DashMenu() {
                     </Nav.Menu>
                     )}
                     {(isAdmin || isEmployee) && (
-                    <Nav.Menu eventKey="5" title="Events" icon={<ListIcon />}>
+                    <Nav.Menu eventKey="5" title="Events" icon={<EventDetailIcon />}>
                         <Nav.Item eventKey="5-1" as={Link} to="/app/account/allevents">Manage All Events</Nav.Item>
                         <Nav.Item eventKey="5-2" as={Link} to="/app/account/addevent">Add New Event</Nav.Item>
                     </Nav.Menu>
                     )}
                     {(isAdmin || isAgent || isEmployee || isClient) && (
-                    <Nav.Menu eventKey="6" title="Appointments" icon={<PeoplesIcon />}>
+                    <Nav.Menu eventKey="6" title="Appointments" icon={<CalendarIcon />}>
                         <Nav.Item eventKey="6-1" as={Link} to="/app/account/myappointments">My Appointments</Nav.Item>
                         <Nav.Item eventKey="6-2" as={Link} to="/app/account/bookappointment">Book Appointment</Nav.Item>
                         {(isAdmin || isEmployee) && (

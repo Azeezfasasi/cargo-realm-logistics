@@ -311,9 +311,10 @@ function AllUserMain() {
                             onChange={(e) => setEditRole(e.target.value)}
                             className="w-full p-1 border rounded bg-white"
                           >
-                            <option value="member">Member</option>
-                            <option value="pastor">Pastor</option>
                             <option value="admin">Admin</option>
+                            <option value="client">Client</option>
+                            <option value="agent">Agent</option>
+                            <option value="employee">Employee</option>
                           </select>
                         ) : (
                           user.role

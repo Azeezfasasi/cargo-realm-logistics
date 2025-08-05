@@ -4,15 +4,17 @@ import account from '../../images/account.svg';
 import { useProfile } from '../../context-api/ProfileContext';
 import { Sidenav, Nav } from 'rsuite';
 import DashboardIcon from '@rsuite/icons/legacy/Dashboard';
-import DetailIcon from '@rsuite/icons/Detail';
 import ListIcon from '@rsuite/icons/List';
 import UserInfoIcon from '@rsuite/icons/UserInfo';
 import PeoplesIcon from '@rsuite/icons/Peoples';
 import GridIcon from '@rsuite/icons/Grid';
-import TagIcon from '@rsuite/icons/Tag';
 import MessageIcon from '@rsuite/icons/Message';
 import GearIcon from '@rsuite/icons/Gear';
 import logo2 from '../../images/logo2.png'
+import TextImageIcon from '@rsuite/icons/TextImage';
+import EventDetailIcon from '@rsuite/icons/EventDetail';
+import CalendarIcon from '@rsuite/icons/Calendar';
+import DetailIcon from '@rsuite/icons/Detail';
 
 function DashHeader() {
   const {currentUser, isAdmin, isAgent, isEmployee, isClient} = useProfile();
@@ -67,13 +69,13 @@ function DashHeader() {
 
   return (
     <nav className="bg-gray-500 text-white px-3 font-inter sticky top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center py-2">
+      <div className="container mx-auto flex justify-between items-center relative py-2">
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <img
             src={logo2}
             alt="Adesola Plastic Stores Logo"
-            className="h-[45px] w-[180px] md:h-[52px] md:w-[250px] rounded-full mr-0"
+            className="h-[30px] w-[120px] md:h-[52px] md:w-[250px] rounded-full mr-0"
           />
         </Link>
 
@@ -102,15 +104,15 @@ function DashHeader() {
             </button>
         </div>
         {openDropdown && (
-        <div className="absolute top-full mt-0 right-0 bg-white border rounded-md shadow-md z-50 w-48">
+        <div className="absolute top-full mt-0 right-0 bg-white border rounded-md shadow-md z-[9999] w-48">
           <ul className="py-2">
             <li>
-              <Link to="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setOpenDropdown(false)}>
+              <Link to="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 z-50" onClick={() => setOpenDropdown(false)}>
                 Back to Home
               </Link>
             </li>
             <li>
-              <Link to="/app/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setOpenDropdown(false)}>
+              <Link to="/app/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 pointer-events-auto" onClick={() => setOpenDropdown(false)}>
                 Profile
               </Link>
             </li>
@@ -120,7 +122,7 @@ function DashHeader() {
                   // Perform logout logic here
                   setOpenDropdown(false);
                 }}
-                className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 pointer-events-auto"
               >
                 Logout
               </button>
@@ -132,15 +134,15 @@ function DashHeader() {
         {/* Hamburger Menu for Mobile */}
         <div className="lg:hidden flex items-center" ref={menuRef}>
           {/* Mobile Icons (User, Cart) */}
-          <Link to="/app/dashboard" onClick={() => setOpenDropdown(!openDropdown)} className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-2 duration-300 mr-2">
+          <Link to="/app/dashboard" onClick={() => setOpenDropdown(!openDropdown)} className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-1 duration-300 mr-0">
             <img 
             src={account} 
             alt={account} 
             className='w-7 h-7 text-blue-500' 
             />
             <div className='mr-4 flex flex-col items-start justify-center'>
-                <div className='text-[14px]'>{currentUser?.name}</div>
-                <div className='text-[12px] capitalize'>{currentUser?.role}</div>
+                <div className='text-[11px] md:text-[14px]'>{currentUser?.name}</div>
+                <div className='text-[11px] capitalize'>{currentUser?.role}</div>
             </div>
           </Link>
           
@@ -189,7 +191,7 @@ function DashHeader() {
                 </Nav.Item>
                 )}
                 {(isAdmin || isEmployee || isClient || isAgent) && (
-                <Nav.Menu eventKey="2" title="Shipments" icon={<ListIcon />}>
+                <Nav.Menu eventKey="2" title="Shipments" icon={<DetailIcon />}>
                   {(isAdmin || isEmployee) && (
                   <Nav.Item eventKey="2-1" as={Link} to="/app/account/allshipments">All Shipments</Nav.Item>
                   )}
@@ -205,7 +207,7 @@ function DashHeader() {
                   </Nav.Menu>
                 )}
                 {(isAdmin || isEmployee) && (
-                <Nav.Item eventKey="3" icon={<TagIcon />} as={Link} to="/app/account/contactformresponses">
+                <Nav.Item eventKey="3" icon={<TextImageIcon />} as={Link} to="/app/account/contactformresponses">
                     Quote Request Responses
                 </Nav.Item>
                 )}
@@ -221,13 +223,13 @@ function DashHeader() {
                 </Nav.Menu>
                 )}
                 {(isAdmin || isEmployee) && (
-                <Nav.Menu eventKey="5" title="Events" icon={<ListIcon />}>
+                <Nav.Menu eventKey="5" title="Events" icon={<EventDetailIcon />}>
                     <Nav.Item eventKey="5-1" as={Link} to="/app/account/allevents">Manage All Events</Nav.Item>
                     <Nav.Item eventKey="5-2" as={Link} to="/app/account/addevent">Add New Event</Nav.Item>
                 </Nav.Menu>
                 )}
                 {(isAdmin || isAgent || isEmployee || isClient) && (
-                <Nav.Menu eventKey="6" title="Appointments" icon={<PeoplesIcon />}>
+                <Nav.Menu eventKey="6" title="Appointments" icon={<CalendarIcon/>}>
                     <Nav.Item eventKey="6-1" as={Link} to="/app/account/myappointments">My Appointments</Nav.Item>
                     <Nav.Item eventKey="6-2" as={Link} to="/app/account/bookappointment">Book Appointment</Nav.Item>
                     {(isAdmin || isEmployee) && (
