@@ -35,7 +35,7 @@ export default function CreateShipmentForm({ token }) {
     cost: '',
   });
 
-  const { data: users } = useQuery({
+  const { data: users, isLoading, isError } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const res = await axios.get('/api/profile/all', {
@@ -101,6 +101,10 @@ export default function CreateShipmentForm({ token }) {
     mutation.mutate(form);
   };
 
+  if (isLoading) return <p>Loading users...</p>;
+  if (isError || !Array.isArray(users)) return <p>Failed to load users.</p>;
+
+
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl border border-solid border-green-600">
       <h2 className="text-2xl font-semibold mb-6 text-green-700">Create New Shipment</h2>
@@ -124,12 +128,19 @@ export default function CreateShipmentForm({ token }) {
             className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
           >
             <option value="">Select user</option>
-            {users &&
+            {/* {users &&
               users.map((user) => (
                 <option key={user._id} value={user._id}>
                   {user.fullName} ({user.email})
                 </option>
-              ))}
+              ))} */}
+            {Array.isArray(users) &&
+            users.map((user) => (
+              <option key={user._id} value={user._id}>
+                {user.fullName} ({user.email})
+              </option>
+            ))}
+
           </select>
         </div>
 
