@@ -122,8 +122,8 @@ export default function TrackShipmentComponent() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Shipment Status: <span className={`font-extrabold capitalize ${trackingResult.status === 'Delivered' ? 'text-green-600' : 'text-blue-600'}`}>{trackingResult.status}</span></h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
-              <p><strong>Sender:</strong> {trackingResult.senderName}</p>
-              <p><strong>Receiver Name:</strong> {trackingResult.senderName}</p>
+              <p><strong>Sender Name:</strong> {trackingResult.senderName}</p>
+              <p><strong>Receiver Name:</strong> {trackingResult.recipientName}</p>
               <p><strong>Origin Country:</strong> {trackingResult.origin}</p>
               <p><strong>Destination Country:</strong> {trackingResult.destination}</p>
               <p><strong>Shipment Date:</strong> {formatDate(trackingResult.shipmentDate)}</p>
