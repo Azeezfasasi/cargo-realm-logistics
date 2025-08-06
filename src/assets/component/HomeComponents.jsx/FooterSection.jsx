@@ -41,7 +41,7 @@ export default function FooterSection() {
                 d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001 1h3v-3m-3 3h3v-3m-3 0V9a1 1 0 011-1h2a1 1 0 011 1v10m-6 0h6"
               ></path>
             </svg>
-            <span className="text-xl font-semibold text-white">Care Cargo</span>
+            <span className="text-xl font-semibold text-white">Cargo Realm and Logistics</span>
           </div>
           <p className="text-sm leading-relaxed">
             Your reliable partner for global cargo shipments. We provide efficient, secure, and timely logistics solutions tailored to your business needs, ensuring your goods reach their destination with care.
