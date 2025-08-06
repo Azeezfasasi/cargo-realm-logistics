@@ -5,19 +5,19 @@ export default function TestimonialSection() {
   const reviews = [
     {
       id: 1,
-      text: 'Care Cargo delivered my urgent shipment ahead of schedule! Their tracking system was incredibly accurate, and the customer service was exceptional. Highly recommended for all your logistics needs.',
+      text: 'Cargo Realm and Logistics delivered my urgent shipment ahead of schedule! Their tracking system was incredibly accurate, and the customer service was exceptional. Highly recommended for all your logistics needs.',
       author: 'Sarah M.',
       avatar: avatar,
     },
     {
       id: 2,
-      text: 'We rely on Care Cargo for all our international freight. Their team handles customs and complex routes with expertise, making the entire process seamless and worry-free. A true partner!',
+      text: 'We rely on Cargo Realm and Logistics for all our international freight. Their team handles customs and complex routes with expertise, making the entire process seamless and worry-free. A true partner!',
       author: 'David R.',
       avatar: avatar,
     },
     {
       id: 3,
-      text: 'Outstanding service from start to finish. My delicate cargo arrived in perfect condition, thanks to their meticulous handling and secure packaging. Care Cargo truly lives up to its name!',
+      text: 'Outstanding service from start to finish. My delicate cargo arrived in perfect condition, thanks to their meticulous handling and secure packaging. Cargo Realm and Logistics truly lives up to its name!',
       author: 'Emily L.',
       avatar: avatar,
     },
@@ -29,7 +29,7 @@ export default function TestimonialSection() {
     },
     {
       id: 5,
-      text: 'Reliable, professional, and always on time. Care Cargo has become our go-to for all our cargo needs. Their team is responsive and always goes the extra mile to ensure satisfaction.',
+      text: 'Reliable, professional, and always on time. Cargo Realm and Logistics has become our go-to for all our cargo needs. Their team is responsive and always goes the extra mile to ensure satisfaction.',
       author: 'Jessica T.',
       avatar: avatar,
     },
