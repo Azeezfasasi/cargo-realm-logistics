@@ -79,7 +79,7 @@ export default function FooterSection() {
 
       {/* Bottom Section: Copyright */}
       <div className="border-t border-gray-700 mt-12 pt-8 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} Care Cargo. All rights reserved.
+        &copy; {new Date().getFullYear()} Cargo Realm and Logistics. All rights reserved.
       </div>
     </footer>
   );
