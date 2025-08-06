@@ -263,13 +263,11 @@ function ManageBlogPosts() {
                             onChange={(e) => setEditCategory(e.target.value)}
                             className="w-full p-1 border rounded bg-white"
                           >
-                            <option value="RELATIONSHIP">RELATIONSHIP</option>
-                            <option value="SPIRITUAL GROWTH">SPIRITUAL GROWTH</option>
-                            <option value="COMMUNITY">COMMUNITY</option>
-                            <option value="SERMON">SERMON</option>
-                            <option value="EVENTS">EVENTS</option>
-                            <option value="TESTIMONY">TESTIMONY</option>
-                            <option value="TESTIMONY">PRAYER</option>
+                            <option value="Shipment">Shipment</option>
+                            <option value="Air Freight">Air Freight</option>
+                            <option value="Cargo">Cargo</option>
+                            <option value="Events">Events</option>
+                            <option value="Testimony">Testimony</option>
                           </select>
                         ) : (
                           blog.category

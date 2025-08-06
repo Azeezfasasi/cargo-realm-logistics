@@ -11,7 +11,7 @@ function AddNewPostMain() {
   const navigate = useNavigate();
 
   const [blogTitle, setBlogTitle] = useState('');
-  const [category, setCategory] = useState('RELATIONSHIP'); // Default category
+  const [category, setCategory] = useState('Shipment'); // Default category
   const [description, setDescription] = useState('');
   const [localError, setLocalError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -39,7 +39,7 @@ function AddNewPostMain() {
 
       // Clear form fields
       setBlogTitle('');
-      setCategory('RELATIONSHIP');
+      setCategory('Shipment');
       setDescription('');
 
       // Optional: Redirect to the blog list page or the newly created blog post
@@ -143,7 +143,7 @@ function AddNewPostMain() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
               required
             >
-              <option value="RELATIONSHIP">Choose Category</option>
+              <option value="">Choose Category</option>
               <option value="Shipment">Shipment</option>
               <option value="Air Freight">Air Freight</option>
               <option value="Cargo">Cargo</option>
