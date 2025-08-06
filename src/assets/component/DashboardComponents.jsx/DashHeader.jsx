@@ -74,7 +74,7 @@ function DashHeader() {
     <nav className="bg-gray-500 text-white px-3 font-inter sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center relative py-2">
         {/* Logo */}
-        <Link to="/" className="flex items-center bg-gray-200 p-2 rounded-md">
+        <Link to="/" className="flex items-center bg-gray-100 p-2 rounded-md">
           <img
             src={cargorealmlogo}
             alt="Adesola Plastic Stores Logo"

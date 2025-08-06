@@ -18,6 +18,7 @@ import HowItWorks from '../assets/component/HomeComponents.jsx/HowItWorks'
 import TestimonialSection from '../assets/component/HomeComponents.jsx/TestimonialSection'
 import FooterSection from '../assets/component/HomeComponents.jsx/FooterSection'
 import HeaderSection from '../assets/component/HomeComponents.jsx/HeaderSection'
+import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
 
 function Home() {
   return (
@@ -25,6 +26,7 @@ function Home() {
       <Helmet>
         <title>Cargo Realm and Logistics</title>
       </Helmet>
+      <SubscribePopUp />
       <HeaderSection />
       <Hero />
       <OurServicesSection />
