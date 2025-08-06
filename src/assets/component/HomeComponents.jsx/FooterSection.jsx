@@ -1,17 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import SubscribeNow from './SubscribeNow';
 
 export default function FooterSection() {
-  const cargoServices = [
-    'Air Freight',
-    'Sea Freight',
-    'Road Transport',
-    'Warehousing',
-    'Customs Brokerage',
-    'Project Cargo',
-    'Supply Chain Solutions',
-    'Express Delivery',
-  ];
-
   const quickLinks = [
     { name: 'Services', href: '#' },
     { name: 'Terms & Conditions', href: '#' },
@@ -22,9 +13,10 @@ export default function FooterSection() {
 
   return (
     <footer className="bg-gray-900 text-gray-300 py-12 px-4 font-sans">
-      <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"> */}
+      <div className="container mx-auto flex flex-col md:flex-row gap-4">
         {/* Column 1: Logo and Description */}
-        <div className="flex flex-col items-start">
+        <div className="w-full flex flex-col items-start">
           <div className="flex items-center space-x-2 mb-4">
             {/* Using an SVG for the logo as it's scalable and matches the image */}
             <svg
@@ -49,8 +41,8 @@ export default function FooterSection() {
         </div>
 
         {/* Column 2: Quick Links */}
-        <div>
-          <h4 className="text-lg font-bold text-white mb-4">Quick Links</h4>
+        <div className='w-full flex flex-col items-start md:items-center'>
+          <h4 className="flex justify-start text-lg font-bold text-white mb-4">Quick Links</h4>
           <ul className="space-y-2">
             {quickLinks.map((link, index) => (
               <li key={index}>
@@ -62,18 +54,39 @@ export default function FooterSection() {
           </ul>
         </div>
 
-        {/* Column 3 & 4: Our Services */}
-        <div className="col-span-1 md:col-span-2">
+        {/* Column 3 Our Services */}
+        <div className='w-full'>
           <h4 className="text-lg font-bold text-white mb-4">Our Services</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
-            {cargoServices.map((service, index) => (
-              <li key={index} className="list-none">
-                <a href="#" className="text-gray-300 hover:text-green-600 transition duration-200">
-                  {service}
-                </a>
-              </li>
-            ))}
-          </div>
+          <ul className="space-y-2">
+            <li>
+              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">
+                Air Freight
+              </Link>
+            </li>
+            <li>
+              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Sea Freight</Link>
+            </li>
+            <li>
+              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Road Transport</Link>
+            </li>
+            <li>
+              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Warehousing</Link>
+            </li>
+            <li>
+              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Customs Brokerage</Link>
+            </li>
+            <li>
+              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Express Delivery</Link>
+            </li>
+            <li>
+              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Supply Chain Solutions</Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Column 4 Newsletter */}
+        <div className='w-full'>
+          <SubscribeNow />
         </div>
       </div>
 

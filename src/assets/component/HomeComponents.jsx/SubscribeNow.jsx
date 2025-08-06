@@ -86,7 +86,7 @@ function SubscribeNow() {
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-grow px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white placeholder-gray-500"
+          className="flex-grow px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white placeholder-gray-500"
           required
         />
         <input
@@ -94,12 +94,12 @@ function SubscribeNow() {
           placeholder="Yourmail@gmail.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-grow px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white placeholder-gray-500"
+          className="flex-grow px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white placeholder-gray-500"
           required
         />
         <button
           type="submit"
-          className="px-6 py-3 bg-orange-300 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-orange-400 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          className="px-6 py-3 bg-green-300 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-green-400 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           disabled={subscribeMutation.isPending} // Disable button when loading
         >
           {subscribeMutation.isPending ? (
