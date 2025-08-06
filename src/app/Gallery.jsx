@@ -5,6 +5,7 @@ import Footer from '../assets/component/HomeComponents.jsx/Footer'
 import { Helmet } from 'react-helmet'
 import HeaderSection from '@/assets/component/HomeComponents.jsx/HeaderSection'
 import FooterSection from '@/assets/component/HomeComponents.jsx/FooterSection'
+import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
 
 function Gallery() {
   return (
@@ -12,6 +13,7 @@ function Gallery() {
     <Helmet>
       <title>Gallery - Cargo Realm and Logistics</title>
     </Helmet>
+    <SubscribePopUp />
     <HeaderSection />
     <GalleryMain />
     <FooterSection />

@@ -4,6 +4,7 @@ import ContactForm from '../assets/component/HomeComponents.jsx/ContactForm'
 import { Helmet } from 'react-helmet'
 import HeaderSection from '../assets/component/HomeComponents.jsx/HeaderSection'
 import FooterSection from '../assets/component/HomeComponents.jsx/FooterSection'
+import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
 
 function ContactUs() {
   return (
@@ -11,6 +12,7 @@ function ContactUs() {
     <Helmet>
       <title>Contact Us - Cargo Realm and Logistics</title>
     </Helmet>
+    <SubscribePopUp />
     <HeaderSection />
     <ContactInfo />
     <ContactForm />

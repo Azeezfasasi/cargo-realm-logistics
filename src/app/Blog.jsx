@@ -5,6 +5,7 @@ import AllBlog from '../assets/component/HomeComponents.jsx/AllBlog'
 import { Helmet } from 'react-helmet'
 import HeaderSection from '@/assets/component/HomeComponents.jsx/HeaderSection'
 import FooterSection from '@/assets/component/HomeComponents.jsx/FooterSection'
+import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
 
 function Blog() {
   return (
@@ -12,6 +13,7 @@ function Blog() {
     <Helmet>
       <title>Blog - Cargo Realm and Logistics</title>
     </Helmet>
+    <SubscribePopUp />
     <HeaderSection />
     <AllBlog />
     <FooterSection />

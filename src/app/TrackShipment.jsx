@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet'
 import HeaderSection from '../assets/component/HomeComponents.jsx/HeaderSection'
 import TrackShipmentComponent from '../assets/component/HomeComponents.jsx/TrackShipmentComponent'
 import FooterSection from '../assets/component/HomeComponents.jsx/FooterSection'
+import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
 
 function About() {
   return (
@@ -10,6 +11,7 @@ function About() {
     <Helmet>
       <title>Track Shipment - Cargo Realm and Logistics</title>
     </Helmet>
+    <SubscribePopUp />
     <HeaderSection />
     <TrackShipmentComponent />
     <FooterSection />

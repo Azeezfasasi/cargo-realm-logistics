@@ -65,7 +65,7 @@ function SubscribeNowPopup() {
   };
 
   return (
-    <div className="lg:col-span-1 md:col-span-2 text-left p-6 rounded-xl bg-gray-200 shadow-lg"> {/* Added padding and background for better visual */}
+    <div className="lg:col-span-1 md:col-span-2 text-left p-6 rounded-xl bg-gray-200 shadow-lg border border-green-400 border-solid"> {/* Added padding and background for better visual */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4"> {/* Increased gap for better spacing */}
         {localError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative" role="alert">
@@ -83,7 +83,7 @@ function SubscribeNowPopup() {
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-grow px-4 py-3 bg-gray-200 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-green-900 placeholder-gray-500"
+          className="flex-grow px-4 py-3 bg-gray-200 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-green-900 placeholder-gray-500"
           required
         />
         <input
@@ -91,7 +91,7 @@ function SubscribeNowPopup() {
           placeholder="Yourmail@gmail.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-grow px-4 py-3 bg-gray-200 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-green-900 placeholder-gray-500"
+          className="flex-grow px-4 py-3 bg-gray-200 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-green-900 placeholder-gray-500"
           required
         />
         <button
