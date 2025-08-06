@@ -19,10 +19,12 @@ import TestimonialSection from '../assets/component/HomeComponents.jsx/Testimoni
 import FooterSection from '../assets/component/HomeComponents.jsx/FooterSection'
 import HeaderSection from '../assets/component/HomeComponents.jsx/HeaderSection'
 import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
+import TawkToChat from '@/assets/component/HomeComponents.jsx/TawktoChat'
 
 function Home() {
   return (
     <>
+      <TawkToChat />
       <Helmet>
         <title>Cargo Realm and Logistics</title>
       </Helmet>

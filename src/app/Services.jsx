@@ -5,10 +5,12 @@ import OurServicesSection from '../assets/component/HomeComponents.jsx/OurServic
 import FooterSection from '../assets/component/HomeComponents.jsx/FooterSection'
 import ContactForm from '@/assets/component/HomeComponents.jsx/ContactForm'
 import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
+import TawkToChat from '@/assets/component/HomeComponents.jsx/TawktoChat'
 
 function Services() {
   return (
     <>
+    <TawkToChat />
     <Helmet>
       <title>Our Services - Cargo Realm and Logistics</title>
     </Helmet>
