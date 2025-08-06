@@ -162,7 +162,7 @@ function ContactFormResponsesMain() {
   // Handle opening reply modal
   const handleReplyClick = (contact) => {
     setCurrentContactForReply(contact);
-    setReplySubject(`Re: Your message to CAC Lightway Assembly`); // Pre-fill subject
+    setReplySubject(`Re: Quote Request for Shipment`); // Pre-fill subject
     setReplyContent(''); // Clear previous content
     setShowReplyModal(true);
     setReplyError('');
@@ -457,6 +457,7 @@ function ContactFormResponsesMain() {
               <div>
                 <label htmlFor="replySubject" className="block text-sm font-medium text-gray-700 mb-1">
                   Subject <span className="text-red-500">*</span>
+                  <span className='ml-2 text-[11px]'>(You can rephrase the subject)</span>
                 </label>
                 <input
                   type="text"
@@ -476,6 +477,7 @@ function ContactFormResponsesMain() {
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
                   rows="8"
+                  placeholder='Enter your reply here...'
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
                   required
                 ></textarea>
