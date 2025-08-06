@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import account from '../../images/account.svg';
 import { useProfile } from '../../context-api/ProfileContext';
@@ -10,31 +10,32 @@ import PeoplesIcon from '@rsuite/icons/Peoples';
 import GridIcon from '@rsuite/icons/Grid';
 import MessageIcon from '@rsuite/icons/Message';
 import GearIcon from '@rsuite/icons/Gear';
-import logo2 from '../../images/logo2.png'
 import TextImageIcon from '@rsuite/icons/TextImage';
 import EventDetailIcon from '@rsuite/icons/EventDetail';
 import CalendarIcon from '@rsuite/icons/Calendar';
 import DetailIcon from '@rsuite/icons/Detail';
 import OffRoundIcon from '@rsuite/icons/OffRound';
 import LogoutButton from './LogoutButton';
+import cargorealmlogo from '../../images/cargorealmlogo.png';
+
 
 function DashHeader() {
   const {currentUser, isAdmin, isAgent, isEmployee, isClient} = useProfile();
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const [openDropdown, setOpenDropdown] = useState(false);
+  // const [openDropdown, setOpenDropdown] = useState(false);
   const menuRef = useRef();
 
   // Close dropdown if clicked outside
-  useEffect(() => {
-    const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpenDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  // useEffect(() => {
+  //   const handler = (e) => {
+  //     if (menuRef.current && !menuRef.current.contains(e.target)) {
+  //       setOpenDropdown(false);
+  //     }
+  //   };
+  //   document.addEventListener('mousedown', handler);
+  //   return () => document.removeEventListener('mousedown', handler);
+  // }, []);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -73,11 +74,11 @@ function DashHeader() {
     <nav className="bg-gray-500 text-white px-3 font-inter sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center relative py-2">
         {/* Logo */}
-        <Link to="/" className="flex items-center">
+        <Link to="/" className="flex items-center bg-gray-200 p-2 rounded-md">
           <img
-            src={logo2}
+            src={cargorealmlogo}
             alt="Adesola Plastic Stores Logo"
-            className="h-[30px] w-[120px] md:h-[52px] md:w-[250px] rounded-full mr-0"
+            className="h-[30px] w-[120px] md:h-40px] md:w-[220px] mr-0"
           />
         </Link>
 

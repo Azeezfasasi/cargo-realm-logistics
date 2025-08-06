@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import user from '../../images/user.svg';
-import logo2 from '../../images/logo2.png';
+import cargorealmlogo from '../../images/cargorealmlogo.png';
 
 export default function HeaderSection() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -22,9 +22,9 @@ export default function HeaderSection() {
         {/* Logo Section */}
         <Link to="/" className="flex items-center space-x-2">
           <img
-            src={logo2}
+            src={cargorealmlogo}
             alt="Adesola Plastic Stores Logo"
-            className="h-[45px] w-[180px] md:h-[52px] md:w-[250px] rounded-full mr-0"
+            className="h-[40px] w-[130px] md:h-[52px] md:w-[250px] mr-0"
           />
         </Link>
 

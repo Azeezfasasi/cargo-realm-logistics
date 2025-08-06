@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import SubscribeNow from './SubscribeNow';
+import cargorealmlogo from '../../images/cargorealmlogo.png';
 
 export default function FooterSection() {
   const quickLinks = [
@@ -19,21 +20,8 @@ export default function FooterSection() {
         <div className="w-full flex flex-col items-start">
           <div className="flex items-center space-x-2 mb-4">
             {/* Using an SVG for the logo as it's scalable and matches the image */}
-            <svg
-              className="w-8 h-8 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001 1h3v-3m-3 3h3v-3m-3 0V9a1 1 0 011-1h2a1 1 0 011 1v10m-6 0h6"
-              ></path>
-            </svg>
-            <span className="text-xl font-semibold text-white">Cargo Realm and Logistics</span>
+            <img src={cargorealmlogo} alt="logo" className='w-[250px] h-[60px]' />
+            {/* <span className="text-xl font-semibold text-white">Cargo Realm and Logistics</span> */}
           </div>
           <p className="text-sm leading-relaxed">
             Your reliable partner for global cargo shipments. We provide efficient, secure, and timely logistics solutions tailored to your business needs, ensuring your goods reach their destination with care.
