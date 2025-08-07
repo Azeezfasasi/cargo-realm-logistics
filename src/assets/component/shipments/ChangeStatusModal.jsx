@@ -18,6 +18,15 @@ const statusOptions = [
   'customs-clearance',
   'Awaiting Pickup',
   'Awaiting Delivery',
+  'Arrived Carrier Connecting facility',
+  'Departed CARGO realm facility (Nig)',
+  'Arrived nearest airport', 'Shipment is Delayed',
+  'Delivery date not available',
+  'Available for pick up,check phone for instructions',
+  'Processed in Lagos Nigeria', 'Pending Carrier lift',
+  'Scheduled to depart on the next movement',
+  'Received from flight',
+  'Package is received and accepted by airline'
 ];
 
 export default function ChangeStatusModal({ shipment, onClose, onStatusChange }) {

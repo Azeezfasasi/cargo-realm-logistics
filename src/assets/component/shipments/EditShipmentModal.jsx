@@ -133,6 +133,17 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
         <option value="Awaiting Pickup">Awaiting Pickup</option>
         <option value="failed-delivery-attempt">Failed Delivery Attempt</option>
         <option value="Awaiting Delivery">Awaiting Delivery</option>
+        
+        <option value="Arrived Carrier Connecting facility">Arrived Carrier Connecting facility</option>
+        <option value="Departed CARGO realm facility (Nig)">Departed CARGO realm facility (Nig)</option>
+        <option value="Arrived nearest airport', 'Shipment is Delayed">Arrived nearest airport', 'Shipment is Delayed</option>
+        <option value="Delivery date not available">Delivery date not available</option>
+        <option value="Available for pick up,check phone for instructions">Available for pick up,check phone for instructions</option>
+        <option value="Processed in Lagos Nigeria">Processed in Lagos Nigeria</option>
+        <option value="Pending Carrier lift">Pending Carrier lift</option>
+        <option value="Scheduled to depart on the next movement">Scheduled to depart on the next movement</option>
+        <option value="Received from flight">Received from flight</option>
+        <option value="Package is received and accepted by airline">Package is received and accepted by airline</option>
         </select>
       </label>
       

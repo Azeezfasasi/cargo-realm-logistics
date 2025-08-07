@@ -51,8 +51,20 @@ export default function ShipmentTable({ shipments, onActionClick }) {
                   shipment.status === 'Awaiting Pickup' ? 'bg-fuchsia-100 text-fuchsia-800' :
                   shipment.status === 'failed-delivery-attempt' ? 'bg-red-100 text-red-800' :
                   shipment.status === 'Awaiting Delivery' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Arrived Carrier Connecting facility' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Departed CARGO realm facility (Nig)' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Arrived nearest airport' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Shipment is Delayed' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Delivery date not available' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Available for pick up,check phone for instructions' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Processed in Lagos Nigeria' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Pending Carrier lift' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Scheduled to depart on the next movement' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Received from flight' ? 'bg-lime-100 text-lime-800' :
+                  shipment.status === 'Package is received and accepted by airline' ? 'bg-lime-100 text-lime-800' :
                   shipment.status === 'pending' ? 'bg-red-100 text-red-800' :
-                  'bg-gray-100 text-gray-800' }`}>
+                  'bg-gray-100 text-gray-800' }`
+                  }>
                 {shipment.status}
                 </span>
               </td>
