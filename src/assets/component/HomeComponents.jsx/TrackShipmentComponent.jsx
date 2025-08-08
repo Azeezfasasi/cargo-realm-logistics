@@ -125,43 +125,41 @@ export default function TrackShipmentComponent() {
           </div>
         )}
         
-        <div className="bg-white p-3 md:p-8 rounded-lg border border-solid border-green-400 shadow-xl mx-auto text-left">
-          {trackingResult && (
-            <div className="bg-white px-6 py-6 md:px-8 md:py-8 rounded-lg border border-solid border-green-400 shadow-xl max-w-3xl mx-auto text-left">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Shipment Status: <br className='md:hidden' /> <span className={`font-extrabold capitalize ${trackingResult.status === 'Delivered' ? 'text-green-600' : 'text-blue-600'}`}>{trackingResult.status}</span></h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
-                <p><strong>Sender Name:</strong> {trackingResult.senderName}</p>
-                <p><strong>Receiver Name:</strong> {trackingResult.recipientName}</p>
-                <p><strong>Origin Country:</strong> {trackingResult.origin}</p>
-                <p><strong>Destination Country:</strong> {trackingResult.destination}</p>
-                <p><strong>Shipment Date:</strong> {formatDate(trackingResult.shipmentDate)}</p>
-                <p><strong>Estimated Delivery:</strong> {formatDate(trackingResult.deliveryDate)}</p>
-              </div>
+        {trackingResult && (
+          <div className="bg-white px-6 py-6 md:px-8 md:py-8 rounded-lg border border-solid border-green-400 shadow-xl max-w-3xl mx-auto text-left">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Shipment Status: <br className='md:hidden' /> <span className={`font-extrabold capitalize ${trackingResult.status === 'Delivered' ? 'text-green-600' : 'text-blue-600'}`}>{trackingResult.status}</span></h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
+              <p><strong>Sender Name:</strong> {trackingResult.senderName}</p>
+              <p><strong>Receiver Name:</strong> {trackingResult.recipientName}</p>
+              <p><strong>Origin Country:</strong> {trackingResult.origin}</p>
+              <p><strong>Destination Country:</strong> {trackingResult.destination}</p>
+              <p><strong>Shipment Date:</strong> {formatDate(trackingResult.shipmentDate)}</p>
+              <p><strong>Estimated Delivery:</strong> {formatDate(trackingResult.deliveryDate)}</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Shipment Tracking history */}
-          {sortedHistory && (
-            <div className="max-w-[500px] mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md font-sans mt-3 border border-solid border-green-400">
-              <h2 className="text-[18px] sm:text-[18px] font-bold text-green-700 mb-6">Shipment Tracking History for #{trackingResult.trackingNumber}</h2>
-              <div className="relative border-l-2 border-gray-200 ml-2">
-                {sortedHistory.map((event, index) => (
-                  <div key={index} className="mb-8 ml-6 relative">
-                    {/* The dot */}
-                    <div className={`absolute -left-8 top-1.5 w-4 h-4 rounded-full border-2 ${index === 0 ? 'bg-green-600 border-green-600' : 'bg-blue-400 border-gray-400'}`}></div>
-                    
-                    <div className="flex flex-col">
-                      <h4 className="font-semibold text-gray-900 leading-tight mb-1 capitalize">{event.status}</h4>
-                      <p className="text-sm text-gray-600 mb-1">{event.location}</p>
-                      <p className="text-xs text-gray-400">{new Date(event.timestamp).toLocaleString()}</p>
-                    </div>
+        {/* Shipment Tracking history */}
+        {sortedHistory && (
+          <div className="max-w-[500px] mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md font-sans mt-3 border border-solid border-green-400">
+            <h2 className="text-[18px] sm:text-[18px] font-bold text-green-700 mb-6">Shipment Tracking History for #{trackingResult.trackingNumber}</h2>
+            <div className="relative border-l-2 border-gray-200 ml-2">
+              {sortedHistory.map((event, index) => (
+                <div key={index} className="mb-8 ml-6 relative">
+                  {/* The dot */}
+                  <div className={`absolute -left-8 top-1.5 w-4 h-4 rounded-full border-2 ${index === 0 ? 'bg-green-600 border-green-600' : 'bg-blue-400 border-gray-400'}`}></div>
+                  
+                  <div className="flex flex-col">
+                    <h4 className="font-semibold text-gray-900 leading-tight mb-1 capitalize">{event.status}</h4>
+                    <p className="text-sm text-gray-600 mb-1">{event.location}</p>
+                    <p className="text-xs text-gray-400">{new Date(event.timestamp).toLocaleString()}</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );
