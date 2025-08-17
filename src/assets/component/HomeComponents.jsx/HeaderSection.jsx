@@ -1,15 +1,24 @@
-'use client';
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import user from '../../images/user.svg';
 import cargorealmlogo from '../../images/cargorealmlogo.png';
+import ArrowDownLineIcon from '@rsuite/icons/ArrowDownLine';
 
 export default function HeaderSection() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
 
+  // NavLinks to include sub-menus
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/app/about", label: "About Us" },
+    {
+      label: "About Us",
+      submenus: [
+        { href: "/app/about", label: "About Us" },
+        { href: "/app/gallery", label: "Gallery" }, 
+        { href: "/app/events", label: "Events" }, 
+      ]
+    },
     { href: "/app/services", label: "Our Services" },
     { href: "/app/trackshipment", label: "Track Shipment" },
     { href: "/app/requestquote", label: "Request Quote" },
@@ -21,25 +30,61 @@ export default function HeaderSection() {
       <div className="container mx-auto flex items-center justify-between">
         {/* Logo Section */}
         <Link to="/" className="flex items-center space-x-2">
-          <img
-            src={cargorealmlogo}
-            alt="Adesola Plastic Stores Logo"
-            className="h-[40px] w-[130px] md:h-[52px] md:w-[250px] mr-0"
-          />
+            <img
+                src={cargorealmlogo}
+                alt="Adesola Plastic Stores Logo"
+                className="h-[40px] w-[130px] md:h-[52px] md:w-[250px] mr-0"
+            />
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex flex-row items-center space-x-4">
-          {navLinks.map((link) => (
-            <Link key={link.href} to={link.href} className="text-gray-700 hover:text-green-600 font-medium transition-colors">
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link, index) => {
+            // Check if the link has sub-menus
+            if (link.submenus) {
+              return (
+              <div
+                key={index}
+                className="relative"
+                onMouseEnter={() => setAboutDropdownOpen(true)}
+                onMouseLeave={() => setAboutDropdownOpen(false)}
+              >
+                <span className="text-gray-700 hover:text-green-600 font-medium cursor-pointer transition-colors">
+                  {link.label} <ArrowDownLineIcon />
+                </span>
+                {aboutDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                      {link.submenus.map((submenu) => (
+                        <Link
+                          key={submenu.href}
+                          to={submenu.href}
+                          className="block px-4 py-2 text-gray-700 hover:bg-green-100 font-semibold transition-colors"
+                          onClick={() => setAboutDropdownOpen(false)}
+                        >
+                          {submenu.label}
+                        </Link>
+                      ))}
+                    </div>
+                )}
+              </div>
+            );
+              } else {
+              // Render normal links without sub-menus
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-gray-700 hover:text-green-600 font-medium transition-colors"
+                >
+                  {link.label}
+                </Link>
+              );
+            }
+          })}
         </nav>
 
         {/* Login Icons and Button Section (Desktop) */}
         <div className="hidden lg:flex items-center space-x-4">
-          {/* Login Icon */}
           <div>
             <a href="/app/dashboard" className="hidden md:inline-flex items-center p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
               <img
@@ -50,8 +95,6 @@ export default function HeaderSection() {
               />
             </a>
           </div>
-
-          {/* Get A Quote Button */}
           <Link to="/app/requestquote" className="px-6 py-2 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 z-50">
             Get A Quote
           </Link>
@@ -67,53 +110,75 @@ export default function HeaderSection() {
               height={30}
             />
           </a>
-          
-          {/* Hamburger Menu (Mobile) */}
           <button
             className="lg:hidden flex items-center p-2 rounded focus:outline-none focus:ring-2 focus:ring-gray-300"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
-            <span className="sr-only">Open main menu</span>
+          <span className="sr-only">Open main menu</span>
             <div className="relative w-7 h-7 flex flex-col justify-center items-center">
               <span
-                className={`block h-1 w-7 bg-gray-800 rounded transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
+                  className={`block h-1 w-7 bg-gray-800 rounded transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
               ></span>
               <span
-                className={`block h-1 w-7 bg-gray-800 rounded my-1 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
+                  className={`block h-1 w-7 bg-gray-800 rounded my-1 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
               ></span>
               <span
-                className={`block h-1 w-7 bg-gray-800 rounded transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}
+                  className={`block h-1 w-7 bg-gray-800 rounded transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}
               ></span>
             </div>
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
-      {menuOpen && (
-        <nav className="lg:hidden bg-white shadow-lg rounded-b-lg py-4 px-6 absolute left-0 right-0 top-full z-40 animate-slideDown">
-          <div className="flex flex-col space-y-4">
-            <Link to="/" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
-              Home
-            </Link>
-            <Link to="/app/about" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
-              About Us
-            </Link>
-            <Link to="/app/services" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
-              Our Services
-            </Link>
-            <Link to="/app/trackshipment" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
-              Track Shipment
-            </Link>
-            <Link to="/app/requestquote" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
-              Request Quote
-            </Link>
-            <Link to="/app/contactus" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
-              Contact Us
-            </Link>
+        {/* Mobile Menu Dropdown */}
+        {menuOpen && (
+          <nav className="lg:hidden bg-white shadow-lg rounded-b-lg py-4 px-6 absolute left-0 right-0 top-full z-40 animate-slideDown">
+            <div className="flex flex-col space-y-4">
+              {navLinks.map((link, index) => {
+                if (link.submenus) {
+                  return (
+                    <div key={index}>
+                      <button
+                        onClick={() => setAboutDropdownOpen(!aboutDropdownOpen)}
+                        className="w-full text-left text-gray-700 hover:text-green-600 font-medium text-lg transition-colors focus:outline-none"
+                      >
+                        {link.label} <ArrowDownLineIcon />
+                      </button>
+                      {aboutDropdownOpen && (
+                        <div className="flex flex-col space-y-2 pl-4 mt-2">
+                          {link.submenus.map((submenu) => (
+                            <Link
+                              key={submenu.href}
+                              to={submenu.href}
+                              className="text-gray-600 hover:text-green-600 font-semibold text-base transition-colors"
+                              onClick={() => {
+                                  setMenuOpen(false);
+                                  setAboutDropdownOpen(false);
+                              }}
+                            >
+                              {submenu.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                  } else {
+                    return (
+                      <Link
+                        key={link.href}
+                        to={link.href}
+                        className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                );
+              }
+            })}
             <Link to="/app/requestquote" className="px-6 py-2 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-center" onClick={() => setMenuOpen(false)}>
-              Get A Quote
+                Get A Quote
             </Link>
           </div>
         </nav>
