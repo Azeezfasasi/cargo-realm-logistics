@@ -132,6 +132,10 @@ export default function TrackShipmentComponent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
               <p><strong>Sender Name:</strong> {trackingResult.senderName}</p>
               <p><strong>Receiver Name:</strong> {trackingResult.recipientName}</p>
+              <p><strong>Shipment Items:</strong> {trackingResult.items.join(', ')}</p>
+              <p><strong>Shipment Pieces:</strong> {trackingResult.shipmentPieces}</p>
+              <p><strong>Shipment Type:</strong> {trackingResult.shipmentType}</p>
+              <p><strong>Shipment Purpose:</strong> {trackingResult.shipmentPurpose}</p>
               <p><strong>Origin Country:</strong> {trackingResult.origin}</p>
               <p><strong>Destination Country:</strong> {trackingResult.destination}</p>
               <p><strong>Shipment Date:</strong> {formatDate(trackingResult.shipmentDate)}</p>
