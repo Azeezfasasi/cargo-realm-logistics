@@ -186,6 +186,18 @@ export default function PrintModalContent({ shipment, onClose }) {
                   <span style={{ fontWeight: '500' }}>{shipment.destination}</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Pieces</span>
+                  <span style={{ fontWeight: '500' }}>{shipment.shipmentPieces}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Type</span>
+                  <span style={{ fontWeight: '500' }}>{shipment.shipmentType}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Purpose</span>
+                  <span style={{ fontWeight: '500' }}>{shipment.shipmentPurpose}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Weight</span>
                   <span style={{ fontWeight: '500' }}>{shipment.weight}</span>
                 </div>
@@ -212,6 +224,25 @@ export default function PrintModalContent({ shipment, onClose }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
                   <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Description</span>
                   <span style={{ fontWeight: '500' }}>{shipment.notes}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Shipment Items</span>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', border: '1px solid #E5E7EB', borderRadius: '4px' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#43A047', color: '#FFFFFF', textAlign: 'left' }}>
+                        <th style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>S/N</th>
+                        <th style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>Item Name</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shipment.items.map((item, index) => (
+                        <tr key={index}>
+                          <td style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>{index + 1}</td>
+                          <td style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>{item}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </>
