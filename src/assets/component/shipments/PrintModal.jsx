@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import logo2 from '../../images/logo2.png'
+import cargorealmlogo from '../../images/cargorealmlogo.png'
 
 export default function PrintModalContent({ shipment, onClose }) {
   const printRef = useRef();
@@ -118,7 +118,7 @@ export default function PrintModalContent({ shipment, onClose }) {
             <>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginBottom: '1.25rem' }}>
                 <img
-                  src={logo2}
+                  src={cargorealmlogo}
                   alt="Logo"
                   style={{ width: '250px', height: '70px' }}
                 />
