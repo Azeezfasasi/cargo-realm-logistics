@@ -35,38 +35,43 @@ export default function ShipmentTable({ shipments, onActionClick }) {
               <td className="p-3 font-medium">{shipment.trackingNumber}</td>
               <td className="p-3">{shipment.senderName}</td>
               <td className="p-3">
-                <span className={`font-medium capitalize w-fit px-2 py-1 rounded-md
-                ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                  shipment.status === 'in-transit' ? 'bg-yellow-100 text-yellow-800' :
-                  shipment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                  shipment.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                  shipment.status === 'pickup-scheduled' ? 'bg-amber-100 text-amber-800' :
-                  shipment.status === 'out-for-delivery' ? 'bg-pink-100 text-pink-800' :
-                  shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
-                  shipment.status === 'arrived-at-hub' ? 'bg-violet-100 text-violet-800' :
-                  shipment.status === 'departed-from-hub' ? 'bg-indigo-100 text-indigo-800' :
-                  shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
-                  shipment.status === 'on-hold' ? 'bg-pink-100 text-pink-800' :
-                  shipment.status === 'customs-clearance' ? 'bg-cyan-100 text-cyan-800' :
-                  shipment.status === 'Awaiting Pickup' ? 'bg-fuchsia-100 text-fuchsia-800' :
-                  shipment.status === 'failed-delivery-attempt' ? 'bg-red-100 text-red-800' :
-                  shipment.status === 'Awaiting Delivery' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Arrived Carrier Connecting facility' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Departed CARGO realm facility (Nig)' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Arrived nearest airport' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Shipment is Delayed' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Delivery date not available' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Available for pick up,check phone for instructions' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Processed in Lagos Nigeria' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Pending Carrier lift' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Scheduled to depart on the next movement' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Received from flight' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'Package is received and accepted by airline' ? 'bg-lime-100 text-lime-800' :
-                  shipment.status === 'pending' ? 'bg-red-100 text-red-800' :
-                  'bg-gray-100 text-gray-800' }`
-                  }>
-                {shipment.status}
+                <span
+                  className={`font-medium capitalize w-fit px-2 py-1 rounded-md
+                    ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                    shipment.status === 'in-transit' ? 'bg-yellow-100 text-yellow-800' :
+                    shipment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                    shipment.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                    shipment.status === 'pickup-scheduled' ? 'bg-amber-100 text-amber-800' :
+                    shipment.status === 'out-for-delivery' ? 'bg-pink-100 text-pink-800' :
+                    shipment.status === 'picked-up' ? 'bg-purple-100 text-purple-800' :
+                    shipment.status === 'arrived-at-hub' ? 'bg-violet-100 text-violet-800' :
+                    shipment.status === 'departed-from-hub' ? 'bg-indigo-100 text-indigo-800' :
+                    shipment.status === 'on-hold' ? 'bg-rose-100 text-rose-800' :
+                    shipment.status === 'customs-clearance' ? 'bg-cyan-100 text-cyan-800' :
+                    shipment.status === 'Awaiting Pickup' ? 'bg-fuchsia-100 text-fuchsia-800' :
+                    shipment.status === 'failed-delivery-attempt' ? 'bg-rose-100 text-rose-800' :
+                    shipment.status === 'Awaiting Delivery' ? 'bg-lime-100 text-lime-800' :
+                    shipment.status === 'Arrived Carrier Connecting facility' ? 'bg-teal-100 text-teal-800' :
+                    shipment.status === 'Departed CARGO realm facility (Nig)' ? 'bg-orange-100 text-orange-800' :
+                    shipment.status === 'Arrived nearest airport' ? 'bg-sky-100 text-sky-800' :
+                    shipment.status === 'Shipment is Delayed' ? 'bg-red-200 text-red-900' :
+                    shipment.status === 'Delivery date not available' ? 'bg-gray-200 text-gray-800' :
+                    shipment.status === 'Available for pick up,check phone for instructions' ? 'bg-emerald-100 text-emerald-800' :
+                    shipment.status === 'Processed in Lagos Nigeria' ? 'bg-amber-200 text-amber-900' :
+                    shipment.status === 'Pending Carrier lift' ? 'bg-indigo-200 text-indigo-900' :
+                    shipment.status === 'Scheduled to depart on the next movement' ? 'bg-pink-200 text-pink-900' :
+                    shipment.status === 'Received from flight' ? 'bg-cyan-200 text-cyan-900' :
+                    shipment.status === 'Package is received and accepted by airline' ? 'bg-green-200 text-green-900' :
+                    shipment.status === 'Customs clearance completed' ? 'bg-emerald-200 text-emerald-900' :
+                    shipment.status === 'Delivery is booked' ? 'bg-indigo-100 text-indigo-800' :
+                    shipment.status === 'Arrived at an international sorting facility and will be ready for delivery soon' ? 'bg-purple-200 text-purple-900' :
+                    shipment.status === 'pending' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'}`
+                  }
+                >
+                  {shipment.status}
                 </span>
+
               </td>
               <td className="p-3">{shipment.destination}</td>
               <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>

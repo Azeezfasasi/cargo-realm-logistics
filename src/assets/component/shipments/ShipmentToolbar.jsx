@@ -44,8 +44,21 @@ const ShipmentToolbar = ({
           <option value="on-hold">On Hold</option>
           <option value="customs-clearance">Customs Clearance</option>
           <option value="Awaiting Pickup">Awaiting Pickup</option>
-          <option value="failed-delivery-attempt">Failed Delivery Attemptd</option>
-          <option value="Awaiting Delivery">Awaiting Delivery</option>
+          <option value="failed-delivery-attempt">Failed Delivery Attempt</option>
+          <option value="Arrived Carrier Connecting facility">Arrived Carrier Connecting facility</option>
+          <option value="Departed CARGO realm facility (Nig)">Departed CARGO realm facility (Nig)</option>
+          <option value="Arrived nearest airport">Arrived nearest airport</option>
+          <option value="Shipment is Delayed">Shipment is Delayed</option>
+          <option value="Delivery date not available">Delivery date not available</option>
+          <option value="Available for pick up,check phone for instructions">Available for pick up,check phone for instructions</option>
+          <option value="Processed in Lagos Nigeria">Processed in Lagos Nigeria</option>
+          <option value="Pending Carrier lift">Pending Carrier lift</option>
+          <option value="Scheduled to depart on the next movement">Scheduled to depart on the next movement</option>
+          <option value="Received from flight">Received from flight</option>
+          <option value="Package is received and accepted by airline">Package is received and accepted by airline</option>
+          <option value="Customs clearance completed">Customs clearance completed</option>
+          <option value="Delivery is booked">Delivery is booked</option>
+          <option value="Arrived at an international sorting facility and will be ready for delivery soon">Arrived at an international sorting facility and will be ready for delivery soon</option>
         </select>
 
         <Button variant="outline" onClick={onExport}>
