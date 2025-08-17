@@ -86,27 +86,72 @@ export default function PrintModalContent({ shipment, onClose }) {
     }
   };
 
-  // Helper function to get color styles based on status, using standard hex codes
+  // Helper function to get color styles based on status
   const getStatusColors = (status) => {
     switch (status) {
-      case 'delivered': return { backgroundColor: '#D1FAE5', color: '#166534' };
-      case 'in-transit': return { backgroundColor: '#FEFCE8', color: '#92400E' };
-      case 'cancelled': return { backgroundColor: '#FEE2E2', color: '#991B1B' };
-      case 'processing': return { backgroundColor: '#DBEAFE', color: '#1E40AF' };
-      case 'pickup-scheduled': return { backgroundColor: '#FFFBEB', color: '#975A16' };
-      case 'out-for-delivery': return { backgroundColor: '#FCE7F3', color: '#9D174D' };
-      case 'picked-up': return { backgroundColor: '#F3E8FF', color: '#6B21A8' };
-      case 'arrived-at-hub': return { backgroundColor: '#F5F3FF', color: '#4C1D95' };
-      case 'departed-from-hub': return { backgroundColor: '#E0E7FF', color: '#3730A3' };
-      case 'on-hold': return { backgroundColor: '#FCE7F3', color: '#9D174D' };
-      case 'customs-clearance': return { backgroundColor: '#CFFAFE', color: '#083344' };
-      case 'Awaiting Pickup': return { backgroundColor: '#FDF2F8', color: '#86198F' };
-      case 'failed-delivery-attempt': return { backgroundColor: '#FEE2E2', color: '#991B1B' };
-      case 'Awaiting Delivery': return { backgroundColor: '#F7FEE7', color: '#3F6212' };
-      case 'pending': return { backgroundColor: '#FEE2E2', color: '#991B1B' };
-      default: return { backgroundColor: '#F3F4F6', color: '#1F2937' };
+      case 'delivered': 
+        return { backgroundColor: '#D1FAE5', color: '#065F46' }; // Green
+      case 'in-transit': 
+        return { backgroundColor: '#FEF9C3', color: '#854D0E' }; // Amber
+      case 'cancelled': 
+        return { backgroundColor: '#FECACA', color: '#991B1B' }; // Red
+      case 'processing': 
+        return { backgroundColor: '#DBEAFE', color: '#1E3A8A' }; // Blue
+      case 'pickup-scheduled': 
+        return { backgroundColor: '#FFF7ED', color: '#9A3412' }; // Orange
+      case 'out-for-delivery': 
+        return { backgroundColor: '#FCE7F3', color: '#9D174D' }; // Pink
+      case 'picked-up': 
+        return { backgroundColor: '#F3E8FF', color: '#6B21A8' }; // Purple
+      case 'arrived-at-hub': 
+        return { backgroundColor: '#EDE9FE', color: '#5B21B6' }; // Indigo
+      case 'departed-from-hub': 
+        return { backgroundColor: '#E0F2FE', color: '#0369A1' }; // Sky Blue
+      case 'on-hold': 
+        return { backgroundColor: '#FEF2F2', color: '#B91C1C' }; // Strong Red
+      case 'customs-clearance': 
+        return { backgroundColor: '#CCFBF1', color: '#0F766E' }; // Teal
+      case 'Awaiting Pickup': 
+        return { backgroundColor: '#FAE8FF', color: '#86198F' }; // Fuchsia
+      case 'failed-delivery-attempt': 
+        return { backgroundColor: '#FFE4E6', color: '#9F1239' }; // Rose
+      case 'Awaiting Delivery': 
+        return { backgroundColor: '#ECFCCB', color: '#3F6212' }; // Lime
+      case 'Arrived Carrier Connecting facility': 
+        return { backgroundColor: '#FEF9C3', color: '#713F12' }; // Yellow
+      case 'Departed CARGO realm facility (Nig)': 
+        return { backgroundColor: '#FFEDD5', color: '#9A3412' }; // Orange
+      case 'Arrived nearest airport': 
+        return { backgroundColor: '#E0F2FE', color: '#075985' }; // Sky
+      case 'Shipment is Delayed': 
+        return { backgroundColor: '#FFE4E6', color: '#9F1239' }; // Rose
+      case 'Delivery date not available': 
+        return { backgroundColor: '#F3F4F6', color: '#1F2937' }; // Neutral Gray
+      case 'Available for pick up,check phone for instructions': 
+        return { backgroundColor: '#DCFCE7', color: '#166534' }; // Strong Green
+      case 'Processed in Lagos Nigeria': 
+        return { backgroundColor: '#FDE68A', color: '#92400E' }; // Amber
+      case 'Pending Carrier lift': 
+        return { backgroundColor: '#E0E7FF', color: '#3730A3' }; // Indigo Blue
+      case 'Scheduled to depart on the next movement': 
+        return { backgroundColor: '#FBCFE8', color: '#9D174D' }; // Pink
+      case 'Received from flight': 
+        return { backgroundColor: '#E0F7FA', color: '#006064' }; // Cyan
+      case 'Package is received and accepted by airline': 
+        return { backgroundColor: '#D1FAE5', color: '#065F46' }; // Deep Green
+      case 'Customs clearance completed': 
+        return { backgroundColor: '#BBF7D0', color: '#15803D' }; // Bright Green
+      case 'Delivery is booked': 
+        return { backgroundColor: '#E0E7FF', color: '#4338CA' }; // Blue Indigo
+      case 'Arrived at an international sorting facility and will be ready for delivery soon': 
+        return { backgroundColor: '#C7D2FE', color: '#1E3A8A' }; // Cool Indigo
+      case 'pending': 
+        return { backgroundColor: '#FEF2F2', color: '#B91C1C' }; // Red Neutral
+      default: 
+        return { backgroundColor: '#F3F4F6', color: '#1F2937' }; // Neutral Gray
     }
   };
+
 
   return (
     <>

@@ -26,7 +26,10 @@ const statusOptions = [
   'Processed in Lagos Nigeria', 'Pending Carrier lift',
   'Scheduled to depart on the next movement',
   'Received from flight',
-  'Package is received and accepted by airline'
+  'Package is received and accepted by airline',
+  'Customs clearance completed',
+  'Delivery is booked',
+  'Arrived at an international sorting facility and will be ready for delivery soon'
 ];
 
 export default function ChangeStatusModal({ shipment, onClose, onStatusChange }) {
