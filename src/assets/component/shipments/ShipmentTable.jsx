@@ -21,7 +21,8 @@ export default function ShipmentTable({ shipments, onActionClick }) {
           <tr>
             <th className="p-3">#</th>
             <th className="p-3">Tracking No</th>
-            <th className="p-3">Customer</th>
+            <th className="p-3">Sender</th>
+            <th className="p-3">Receiver</th>
             <th className="p-3">Status</th>
             <th className="p-3">Destination</th>
             <th className="p-3">Date</th>
@@ -34,6 +35,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
               <td className="p-3">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
               <td className="p-3 font-medium">{shipment.trackingNumber}</td>
               <td className="p-3">{shipment.senderName}</td>
+              <td className="p-3">{shipment.recipientName}</td>
               <td className="p-3">
                 <span
                   className={`font-medium capitalize w-fit px-2 py-1 rounded-md

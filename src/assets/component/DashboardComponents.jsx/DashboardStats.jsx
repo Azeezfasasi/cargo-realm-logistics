@@ -5,6 +5,7 @@ import { API_BASE_URL } from '../../../config/Api'; // Corrected path to Api.js 
 import { FaSpinner, FaTimesCircle, FaUsers, FaPrayingHands, FaCalendarAlt, FaHandshake, FaDollarSign, FaBlog } from 'react-icons/fa';
 import PageIcon from '@rsuite/icons/Page';
 import DocPassIcon from '@rsuite/icons/DocPass';
+import { Link } from 'react-router-dom';
 
 // Helper function to fetch data with auth token
 const fetchData = async (url) => {
@@ -131,46 +132,56 @@ const DashboardStats = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <StatCard
-              icon={FaUsers}
-              title="Total Users"
-              value={usersQuery.data !== undefined ? usersQuery.data : '--'}
-              isLoading={usersQuery.isLoading}
-              isError={usersQuery.isError}
-              error={usersQuery.error}
-            />
-            <StatCard
-              icon={PageIcon}
-              title="Total Shipments"
-              value={shipmentsQuery.data !== undefined ? shipmentsQuery.data : '--'}
-              isLoading={shipmentsQuery.isLoading}
-              isError={shipmentsQuery.isError}
-              error={shipmentsQuery.error}
-            />
-            <StatCard
-              icon={DocPassIcon}
-              title="Total Quote Requests"
-              value={contactQuery.data !== undefined ? `${contactQuery.data}` : '--'}
-              isLoading={contactQuery.isLoading}
-              isError={contactQuery.isError}
-              error={contactQuery.error}
-            />
-            <StatCard
-              icon={FaCalendarAlt}
-              title="Total Events"
-              value={eventsQuery.data !== undefined ? eventsQuery.data : '--'}
-              isLoading={eventsQuery.isLoading}
-              isError={eventsQuery.isError}
-              error={eventsQuery.error}
-            />
-            <StatCard
-              icon={FaHandshake}
-              title="Total Appointments"
-              value={appointmentsQuery.data !== undefined ? appointmentsQuery.data : '--'}
-              isLoading={appointmentsQuery.isLoading}
-              isError={appointmentsQuery.isError}
-              error={appointmentsQuery.error}
-            />
+            <Link to="/app/dashboard">
+              <StatCard
+                icon={FaUsers}
+                title="Total Users"
+                value={usersQuery.data !== undefined ? usersQuery.data : '--'}
+                isLoading={usersQuery.isLoading}
+                isError={usersQuery.isError}
+                error={usersQuery.error}
+              />
+            </Link>
+            <Link to="/app/account/allshipments">
+              <StatCard
+                icon={PageIcon}
+                title="Total Shipments"
+                value={shipmentsQuery.data !== undefined ? shipmentsQuery.data : '--'}
+                isLoading={shipmentsQuery.isLoading}
+                isError={shipmentsQuery.isError}
+                error={shipmentsQuery.error}
+              />
+            </Link>
+            <Link to="/app/account/contactformresponses">
+              <StatCard
+                icon={DocPassIcon}
+                title="Total Quote Requests"
+                value={contactQuery.data !== undefined ? `${contactQuery.data}` : '--'}
+                isLoading={contactQuery.isLoading}
+                isError={contactQuery.isError}
+                error={contactQuery.error}
+              />
+            </Link>
+            <Link to="/app/account/allevents">
+              <StatCard
+                icon={FaCalendarAlt}
+                title="Total Events"
+                value={eventsQuery.data !== undefined ? eventsQuery.data : '--'}
+                isLoading={eventsQuery.isLoading}
+                isError={eventsQuery.isError}
+                error={eventsQuery.error}
+              />
+            </Link>
+            <Link to="/app/account/allappointments">
+              <StatCard
+                icon={FaHandshake}
+                title="Total Appointments"
+                value={appointmentsQuery.data !== undefined ? appointmentsQuery.data : '--'}
+                isLoading={appointmentsQuery.isLoading}
+                isError={appointmentsQuery.isError}
+                error={appointmentsQuery.error}
+              />
+            </Link>
             <StatCard
               icon={FaBlog}
               title="Total Blog Posts"
