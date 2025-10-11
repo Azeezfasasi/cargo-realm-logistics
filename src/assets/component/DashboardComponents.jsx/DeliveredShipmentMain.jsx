@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
@@ -19,62 +19,113 @@ export default function DeliveredShipmentsMain({ token }) {
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFacility, setSelectedFacility] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const getTimestamp = (item) => {
-  return new Date(
-    item.createdAt ||
-    item.shipmentDate ||
-    item.timestamp ||
-    item.dateCreated ||
-    item.updatedAt || // fallback
-    0 // default if none found
-  );
-};
+    return new Date(
+      item.createdAt ||
+      item.shipmentDate ||
+      item.timestamp ||
+      item.dateCreated ||
+      item.updatedAt || // fallback
+      0 // default if none found
+    );
+  };
 
-  const fetchShipments = async () => {
+  // Centralized filter application (pure function - no hook deps)
+  const applyFilters = ({ shipmentsList, status, facility, term } = {}) => {
+    const list = Array.isArray(shipmentsList) ? shipmentsList : [];
+    const q = (term || '').toLowerCase();
+    return list.filter((s) => {
+      const matchesStatus = !status || s.status === status;
+      const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
+      const matchesFacility = !facility || facilityName === facility;
+      const matchesSearch = !q || (
+        s.trackingNumber?.toLowerCase().includes(q) ||
+        s.senderName?.toLowerCase().includes(q) ||
+        s.destination?.toLowerCase().includes(q) ||
+        s.status?.toLowerCase().includes(q)
+      );
+      return matchesStatus && matchesFacility && matchesSearch;
+    });
+  };
+
+  const fetchShipments = useCallback(async () => {
     setLoading(true); // Start loading
+    setError(null);
     try {
-      const res = await axios.get(`${API_BASE_URL}/shipments`, {
+      const authToken = token || localStorage.getItem('token');
+      console.log('AllShipmentsMain: fetching shipments, token present?', !!authToken);
+      const res = await axios.get(`${API_BASE_URL}/shipments`, authToken ? {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
-      });
-      const sorted = res.data.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+      } : undefined);
+      console.log('AllShipmentsMain: fetch response status', res.status);
+      const sorted = Array.isArray(res.data) ? res.data.sort((a, b) => getTimestamp(b) - getTimestamp(a)) : [];
+      console.log('AllShipmentsMain: fetched shipments count', sorted.length);
       setShipments(sorted);
-      setFilteredShipments(sorted);
+      // apply current filters to freshly fetched data using current UI state
+      const applied = applyFilters({ shipmentsList: sorted, status: selectedStatus, facility: selectedFacility, term: searchQuery });
+      setFilteredShipments(applied);
     } catch (err) {
       console.error('Failed to fetch shipments:', err);
+      setError(err?.response?.data?.message || err.message || 'Failed to fetch shipments');
+      setShipments([]);
+      setFilteredShipments([]);
     } finally {
       setLoading(false); // Stop loading
     }
-  };
-
+  }, [token, selectedStatus, selectedFacility, searchQuery]);
 
   useEffect(() => {
     fetchShipments();
-  }, [token]);
+  }, [fetchShipments]);
+
+  // compute facility counts from shipments
+  const facilities = React.useMemo(() => {
+    const map = {};
+    shipments.forEach((s) => {
+      const raw = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
+      const name = raw.trim();
+      if (!name) return;
+      map[name] = (map[name] || 0) + 1;
+    });
+    // turn into array, preserving some static ordering for known facilities
+    const knownOrder = [
+      'Atlanta','Indianapolis','New York','New jersey','Maryland','Dallas','Houston','United States of America','Canada','Ontario','Calgary','Edmonton','United Kingdom'
+    ];
+    const result = [];
+    knownOrder.forEach((k) => {
+      if (map[k]) result.push({ name: k, count: map[k] });
+    });
+    // add any other facilities discovered
+    Object.keys(map).forEach((k) => {
+      if (!knownOrder.includes(k)) result.push({ name: k, count: map[k] });
+    });
+    return result;
+  }, [shipments]);
 
   const handleSearch = (searchTerm) => {
-    setSearchQuery(searchTerm); // <-- Add this
-    const term = searchTerm.toLowerCase();
-    const result = shipments.filter((shipment) =>
-      shipment.trackingNumber?.toLowerCase().includes(term) ||
-      shipment.senderName?.toLowerCase().includes(term) ||
-      shipment.destination?.toLowerCase().includes(term) ||
-      shipment.status?.toLowerCase().includes(term)
-    );
-    setFilteredShipments(result);
+    setSearchQuery(searchTerm);
+    const applied = applyFilters({ term: searchTerm });
+    setFilteredShipments(applied);
   };
 
 
   const handleFilter = (status) => {
-    if (!status) {
-      setFilteredShipments(shipments);
-    } else {
-      const result = shipments.filter((s) => s.status === status);
-      setFilteredShipments(result);
-    }
+    setSelectedStatus(status);
+    const applied = applyFilters({ status });
+    setFilteredShipments(applied);
+  };
+
+  const handleFacilityChange = (facility) => {
+    setSelectedFacility(facility);
+    const applied = applyFilters({ facility });
+    setFilteredShipments(applied);
   };
 
   const openModal = (shipment, type) => {
@@ -137,10 +188,24 @@ export default function DeliveredShipmentsMain({ token }) {
         return (
           <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
             <FaSpinner className="animate-spin text-green-600 text-4xl" />
-            <p className="ml-3 text-lg text-gray-700">Loading archived shipments...</p>
+            <p className="ml-3 text-lg text-gray-700">Loading all shipments...</p>
           </section>
         );
       }
+
+  if (error) {
+    return (
+      <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
+        <p className="text-red-600 mb-4">Error loading shipments: {String(error)}</p>
+        <button
+          className="px-4 py-2 bg-green-600 text-white rounded"
+          onClick={() => fetchShipments()}
+        >
+          Retry
+        </button>
+      </section>
+    );
+  }
 
   return (
     <div className="p-4 space-y-6">
@@ -149,6 +214,9 @@ export default function DeliveredShipmentsMain({ token }) {
         searchQuery={searchQuery}
         onSearch={handleSearch}
         onStatusChange={handleFilter}
+        onFacilityChange={handleFacilityChange}
+        selectedFacility={selectedFacility}
+        facilities={facilities}
         onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
       />
 

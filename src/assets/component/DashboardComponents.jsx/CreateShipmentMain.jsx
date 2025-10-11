@@ -13,7 +13,7 @@ const generateTrackingNumber = () => {
 export default function CreateShipmentForm({ token }) {
   const [form, setForm] = useState({
     trackingNumber: generateTrackingNumber(),
-    sender: '', // This will hold the sender's _id
+    sender: '', 
     senderName: '',
     senderPhone: '',
     senderEmail: '',
@@ -39,10 +39,12 @@ export default function CreateShipmentForm({ token }) {
     shipmentPieces: '',
     shipmentType: '',
     shipmentPurpose: '',
+    shipmentFacility: '',
   });
 
   // State for the new item input
   const [newItem, setNewItem] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch users for the sender dropdown
   const {
@@ -71,14 +73,38 @@ export default function CreateShipmentForm({ token }) {
 
   const mutation = useMutation({
     mutationFn: async (shipmentData) => {
-      const res = await axios.post(`${API_BASE_URL}/shipments`, shipmentData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return res.data;
+      // Client-side retry for duplicate tracking numbers
+      const maxAttempts = 5;
+      let attempt = 0;
+      let lastError;
+      let payload = { ...shipmentData };
+      while (attempt < maxAttempts) {
+        try {
+          const res = await axios.post(`${API_BASE_URL}/shipments`, payload, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          return res.data;
+        } catch (err) {
+          lastError = err;
+          // If duplicate key on trackingNumber, regenerate and retry
+          const isDuplicate = err?.response?.data?.errmsg?.includes('duplicate key') || err?.response?.status === 409 || (err?.code === 11000 || err?.response?.data?.code === 11000);
+          if (isDuplicate) {
+            attempt += 1;
+            payload = { ...shipmentData, trackingNumber: generateTrackingNumber() };
+            console.warn(`Duplicate tracking number detected. Retrying with new tracking number (attempt ${attempt})`);
+            continue;
+          }
+          // Non-retryable error: rethrow
+          throw err;
+        }
+      }
+      // if we exit loop without success, throw last error
+      throw lastError;
     },
     onSuccess: () => {
+      setSubmitting(false);
       toast.success('Shipment created successfully');
       setForm((prev) => ({
         ...prev,
@@ -109,12 +135,21 @@ export default function CreateShipmentForm({ token }) {
         shipmentPieces: '',
         shipmentType: '',
         shipmentPurpose: '',
+        shipmentFacility: '',
       }));
       // Reset the new item input field
       setNewItem('');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Error creating shipment');
+      setSubmitting(false);
+      const message = err?.response?.data?.message || err?.message || 'Error creating shipment';
+      // Show helpful guidance if duplicate-key exhausted
+      if (err?.response?.data?.errmsg?.includes('duplicate key') || err?.code === 11000) {
+        toast.error('Duplicate tracking number. Please try again or contact support.');
+      } else {
+        toast.error(message);
+      }
+      console.error('Create shipment error (frontend):', err);
     },
   });
 
@@ -146,6 +181,7 @@ export default function CreateShipmentForm({ token }) {
     if (!form.sender) {
       return toast.error('Please select a sender');
     }
+    setSubmitting(true);
     mutation.mutate(form);
   };
 
@@ -493,6 +529,27 @@ export default function CreateShipmentForm({ token }) {
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-1">Shipment Facility</label>
+          <select
+            name="shipmentFacility" value={form.shipmentFacility} onChange={handleChange} className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600" required>
+            <option value="">Choose Shipment Facility</option>
+            <option value="Atlanta">Atlanta</option>
+            <option value="Indianapolis">Indianapolis</option>
+            <option value="New York">New York</option>
+            <option value="New Jersey">New Jersey</option>
+            <option value="Maryland">Maryland</option>
+            <option value="Dallas">Dallas</option>
+            <option value="Houston">Houston</option>
+            <option value="United States of America">United States of America</option>
+            <option value="Canada">Canada</option>
+            <option value="Ontario">Ontario</option>
+            <option value="Calgary">Calgary</option>
+            <option value="Edmonton">Edmonton</option>
+            <option value="United Kingdom">United Kingdom</option>
+          </select>
+        </div>
+
         <div className="md:col-span-2">
           <label className="block text-sm font-medium mb-1">Notes</label>
           <textarea
@@ -505,13 +562,20 @@ export default function CreateShipmentForm({ token }) {
           />
         </div>
 
-        <div className="md:col-span-2 mt-4">
+        <div className="w-full md:w-[40%] md:col-span-2 mt-4 mx-auto">
           <button
             type="submit"
-            disabled={mutation.isLoading}
-            className="w-full bg-green-600 text-white font-semibold py-2 rounded hover:bg-green-700 transition"
+            disabled={mutation.isLoading || submitting}
+            className="w-full bg-green-600 text-white font-semibold py-2 rounded hover:bg-green-700 transition flex items-center justify-center gap-2"
           >
-            {mutation.isLoading ? 'Creating Shipment...' : 'Create Shipment'}
+            {(mutation.isLoading || submitting) ? (
+              <>
+                <FaSpinner className="animate-spin" />
+                <span>Creating Shipment...</span>
+              </>
+            ) : (
+              <span>Create Shipment</span>
+            )}
           </button>
         </div>
       </form>
