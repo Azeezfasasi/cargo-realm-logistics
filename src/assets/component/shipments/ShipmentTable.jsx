@@ -7,8 +7,11 @@ const ITEMS_PER_PAGE = 10;
 export default function ShipmentTable({ shipments, onActionClick }) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(shipments.length / ITEMS_PER_PAGE);
-  const paginated = shipments.slice(
+  // filter out shipments with delivered status (case-insensitive)
+  const visibleShipments = shipments.filter(s => String(s.status).toLowerCase() !== 'delivered');
+
+  const totalPages = Math.ceil(visibleShipments.length / ITEMS_PER_PAGE) || 1;
+  const paginated = visibleShipments.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -98,7 +101,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
           ))}
           {paginated.length === 0 && (
             <tr>
-              <td colSpan={7} className="p-3 text-center text-gray-500">
+              <td colSpan={8} className="p-3 text-center text-gray-500">
                 No shipments found.
               </td>
             </tr>
