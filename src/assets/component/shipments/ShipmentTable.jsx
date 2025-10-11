@@ -28,6 +28,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
             <th className="p-3">Receiver</th>
             <th className="p-3">Status</th>
             <th className="p-3">Destination</th>
+            <th className="p-3">Shipment Facility</th>
             <th className="p-3">Date</th>
             <th className="p-3">Actions</th>
           </tr>
@@ -79,6 +80,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
 
               </td>
               <td className="p-3">{shipment.destination}</td>
+              <td className="p-3">{shipment.shipmentFacility}</td>
               <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>
               <td className="p-3 space-x-1">
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'edit')}>

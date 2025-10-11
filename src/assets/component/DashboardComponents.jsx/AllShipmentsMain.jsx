@@ -219,7 +219,6 @@ export default function AllShipmentsMain({ token }) {
         onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
       />
 
-
       {/* Table */}
       <ShipmentTable
         shipments={filteredShipments}

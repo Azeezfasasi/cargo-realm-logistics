@@ -534,6 +534,7 @@ export default function CreateShipmentForm({ token }) {
           <select
             name="shipmentFacility" value={form.shipmentFacility} onChange={handleChange} className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600" required>
             <option value="">Choose Shipment Facility</option>
+            <option value="Lagos">Lagos</option>
             <option value="Atlanta">Atlanta</option>
             <option value="Indianapolis">Indianapolis</option>
             <option value="New York">New York</option>
