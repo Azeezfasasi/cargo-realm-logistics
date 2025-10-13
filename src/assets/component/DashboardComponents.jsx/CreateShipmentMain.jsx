@@ -349,7 +349,7 @@ export default function CreateShipmentForm({ token }) {
 
         {/* section for adding items */}
         <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">Items in Shipment</label>
+            <label className="block text-sm font-medium mb-1">Items in Shipment <span className='text-[13px] text-blue-700'>Enter an item and click the plus button to add</span></label>
             <div className="flex items-center space-x-2 mb-2">
                 <input
                   type="text"

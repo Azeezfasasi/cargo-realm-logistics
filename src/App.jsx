@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom"
+import './App.css'
 import Home from "./app/Home"
 import Login from "./Login"
 import ForgetPassword from "./ForgetPassword"
