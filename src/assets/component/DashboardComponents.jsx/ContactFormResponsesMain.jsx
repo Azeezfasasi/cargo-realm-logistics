@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../../config/Api'; 
 import { useProfile } from '../../context-api/ProfileContext'; 
 import { Link } from 'react-router-dom';
+import ContactFormDetailModal from './ContactFormDetailModal';
 
 // Helper function to format timestamp
 const formatTimestamp = (timestamp) => {
@@ -33,6 +34,9 @@ function ContactFormResponsesMain() {
 
   const [actionMessage, setActionMessage] = useState(''); // For general success messages
   const [actionError, setActionError] = useState(''); // For general action errors
+  // Modal state for viewing details
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailContact, setDetailContact] = useState(null);
 
   // Clear messages when starting a new action or editing
   useEffect(() => {
@@ -374,21 +378,27 @@ function ContactFormResponsesMain() {
                         ) : (
                           <div className="flex justify-end space-x-2">
                             <button
+                              onClick={() => { setDetailContact(contact); setShowDetailModal(true); }}
+                              className="text-green-600 hover:text-green-900 cursor-pointer"
+                            >
+                              View
+                            </button>
+                            <button
                               onClick={() => handleEditClick(contact)}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeleteClick(contact._id)}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50 cursor-pointer"
                               disabled={deleteContactFormMutation.isPending}
                             >
                               Delete
                             </button>
                             <button
                               onClick={() => handleReplyClick(contact)}
-                              className="text-purple-600 hover:text-purple-900 disabled:opacity-50"
+                              className="text-purple-600 hover:text-purple-900 disabled:opacity-50 cursor-pointer"
                               disabled={!contact.email} // Disable if no email to reply to
                             >
                               Reply
@@ -509,6 +519,11 @@ function ContactFormResponsesMain() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Detail Modal */}
+      {showDetailModal && detailContact && (
+        <ContactFormDetailModal contact={detailContact} onClose={() => { setShowDetailModal(false); setDetailContact(null); }} />
       )}
     </section>
   );
