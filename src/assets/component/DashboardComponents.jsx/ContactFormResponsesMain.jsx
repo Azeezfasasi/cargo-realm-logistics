@@ -248,7 +248,7 @@ function ContactFormResponsesMain() {
     <section className="py-16 px-2 sm:px-3 lg:px-4 bg-gray-100 font-inter overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Manage Contact Forms
+          Manage  Quote Requests
         </h2>
 
         {actionMessage && (
