@@ -7,11 +7,11 @@ import { Link, useNavigate } from 'react-router-dom';
 
 function AddNewUserMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isPastor, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
   const navigate = useNavigate();
 
    // Determine if the user has permission to manage events
-  const hasPermission = isAuthenticated && (isAdmin || isPastor);
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
   // State for form fields
   const [name, setName] = useState('');

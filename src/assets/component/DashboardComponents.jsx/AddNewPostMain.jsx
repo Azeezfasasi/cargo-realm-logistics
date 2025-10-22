@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 function AddNewPostMain() {
   const queryClient = useQueryClient(); // Get QueryClient instance
-  const { isAdmin, isPastor, isAuthenticated, isLoading: authLoading } = useProfile(); // Get user role and auth status
+  const { isAdmin, isEmployee, isAuthenticated, isLoading: authLoading } = useProfile(); // Get user role and auth status
   const navigate = useNavigate();
 
   const [blogTitle, setBlogTitle] = useState('');
@@ -85,7 +85,7 @@ function AddNewPostMain() {
   }
 
   // Check if user is authenticated and is an admin
-  if (!isAuthenticated && !isAdmin && isPastor) {
+  if (!isAuthenticated && !isAdmin && isEmployee) {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center">
         <div className="text-center text-lg text-red-600">

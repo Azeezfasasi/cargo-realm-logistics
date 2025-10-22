@@ -14,7 +14,7 @@ const formatTimestamp = (timestamp) => {
 
 function ContactFormResponsesMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isPastor, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
 
   // State for editing mode
   const [editingContactId, setEditingContactId] = useState(null);
@@ -42,7 +42,7 @@ function ContactFormResponsesMain() {
   }, [editingContactId, showReplyModal]);
 
   // Determine if the user has permission to manage contact forms
-  const hasPermission = isAuthenticated && (isAdmin || isPastor);
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
   // Fetch all contact forms for admin/pastor management
   const {
@@ -58,7 +58,7 @@ function ContactFormResponsesMain() {
       return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by creation date
     },
     staleTime: 5 * 60 * 1000,
-    enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isPastor)
+    enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isEmployee)
   });
 
   // Mutation for editing a contact form
@@ -202,7 +202,7 @@ function ContactFormResponsesMain() {
     );
   }
 
-  // Check if user is authenticated AND (isAdmin OR isPastor)
+  // Check if user is authenticated AND (isAdmin OR isEmployee)
   if (!hasPermission) {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">

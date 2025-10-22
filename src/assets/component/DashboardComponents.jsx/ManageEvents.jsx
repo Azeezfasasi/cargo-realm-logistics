@@ -23,7 +23,7 @@ const formatDate = (dateString) => {
 
 function ManageEvents() {
   const queryClient = useQueryClient();
-  const { isAdmin, isPastor, isAuthenticated, isLoading: authLoading } = useProfile();
+  const { isAdmin, isEmployee, isAuthenticated, isLoading: authLoading } = useProfile();
 
   // State for editing mode
   const [editingEventId, setEditingEventId] = useState(null);
@@ -48,7 +48,7 @@ function ManageEvents() {
   }, [editingEventId]);
 
   // Determine if the user has permission to manage events
-  const hasPermission = isAuthenticated && (isAdmin || isPastor);
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
   // Fetch ALL events (upcoming, completed, cancelled) for admin/pastor management
   const {
@@ -67,7 +67,7 @@ function ManageEvents() {
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
-    // Corrected: enabled if authenticated AND (isAdmin OR isPastor)
+    // Corrected: enabled if authenticated AND (isAdmin OR isEmployee)
     enabled: hasPermission,
   });
 
@@ -205,7 +205,7 @@ function ManageEvents() {
     );
   }
 
-  // Corrected: Check if user is authenticated AND (isAdmin OR isPastor)
+  // Corrected: Check if user is authenticated AND (isAdmin OR isEmployee)
   if (!hasPermission) {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">

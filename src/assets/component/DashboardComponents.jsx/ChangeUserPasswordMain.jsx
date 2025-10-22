@@ -6,7 +6,7 @@ import { useProfile } from '../../context-api/ProfileContext';
 import { Link, useNavigate } from 'react-router-dom';
 
 function ChangeUserPasswordMain() {
-  const { isAuthenticated, isAdmin, isPastor, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
   const navigate = useNavigate();
 
   const [targetUserEmail, setTargetUserEmail] = useState('');
@@ -79,7 +79,7 @@ function ChangeUserPasswordMain() {
   };
 
   // Determine if the user has permission
-  const hasPermission = isAuthenticated && (isAdmin || isPastor);
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
   // Render loading state for authentication check
   if (authLoading) {
