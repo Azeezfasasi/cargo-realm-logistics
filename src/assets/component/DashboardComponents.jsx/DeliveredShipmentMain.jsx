@@ -11,8 +11,9 @@ import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
 import { FaSpinner } from 'react-icons/fa';
+import DeliveredShipmentTable from '../shipments/DeliveredShipmentTable';
 
-export default function AllShipmentsMain({ token }) {
+export default function DeliveredShipmentsMain({ token }) {
   const [shipments, setShipments] = useState([]);
   const [filteredShipments, setFilteredShipments] = useState([]);
   const [selectedShipment, setSelectedShipment] = useState(null);
@@ -24,15 +25,15 @@ export default function AllShipmentsMain({ token }) {
   const [error, setError] = useState(null);
 
   const getTimestamp = (item) => {
-  return new Date(
-    item.createdAt ||
-    item.shipmentDate ||
-    item.timestamp ||
-    item.dateCreated ||
-    item.updatedAt || // fallback
-    0 // default if none found
-  );
-};
+    return new Date(
+      item.createdAt ||
+      item.shipmentDate ||
+      item.timestamp ||
+      item.dateCreated ||
+      item.updatedAt || // fallback
+      0 // default if none found
+    );
+  };
 
   // Centralized filter application (pure function - no hook deps)
   const applyFilters = ({ shipmentsList, status, facility, term } = {}) => {
@@ -219,8 +220,9 @@ export default function AllShipmentsMain({ token }) {
         onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
       />
 
+
       {/* Table */}
-      <ShipmentTable
+      <DeliveredShipmentTable
         shipments={filteredShipments}
         onActionClick={openModal}
         onDeleteClick={(shipment) => openModal(shipment, 'delete')}

@@ -26,6 +26,7 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
     shipmentPieces: '',
     shipmentType: '',
     shipmentPurpose: '',
+    shipmentFacility: '',
   });
 
   // State for the new item input
@@ -56,6 +57,7 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
         shipmentPieces: shipment.shipmentPieces || '',
         shipmentType: shipment.shipmentType || '',
         shipmentPurpose: shipment.shipmentPurpose || '',
+        shipmentFacility: shipment.shipmentFacility || '',
       });
       setNewItem('');
     }
@@ -172,6 +174,25 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
           <option value="Return for Repair">Return for Repair</option>
           <option value="Sample">Sample</option>
           <option value="Other">Other</option>
+        </select>
+
+        <label>Shipment Facility</label>
+        <select name="shipmentFacility" value={formData.shipmentFacility} onChange={handleChange} className='w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600'>
+          <option value="">Choose Shipment Facility</option>
+          <option value="Lagos">Lagos</option>
+          <option value="Atlanta">Atlanta</option>
+          <option value="Indianapolis">Indianapolis</option>
+          <option value="New York">New York</option>
+          <option value="New Jersey">New Jersey</option>
+          <option value="Maryland">Maryland</option>
+          <option value="Dallas">Dallas</option>
+          <option value="Houston">Houston</option>
+          <option value="United States of America">United States of America</option>
+          <option value="Canada">Canada</option>
+          <option value="Ontario">Ontario</option>
+          <option value="Calgary">Calgary</option>
+          <option value="Edmonton">Edmonton</option>
+          <option value="United Kingdom">United Kingdom</option>
         </select>
         
         {/* section for adding items */}

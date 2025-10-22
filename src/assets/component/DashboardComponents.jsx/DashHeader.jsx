@@ -26,49 +26,52 @@ function DashHeader() {
   // const [openDropdown, setOpenDropdown] = useState(false);
   const menuRef = useRef();
 
-  // Close dropdown if clicked outside
-  // useEffect(() => {
-  //   const handler = (e) => {
-  //     if (menuRef.current && !menuRef.current.contains(e.target)) {
-  //       setOpenDropdown(false);
-  //     }
-  //   };
-  //   document.addEventListener('mousedown', handler);
-  //   return () => document.removeEventListener('mousedown', handler);
-  // }, []);
-
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
   // Map route paths to eventKeys
   const menuKeyByPath = {
-    '/app/dashboard': '1',
-    '/app/account/allshipments': '2-1',
-    '/app/account/myshipments': '2-2',
-    '/app/account/createshipment': '2-3',
-    '/app/trackshipment': '2-4',
-    '/app/account/contactformresponses': '3',
-    '/app/account/allposts': '4-1',
-    '/app/account/allblogpost': '4-2',
-    '/app/account/addnewpost': '4-3',
-    '/app/account/allevents': '5-1',
-    '/app/account/addevent': '5-2',
-    '/app/account/myappointments': '6-1', 
-    '/app/account/bookappointment': '6-2', 
-    '/app/account/allappointments': '6-3', 
-    '/app/account/sendnewsletter': '7-1',
-    '/app/account/allnewsletter': '7-2',
-    '/app/account/Newslettersubscribers': '7-3',
-    '/app/account/allgalleryimages': '8-1',
-    '/app/account/addnewgallery': '8-2',
-    '/app/account/allusers': '9-1',
-    '/app/account/addnewuser': '9-2',
-    '/app/account/changeuserpassword': '9-3',
-    '/app/account/profile': '10',
-    '/app/mysettings': '11',
+    '/app/dashboard': { key: '1', parent: null },
+    '/app/account/allshipments': { key: '2-1', parent: '2' },
+    '/app/account/myshipments': { key: '2-2', parent: '2' },
+    '/app/account/createshipment': { key: '2-3', parent: '2' },
+    '/app/account/archived-shipments': { key: '2-4', parent: '2' },
+    '/app/trackshipment': { key: '2-5', parent: '2' },
+    '/app/account/contactformresponses': { key: '3', parent: null },
+    '/app/account/allposts': { key: '4-1', parent: '4' },
+    '/app/account/allblogpost': { key: '4-2', parent: '4' },
+    '/app/account/addnewpost': { key: '4-3', parent: '4' },
+    '/app/account/allevents': { key: '5-1', parent: '5' },
+    '/app/account/addevent': { key: '5-2', parent: '5' },
+    '/app/account/myappointments': { key: '6-1', parent: '6' },
+    '/app/account/bookappointment': { key: '6-2', parent: '6' },
+    '/app/account/allappointments': { key: '6-3', parent: '6' },
+    '/app/account/sendnewsletter': { key: '7-1', parent: '7' },
+    '/app/account/allnewsletter': { key: '7-2', parent: '7' },
+    '/app/account/Newslettersubscribers': { key: '7-3', parent: '7' },
+    '/app/account/allgalleryimages': { key: '8-1', parent: '8' },
+    '/app/account/addnewgallery': { key: '8-2', parent: '8' },
+    '/app/account/allusers': { key: '9-1', parent: '9' },
+    '/app/account/addnewuser': { key: '9-2', parent: '9' },
+    '/app/account/changeuserpassword': { key: '9-3', parent: '9' },
+    '/app/account/profile': { key: '10', parent: null },
+    '/app/mysettings': { key: '11', parent: null },
   };
-  const activeKey = menuKeyByPath[location.pathname];
+    
+  // Normalize pathname to handle trailing slashes and query params
+    const cleanPath = location.pathname.replace(/\/$/, '').split('?')[0];
+    const routeInfo = menuKeyByPath[location.pathname] || menuKeyByPath[cleanPath];
+    const activeKey = routeInfo ? routeInfo.key : null;
+    // Compute defaultOpenKeys for Sidenav
+    let defaultOpenKeys = [];
+    if (routeInfo) {
+        if (routeInfo.parent) {
+            defaultOpenKeys = [routeInfo.parent];
+        } else if (Object.values(menuKeyByPath).some(info => info.parent === routeInfo.key)) {
+            defaultOpenKeys = [routeInfo.key];
+        }
+    }
 
   return (
     <nav className="bg-gray-500 text-white px-3 font-inter sticky top-0 z-50">
@@ -81,16 +84,6 @@ function DashHeader() {
             className="h-[30px] w-[120px] md:h-40px] md:w-[220px] mr-0"
           />
         </Link>
-
-        {/* Desktop Navigation */}
-        {/* <div className="hidden lg:flex items-center space-x-6 text-lg">
-          <Link to="/" className="hover:text-orange-400 transition-colors duration-300">Home</Link>
-          <Link to="/app/about" className="hover:text-orange-400 transition-colors duration-300">About Us</Link>
-          <Link to="/app/prayerrequest" className="hover:text-orange-400 transition-colors duration-300">Prayer Requests</Link>
-          <Link to="/app/blog" className="hover:text-orange-400 transition-colors duration-300">Blog</Link>
-          <Link to="/app/gallery" className="hover:text-orange-400 transition-colors duration-300">Gallery</Link>
-          <Link to="/app/contactus" className="hover:text-orange-400 transition-colors duration-300">Contact Us</Link>
-        </div> */}
 
         {/* Icons for Desktop (User, Wishlist, Cart) */}
         <div className="hidden lg:flex items-center space-x-4" ref={menuRef}>
@@ -158,7 +151,7 @@ function DashHeader() {
         } py-2 px-0 transition-all duration-300 ease-in-out`}
       >
         <div className="flex flex-col space-y-2">
-          <Sidenav>
+          <Sidenav defaultOpenKeys={defaultOpenKeys}>
             <Sidenav.Body>
               <Nav activeKey={activeKey}>
                 {(isAdmin || isEmployee || isClient || isAgent) && (
@@ -177,8 +170,11 @@ function DashHeader() {
                   {(isAdmin || isAgent || isEmployee) && (
                   <Nav.Item eventKey="2-3" as={Link} to="/app/account/createshipment">Create Shipment</Nav.Item>
                   )}
+                   {(isAdmin || isAgent || isEmployee) && (
+                  <Nav.Item eventKey="2-4" as={Link} to="/app/account/archived-shipments">Archived Shipment</Nav.Item>
+                  )}
                   {(isAdmin || isAgent || isClient || isEmployee) && (
-                  <Nav.Item eventKey="2-4" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>
+                  <Nav.Item eventKey="2-5" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>
                   )}
                   </Nav.Menu>
                 )}

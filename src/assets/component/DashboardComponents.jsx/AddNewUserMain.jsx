@@ -17,7 +17,7 @@ function AddNewUserMain() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('member'); // Default role
+  const [role, setRole] = useState('client'); // Default role
   const [gender, setGender] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [homeAddress, setHomeAddress] = useState('');
@@ -52,7 +52,7 @@ function AddNewUserMain() {
       setName('');
       setEmail('');
       setPassword('');
-      setRole('member');
+      setRole('client');
       setGender('');
       setPhoneNumber('');
       setHomeAddress('');
