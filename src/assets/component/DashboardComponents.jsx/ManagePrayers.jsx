@@ -14,7 +14,7 @@ const formatTimestamp = (timestamp) => {
 
 function ManagePrayers() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isPastor, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
 
   // State for editing mode
   const [editingPrayerId, setEditingPrayerId] = useState(null);
@@ -46,7 +46,7 @@ function ManagePrayers() {
       return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     },
     staleTime: 5 * 60 * 1000,
-    enabled: isAuthenticated && (isAdmin || isPastor),
+    enabled: isAuthenticated && (isAdmin || isEmployee),
   });
 
   // Mutation for editing a prayer request
@@ -167,7 +167,7 @@ function ManagePrayers() {
   }
 
   // Check if user is authenticated and is an admin
-  if (!isAuthenticated && !isPastor && !isAdmin) {
+  if (!isAuthenticated && !isEmployee && !isAdmin) {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
         <div className="text-center text-lg text-red-600">

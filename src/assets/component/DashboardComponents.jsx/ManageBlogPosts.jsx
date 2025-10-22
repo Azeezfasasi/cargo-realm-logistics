@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 function ManageBlogPosts() {
   const queryClient = useQueryClient();
-  const { isAdmin, isPastor, isAuthenticated, isLoading: authLoading } = useProfile();
+  const { isAdmin, isEmployee, isAuthenticated, isLoading: authLoading } = useProfile();
 
   const [editingBlogId, setEditingBlogId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
@@ -29,7 +29,7 @@ function ManageBlogPosts() {
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
-    enabled: isAuthenticated && isAdmin || isPastor,
+    enabled: isAuthenticated && isAdmin || isEmployee,
   });
 
   // Mutation for editing a blog
@@ -158,7 +158,7 @@ function ManageBlogPosts() {
   }
 
   // Check if user is authenticated and is an admin
-  if (!isAuthenticated && !isAdmin && isPastor) {
+  if (!isAuthenticated && !isAdmin && isEmployee) {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center">
         <div className="text-center text-lg text-red-600">

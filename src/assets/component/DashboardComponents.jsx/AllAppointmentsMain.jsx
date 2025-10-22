@@ -23,7 +23,7 @@ const formatDateForDisplay = (dateString) => {
 
 function AllAppointmentsMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isPastor, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
 
   // State for editing mode
   const [editingAppointmentId, setEditingAppointmentId] = useState(null);
@@ -56,7 +56,7 @@ function AllAppointmentsMain() {
   }, [editingAppointmentId, showRescheduleModal]);
 
   // Determine if the user has permission to manage appointments
-  const hasPermission = isAuthenticated && (isAdmin || isPastor);
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
   // Fetch all appointments for admin/pastor management
   const {
@@ -72,7 +72,7 @@ function AllAppointmentsMain() {
       return response.data.sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate)); // Sort by date
     },
     staleTime: 5 * 60 * 1000,
-    enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isPastor)
+    enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isEmployee)
   });
 
   // Mutation for updating appointment details
@@ -285,7 +285,7 @@ function AllAppointmentsMain() {
     );
   }
 
-  // Check if user is authenticated AND (isAdmin OR isPastor)
+  // Check if user is authenticated AND (isAdmin OR isEmployee)
   if (!hasPermission) {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">

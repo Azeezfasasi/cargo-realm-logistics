@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 function AllUserMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isPastor, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
 
   // State for editing mode
   const [editingUserId, setEditingUserId] = useState(null);
@@ -30,7 +30,7 @@ function AllUserMain() {
   }, [editingUserId]);
 
    // Determine if the user has permission to manage events
-  const hasPermission = isAuthenticated && (isAdmin || isPastor);
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
   // Fetch all users for admin management
   const {
