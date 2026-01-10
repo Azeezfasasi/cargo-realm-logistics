@@ -22,6 +22,8 @@ export default function AllShipmentsMain({ token }) {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [facilities, setFacilities] = useState([]);
+  const [statuses, setStatuses] = useState([]);
 
   const getTimestamp = (item) => {
   return new Date(
@@ -33,6 +35,32 @@ export default function AllShipmentsMain({ token }) {
     0 // default if none found
   );
 };
+
+  // Fetch facilities and statuses on mount
+  useEffect(() => {
+    const fetchFacilitiesAndStatuses = async () => {
+      try {
+        const [facilitiesRes, statusesRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/facilities`),
+          axios.get(`${API_BASE_URL}/shipment-statuses`)
+        ]);
+        
+        // Transform facilities for display
+        const facilityList = facilitiesRes.data.map(f => ({
+          name: f.name,
+          count: 0 // Will be calculated from shipments
+        }));
+        setFacilities(facilityList);
+        
+        // Set statuses
+        setStatuses(statusesRes.data || []);
+      } catch (err) {
+        console.error('Error fetching facilities/statuses:', err);
+      }
+    };
+    
+    fetchFacilitiesAndStatuses();
+  }, []);
 
   // Centralized filter application (pure function - no hook deps)
   const applyFilters = ({ shipmentsList, status, facility, term } = {}) => {
@@ -84,28 +112,25 @@ export default function AllShipmentsMain({ token }) {
     fetchShipments();
   }, [fetchShipments]);
 
-  // compute facility counts from shipments
-  const facilities = React.useMemo(() => {
-    const map = {};
+  // Compute facility counts from shipments
+  useEffect(() => {
+    if (facilities.length === 0) return;
+    
+    const facilityCounts = {};
     shipments.forEach((s) => {
       const raw = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
       const name = raw.trim();
       if (!name) return;
-      map[name] = (map[name] || 0) + 1;
+      facilityCounts[name] = (facilityCounts[name] || 0) + 1;
     });
-    // turn into array, preserving some static ordering for known facilities
-    const knownOrder = [
-      'Atlanta','Indianapolis','New York','New jersey','Maryland','Dallas','Houston','United States of America','Canada','Ontario','Calgary','Edmonton','United Kingdom'
-    ];
-    const result = [];
-    knownOrder.forEach((k) => {
-      if (map[k]) result.push({ name: k, count: map[k] });
-    });
-    // add any other facilities discovered
-    Object.keys(map).forEach((k) => {
-      if (!knownOrder.includes(k)) result.push({ name: k, count: map[k] });
-    });
-    return result;
+    
+    // Create list with counts
+    const facilityList = facilities.map(f => ({
+      ...f,
+      count: facilityCounts[f.name] || 0
+    }));
+    setFacilities(facilityList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shipments]);
 
   const handleSearch = (searchTerm) => {
@@ -219,7 +244,9 @@ export default function AllShipmentsMain({ token }) {
         onStatusChange={handleFilter}
         onFacilityChange={handleFacilityChange}
         selectedFacility={selectedFacility}
+        selectedStatus={selectedStatus}
         facilities={facilities}
+        statuses={statuses}
         onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
       />
 
