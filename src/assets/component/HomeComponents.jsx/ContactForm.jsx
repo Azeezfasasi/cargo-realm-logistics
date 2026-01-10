@@ -31,11 +31,18 @@ function ContactForm() {
   const submitContactFormMutation = useMutation({
     mutationFn: async (formData) => {
       // This endpoint is public, as per your backend routes
+      console.log('Submitting contact form with data:', formData);
       const response = await axios.post(`${API_BASE_URL}/contact`, formData);
+      console.log('Contact form response:', response.data);
       return response.data;
     },
     onSuccess: (data) => {
-      setSuccessMessage(data.message || 'Your message has been sent successfully! We will get back to you soon.');
+      console.log('Contact form submitted successfully:', data);
+      const trackingNumber = data.shipment?.trackingNumber;
+      const message = trackingNumber 
+        ? `Your quote request has been received! Your tracking number is: ${trackingNumber}. You can track your shipment at any time.`
+        : 'Your message has been sent successfully! We will get back to you soon.';
+      setSuccessMessage(message);
       setLocalError(''); // Clear any previous errors
 
       // Clear form fields after successful submission
@@ -51,6 +58,7 @@ function ContactForm() {
       setHeight('');
     },
     onError: (err) => {
+      console.error('Contact form submission error:', err);
       const errorMessage = err.response?.data?.message || 'Failed to send message. Please try again.';
       setLocalError(errorMessage);
       setSuccessMessage(''); // Clear success message on error
@@ -72,6 +80,7 @@ function ContactForm() {
       return;
     }
 
+    console.log('Form validation passed, submitting...');
     // Trigger the mutation
     submitContactFormMutation.mutate({
       name: name.trim(),
