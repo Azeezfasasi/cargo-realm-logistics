@@ -3,6 +3,7 @@ import { useState } from "react";
 import user from '../../images/user.svg';
 import cargorealmlogo from '../../images/cargorealmlogo.png';
 import ArrowDownLineIcon from '@rsuite/icons/ArrowDownLine';
+import MessageSlides from "./MessageSlides";
 
 export default function HeaderSection() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -26,8 +27,9 @@ export default function HeaderSection() {
   ];
 
   return (
-    <header className="bg-white p-4 shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto flex items-center justify-between">
+    <header className="bg-white p-0 shadow-sm sticky top-0 z-50">
+      <MessageSlides />
+      <div className="container mx-auto flex items-center justify-between p-4">
         {/* Logo Section */}
         <Link to="/" className="flex items-center space-x-2">
             <img

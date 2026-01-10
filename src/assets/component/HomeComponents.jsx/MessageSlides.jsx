@@ -56,12 +56,12 @@ export default function MessageSlides() {
           gradientColor={[25, 118, 210]}
           speed={50}
           pauseOnHover={true}
-          className="py-2"
+          className="py-2 overflow-y-hidden"
         >
           {messages.map((message, index) => (
             <div
               key={message._id || index}
-              className="flex items-center gap-6 px-8 py-0"
+              className="flex items-center gap-6 px-8"
             >
               <div className="flex items-center gap-3 whitespace-nowrap">
                 <div className="flex gap-1">
@@ -70,9 +70,6 @@ export default function MessageSlides() {
                 </div>
                 <div className="flex flex-col">
                   <p className="text-white font-bold text-sm md:text-base leading-tight">
-                    {message.title || 'Shipment Update'}
-                  </p>
-                  <p className="text-blue-100 text-xs md:text-sm">
                     {message.message}
                   </p>
                 </div>
