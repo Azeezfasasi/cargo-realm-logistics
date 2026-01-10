@@ -45,7 +45,7 @@ function DashMenu() {
     '/app/account/addnewuser': { key: '9-2', parent: '9' },
     '/app/account/changeuserpassword': { key: '9-3', parent: '9' },
     '/app/account/profile': { key: '10', parent: null },
-    '/app/mysettings': { key: '11', parent: null },
+    '/app/account/manage-message-slides': { key: '11', parent: null },
   };
 
     // Normalize pathname to handle trailing slashes and query params
@@ -148,10 +148,12 @@ function DashMenu() {
                         Profile
                     </Nav.Item>
                     )}
-                    {(isAdmin || isAgent || isEmployee || isClient) && (
-                    <Nav.Item eventKey="11" icon={<GearIcon />} as={Link} to="/app/account/mysettings">
-                        Settings
-                    </Nav.Item>
+                    {(isAdmin || isEmployee) && (
+                    <Nav.Menu eventKey="11" title="Settings" icon={<GearIcon />}>
+                        <Nav.Item eventKey="11-1" as={Link} to="/app/account/manage-message-slides">Manage Message Slides</Nav.Item>
+                        {/* <Nav.Item eventKey="9-2" as={Link} to="/app/account/addnewuser">Add New User</Nav.Item>
+                        <Nav.Item eventKey="9-3" as={Link} to="/app/account/changeuserpassword">Change User Password</Nav.Item> */}
+                    </Nav.Menu>
                     )}
                     {(isAdmin || isAgent || isEmployee || isClient) && (
                     <Nav.Item icon={<OffRoundIcon />}>

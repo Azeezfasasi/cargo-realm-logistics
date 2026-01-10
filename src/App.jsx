@@ -52,6 +52,7 @@ import CreateShipment from "./app/account/CreateShipment"
 import AllShipments from "./app/account/AllShipment"
 import MyShipments from "./app/account/MyShipments"
 import ArchivedShipments from "./app/account/ArchivedChipments"
+import ManageMessageSlides from "./app/account/ManageMessageSlides"
 
 function App() {
 
@@ -111,6 +112,7 @@ function App() {
           <Route path="/app/account/allshipments" element={<AllShipments />} />
           <Route path="/app/account/myshipments" element={<MyShipments/>} />
           <Route path="/app/account/archived-shipments" element={<ArchivedShipments />} />
+          <Route path="/app/account/manage-message-slides" element={<ManageMessageSlides />} />
         </Routes>
       </ProfileProvider>
     </>

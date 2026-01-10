@@ -10,6 +10,7 @@ import FooterSection from '../assets/component/HomeComponents.jsx/FooterSection'
 import HeaderSection from '../assets/component/HomeComponents.jsx/HeaderSection'
 import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
 import TawkToChat from '@/assets/component/HomeComponents.jsx/TawktoChat'
+import MessageSlides from '../assets/component/HomeComponents.jsx/MessageSlides'
 
 function Home() {
   return (
@@ -18,6 +19,7 @@ function Home() {
       <Helmet>
         <title>Cargo Realm and Logistics</title>
       </Helmet>
+      <MessageSlides />
       <SubscribePopUp />
       <HeaderSection />
       <Hero />
