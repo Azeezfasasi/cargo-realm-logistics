@@ -15,6 +15,7 @@ export default function ManageShipmentStatus() {
   const [editingStatus, setEditingStatus] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [submitLoading, setSubmitLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -97,6 +98,7 @@ export default function ManageShipmentStatus() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
+      setSubmitLoading(true)
       if (editingStatus) {
         await axios.put(
           `${API_BASE_URL}/shipment-statuses/${editingStatus._id}`,
@@ -115,6 +117,8 @@ export default function ManageShipmentStatus() {
       fetchStatuses()
     } catch (err) {
       setError(err.response?.data?.message || 'Error saving status')
+    } finally {
+      setSubmitLoading(false)
     }
   }
 
@@ -400,14 +404,27 @@ export default function ManageShipmentStatus() {
                 <div className='flex gap-3 pt-6 border-t'>
                   <button
                     type='submit'
-                    className='flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors'
+                    disabled={submitLoading}
+                    className={`flex-1 px-4 py-2 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                      submitLoading
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
                   >
-                    {editingStatus ? 'Update Status' : 'Create Status'}
+                    {submitLoading ? (
+                      <>
+                        <FaSpinner className='animate-spin' />
+                        {editingStatus ? 'Updating...' : 'Creating...'}
+                      </>
+                    ) : (
+                      editingStatus ? 'Update Status' : 'Create Status'
+                    )}
                   </button>
                   <button
                     type='button'
                     onClick={handleCloseModal}
-                    className='flex-1 px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-colors'
+                    disabled={submitLoading}
+                    className='flex-1 px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     Cancel
                   </button>

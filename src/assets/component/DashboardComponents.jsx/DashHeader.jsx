@@ -176,10 +176,10 @@ function DashHeader() {
                   <Nav.Item eventKey="2-4" as={Link} to="/app/account/archived-shipments">Delivered Shipment</Nav.Item>
                   )}
                   {(isAdmin || isEmployee) && (
-                  <Nav.Item eventKey="2-5" as={Link} to="/app/account/manage-facility">Manage Facility</Nav.Item>
+                  <Nav.Item eventKey="2-5" as={Link} to="/app/account/manage-shipment-status">Manage Shipment Status</Nav.Item>
                   )}
                   {(isAdmin || isEmployee) && (
-                  <Nav.Item eventKey="2-6" as={Link} to="/app/account/manage-shipment-status">Manage Shipment Status</Nav.Item>
+                  <Nav.Item eventKey="2-6" as={Link} to="/app/account/manage-facility">Manage Facility</Nav.Item>
                   )}
                   {(isAdmin || isAgent || isClient || isEmployee) && (
                   <Nav.Item eventKey="2-7" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>

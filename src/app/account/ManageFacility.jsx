@@ -15,6 +15,7 @@ export default function ManageFacility() {
   const [editingFacility, setEditingFacility] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [submitLoading, setSubmitLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -87,6 +88,7 @@ export default function ManageFacility() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
+      setSubmitLoading(true)
       if (editingFacility) {
         await axios.put(
           `${API_BASE_URL}/facilities/${editingFacility._id}`,
@@ -105,6 +107,8 @@ export default function ManageFacility() {
       fetchFacilities()
     } catch (err) {
       setError(err.response?.data?.message || 'Error saving facility')
+    } finally {
+      setSubmitLoading(false)
     }
   }
 
@@ -430,14 +434,27 @@ export default function ManageFacility() {
                 <div className='flex gap-3 pt-6 border-t'>
                   <button
                     type='submit'
-                    className='flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors'
+                    disabled={submitLoading}
+                    className={`flex-1 px-4 py-2 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                      submitLoading
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
                   >
-                    {editingFacility ? 'Update Facility' : 'Create Facility'}
+                    {submitLoading ? (
+                      <>
+                        <FaSpinner className='animate-spin' />
+                        {editingFacility ? 'Updating...' : 'Creating...'}
+                      </>
+                    ) : (
+                      editingFacility ? 'Update Facility' : 'Create Facility'
+                    )}
                   </button>
                   <button
                     type='button'
                     onClick={handleCloseModal}
-                    className='flex-1 px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-colors'
+                    disabled={submitLoading}
+                    className='flex-1 px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     Cancel
                   </button>

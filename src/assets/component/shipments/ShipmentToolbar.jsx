@@ -71,7 +71,7 @@ const ShipmentToolbar = ({
           {Array.isArray(statuses) && statuses.length > 0 ? (
             statuses.map((status) => (
               status.isActive && (
-                <option key={status._id} value={status.name}>
+                <option key={status._id} value={status.code || status.name.toLowerCase()}>
                   {status.name}
                 </option>
               )
