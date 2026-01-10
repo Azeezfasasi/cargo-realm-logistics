@@ -40,7 +40,7 @@ export default function MessageSlides() {
   }
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 py-0 shadow-lg">
+    <div className="w-full bg-gradient-to-r from-green-600 via-green-600 to-red-600 py-0 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="flex gap-1">
