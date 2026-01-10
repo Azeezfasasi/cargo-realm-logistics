@@ -40,7 +40,7 @@ export default function MessageSlides() {
   }
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 py-4 shadow-lg">
+    <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 py-0 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="flex gap-1">
@@ -61,7 +61,7 @@ export default function MessageSlides() {
           {messages.map((message, index) => (
             <div
               key={message._id || index}
-              className="flex items-center gap-6 px-8 py-3"
+              className="flex items-center gap-6 px-8 py-0"
             >
               <div className="flex items-center gap-3 whitespace-nowrap">
                 <div className="flex gap-1">
@@ -80,12 +80,6 @@ export default function MessageSlides() {
             </div>
           ))}
         </Marquee>
-
-        <div className="flex justify-end mt-2">
-          <span className="text-blue-100 text-xs uppercase tracking-widest font-medium">
-            {messages.length} active message{messages.length !== 1 ? 's' : ''}
-          </span>
-        </div>
       </div>
     </div>
   )
