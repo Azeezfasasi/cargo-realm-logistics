@@ -147,7 +147,7 @@ export default function ManageMessageSlides() {
               </div>
               <button
                 onClick={() => setShowForm(!showForm)}
-                className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors'
+                className='px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors'
               >
                 {showForm ? 'Cancel' : '+ New Message'}
               </button>
@@ -184,7 +184,7 @@ export default function ManageMessageSlides() {
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder='e.g., Shipment in Transit'
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition'
                     />
                   </div>
 
@@ -198,7 +198,7 @@ export default function ManageMessageSlides() {
                       onChange={handleInputChange}
                       placeholder='Enter the message content here...'
                       rows='4'
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition resize-none'
                     ></textarea>
                   </div>
 
@@ -220,7 +220,7 @@ export default function ManageMessageSlides() {
                     <button
                       type='submit'
                       disabled={loading}
-                      className='flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors'
+                      className='flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors'
                     >
                       {loading ? 'Saving...' : editingId ? 'Update Message' : 'Create Message'}
                     </button>
@@ -244,7 +244,7 @@ export default function ManageMessageSlides() {
                   placeholder='Search messages...'
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none'
+                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none'
                 />
               </div>
             )}

@@ -170,9 +170,12 @@ export default function AllShipmentsMain({ token }) {
     }
     };
 
-    const handleStatusChange = async ({ shipmentId, newStatus }) => {
+    const handleStatusChange = async ({ shipmentId, newStatus, location }) => {
         try {
-            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: newStatus }, {
+            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { 
+              status: newStatus,
+              location: location
+            }, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
