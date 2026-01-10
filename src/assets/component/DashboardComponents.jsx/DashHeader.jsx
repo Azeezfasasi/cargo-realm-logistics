@@ -37,7 +37,9 @@ function DashHeader() {
     '/app/account/myshipments': { key: '2-2', parent: '2' },
     '/app/account/createshipment': { key: '2-3', parent: '2' },
     '/app/account/archived-shipments': { key: '2-4', parent: '2' },
-    '/app/trackshipment': { key: '2-5', parent: '2' },
+    '/app/account/manage-shipment-status': { key: '2-5', parent: '2' },
+    '/app/account/manage-facility': { key: '2-6', parent: '2' },
+    '/app/trackshipment': { key: '2-7', parent: '2' },
     '/app/account/contactformresponses': { key: '3', parent: null },
     '/app/account/allposts': { key: '4-1', parent: '4' },
     '/app/account/allblogpost': { key: '4-2', parent: '4' },
@@ -171,10 +173,16 @@ function DashHeader() {
                   <Nav.Item eventKey="2-3" as={Link} to="/app/account/createshipment">Create Shipment</Nav.Item>
                   )}
                    {(isAdmin || isAgent || isEmployee) && (
-                  <Nav.Item eventKey="2-4" as={Link} to="/app/account/archived-shipments">Archived Shipment</Nav.Item>
+                  <Nav.Item eventKey="2-4" as={Link} to="/app/account/archived-shipments">Delivered Shipment</Nav.Item>
+                  )}
+                  {(isAdmin || isEmployee) && (
+                  <Nav.Item eventKey="2-5" as={Link} to="/app/account/manage-facility">Manage Facility</Nav.Item>
+                  )}
+                  {(isAdmin || isEmployee) && (
+                  <Nav.Item eventKey="2-6" as={Link} to="/app/account/manage-shipment-status">Manage Shipment Status</Nav.Item>
                   )}
                   {(isAdmin || isAgent || isClient || isEmployee) && (
-                  <Nav.Item eventKey="2-5" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>
+                  <Nav.Item eventKey="2-7" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>
                   )}
                   </Nav.Menu>
                 )}

@@ -211,6 +211,7 @@ export default function AllShipmentsMain({ token }) {
 
   return (
     <div className="p-4 space-y-6">
+      <div className='font-bold text-[20px] lg:text-[28px]'>All Shipments</div>
       {/* Toolbar and Filters */}
       <ShipmentToolbar
         searchQuery={searchQuery}
