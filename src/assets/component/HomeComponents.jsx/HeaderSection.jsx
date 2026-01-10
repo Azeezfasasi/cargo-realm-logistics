@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import user from '../../images/user.svg';
 import cargorealmlogo from '../../images/cargorealmlogo.png';
 import ArrowDownLineIcon from '@rsuite/icons/ArrowDownLine';
@@ -8,6 +8,24 @@ import MessageSlides from "./MessageSlides";
 export default function HeaderSection() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    // Check if user is logged in by checking localStorage
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      setIsLoggedIn(true);
+      try {
+        setUserData(JSON.parse(user));
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+  }, []);
 
   // NavLinks to include sub-menus
   const navLinks = [
@@ -85,10 +103,65 @@ export default function HeaderSection() {
           })}
         </nav>
 
-        {/* Login Icons and Button Section (Desktop) */}
+        {/* Account Icons and Button Section (Desktop) */}
         <div className="hidden lg:flex items-center space-x-4">
-          <div>
-            <a href="/app/dashboard" className="hidden md:inline-flex items-center p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+          {isLoggedIn && userData ? (
+            <div className="relative">
+              <button
+                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer"
+              >
+                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold text-gray-700">
+                  {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <div className="text-left hidden sm:block">
+                  <p className="text-sm font-semibold text-gray-900">{userData.name || 'User'}</p>
+                  <p className="text-xs text-orange-500 font-medium capitalize">{userData.role || 'User'}</p>
+                </div>
+                <ArrowDownLineIcon className="text-gray-600" />
+              </button>
+              
+              {accountDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                  <div className="p-4 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900">{userData.name || 'User'}</p>
+                    <p className="text-xs text-gray-600">{userData.email || ''}</p>
+                    <p className="text-xs text-orange-500 font-medium capitalize mt-1">{userData.role || 'User'}</p>
+                  </div>
+                  <div className="py-2">
+                    <Link
+                      to="/app/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setAccountDropdownOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/app/account/allshipments"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setAccountDropdownOpen(false)}
+                    >
+                      Manage Shipments
+                    </Link>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        setIsLoggedIn(false);
+                        setUserData(null);
+                        setAccountDropdownOpen(false);
+                        window.location.href = '/';
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <a href="/app/dashboard" className="flex items-center p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
               <img
                 src={user}
                 alt="Login Icon"
@@ -96,22 +169,74 @@ export default function HeaderSection() {
                 height={32}
               />
             </a>
-          </div>
+          )}
           <Link to="/app/requestquote" className="px-6 py-2 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 z-50">
             Get A Quote
           </Link>
         </div>
 
         {/* Mobile Account Icon and Hamburger Menu */}
-        <div className="flex flex-row lg:hidden">
-          <a href="/app/dashboard" className="flex items-center p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
-            <img
-              src={user}
-              alt="Login Icon"
-              width={30}
-              height={30}
-            />
-          </a>
+        <div className="flex flex-row lg:hidden gap-2">
+          {isLoggedIn && userData ? (
+            <div className="relative">
+              <button
+                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                className="flex items-center p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold text-gray-700">
+                  {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              </button>
+              
+              {accountDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                  <div className="p-4 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900">{userData.name || 'User'}</p>
+                    <p className="text-xs text-gray-600">{userData.email || ''}</p>
+                    <p className="text-xs text-orange-500 font-medium capitalize mt-1">{userData.role || 'User'}</p>
+                  </div>
+                  <div className="py-2">
+                    <Link
+                      to="/app/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setAccountDropdownOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/app/account/allshipments"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setAccountDropdownOpen(false)}
+                    >
+                      Manage Shipments
+                    </Link>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        setIsLoggedIn(false);
+                        setUserData(null);
+                        setAccountDropdownOpen(false);
+                        window.location.href = '/';
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <a href="/app/dashboard" className="flex items-center p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+              <img
+                src={user}
+                alt="Login Icon"
+                width={30}
+                height={30}
+              />
+            </a>
+          )}
           <button
             className="lg:hidden flex items-center p-2 rounded focus:outline-none focus:ring-2 focus:ring-gray-300"
             onClick={() => setMenuOpen(!menuOpen)}
