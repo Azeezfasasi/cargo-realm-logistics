@@ -1,32 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config/Api.jsx';
+import { Link } from 'react-router-dom';
+
+const defaultServices = [
+  {
+    title: 'AIR FREIGHT',
+    description: 'Expedite your shipments globally with our reliable air freight solutions. We ensure fast and secure delivery for time-sensitive cargo, connecting major hubs worldwide.',
+  },
+  {
+    title: 'SEA FREIGHT',
+    description: 'Cost-effective and efficient sea freight services for large volume shipments. We handle full container loads (FCL) and less than container loads (LCL) with comprehensive logistics support.',
+  },
+  {
+    title: 'ROAD TRANSPORT',
+    description: 'Flexible and dependable road transport services for domestic and cross-border deliveries. Our fleet ensures timely and safe ground transportation of your goods.',
+  },
+  {
+    title: 'WAREHOUSING',
+    description: 'Secure and strategically located warehousing solutions for all your storage needs. We offer inventory management, distribution, and value-added services to optimize your supply chain.',
+  },
+  {
+    title: 'CUSTOMS BROKERAGE',
+    description: 'Navigate complex customs regulations with ease. Our expert customs brokerage services ensure smooth clearance and compliance for international shipments, minimizing delays.',
+  },
+  {
+    title: 'PROJECT CARGO',
+    description: 'Specialized handling for oversized, heavy-lift, and complex project cargo. We provide end-to-end solutions for challenging logistics projects, ensuring safe and efficient delivery.',
+  },
+];
 
 export default function OurServicesSection() {
-  const services = [
-    {
-      title: 'AIR FREIGHT',
-      description: 'Expedite your shipments globally with our reliable air freight solutions. We ensure fast and secure delivery for time-sensitive cargo, connecting major hubs worldwide.',
-    },
-    {
-      title: 'SEA FREIGHT',
-      description: 'Cost-effective and efficient sea freight services for large volume shipments. We handle full container loads (FCL) and less than container loads (LCL) with comprehensive logistics support.',
-    },
-    {
-      title: 'ROAD TRANSPORT',
-      description: 'Flexible and dependable road transport services for domestic and cross-border deliveries. Our fleet ensures timely and safe ground transportation of your goods.',
-    },
-    {
-      title: 'WAREHOUSING',
-      description: 'Secure and strategically located warehousing solutions for all your storage needs. We offer inventory management, distribution, and value-added services to optimize your supply chain.',
-    },
-    {
-      title: 'CUSTOMS BROKERAGE',
-      description: 'Navigate complex customs regulations with ease. Our expert customs brokerage services ensure smooth clearance and compliance for international shipments, minimizing delays.',
-    },
-    {
-      title: 'PROJECT CARGO',
-      description: 'Specialized handling for oversized, heavy-lift, and complex project cargo. We provide end-to-end solutions for challenging logistics projects, ensuring safe and efficient delivery.',
-    },
-  ];
+  const [services, setServices] = useState(defaultServices);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/services`);
+      const data = await response.json();
+      if (data.length > 0) {
+        setServices(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+    }
+  };
 
   return (
     <section className="bg-gray-900 text-white py-16 px-4 font-sans">
@@ -45,11 +65,8 @@ export default function OurServicesSection() {
             >
               <h4 className="text-xl font-bold mb-4 text-green-600">{service.title}</h4>
               <p className="text-gray-300 mb-6 flex-grow">{service.description}</p>
-              <a
-                href="#" // Replace with actual link
-                className="text-green-600 font-semibold hover:underline flex items-center"
-              >
-                LEARN MORE
+              <Link to="/app/requestquote" className="text-green-600 font-semibold hover:underline flex items-center">
+                REQUEST QUOTE
                 <svg
                   className="ml-2 w-4 h-4"
                   fill="none"
@@ -64,7 +81,7 @@ export default function OurServicesSection() {
                     d="M17 8l4 4m0 0l-4 4m4-4H3"
                   ></path>
                 </svg>
-              </a>
+              </Link>
             </div>
           ))}
         </div>

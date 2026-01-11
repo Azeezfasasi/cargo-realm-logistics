@@ -56,6 +56,7 @@ import ManageMessageSlides from "./app/account/ManageMessageSlides"
 import ManageFacility from "./app/account/ManageFacility"
 import ManageShipmentStatus from "./app/account/ManageShipmentStatus"
 import ManageHeroSlides from "./app/account/ManageHeroSlides"
+import ManageOurServices from "./app/account/ManageOurServices"
 
 function App() {
 
@@ -119,6 +120,7 @@ function App() {
           <Route path="/app/account/manage-facility" element={<ManageFacility />} />
           <Route path="/app/account/manage-shipment-status" element={<ManageShipmentStatus />} />
           <Route path="/app/account/manage-hero-slides" element={<ManageHeroSlides />} />
+          <Route path="/app/account/manage-our-services" element={<ManageOurServices />} />
         </Routes>
       </ProfileProvider>
     </>
