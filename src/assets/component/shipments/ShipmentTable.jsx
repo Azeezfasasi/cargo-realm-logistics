@@ -20,7 +20,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
     <div className="rounded-xl border bg-white shadow-md overflow-x-auto">
       {/* dark:bg-gray-200 */}
       <table className="w-full text-sm text-left">
-        <thead className="bg-amber-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 uppercase">
+        <thead className="bg-green-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 uppercase">
           <tr>
             <th className="p-3">#</th>
             <th className="p-3">Tracking No</th>

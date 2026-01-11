@@ -47,7 +47,8 @@ function DashMenu() {
     '/app/account/addnewuser': { key: '9-2', parent: '9' },
     '/app/account/changeuserpassword': { key: '9-3', parent: '9' },
     '/app/account/profile': { key: '10', parent: null },
-    '/app/account/manage-message-slides': { key: '11', parent: null },
+    '/app/account/manage-message-slides': { key: '11-1', parent: '11' },
+    '/app/account/manage-hero-slides': { key: '11-2', parent: '11' },
   };
 
     // Normalize pathname to handle trailing slashes and query params
@@ -159,8 +160,7 @@ function DashMenu() {
                     {(isAdmin || isEmployee) && (
                     <Nav.Menu eventKey="11" title="Settings" icon={<GearIcon />}>
                         <Nav.Item eventKey="11-1" as={Link} to="/app/account/manage-message-slides">Manage Message Slides</Nav.Item>
-                        {/* <Nav.Item eventKey="9-2" as={Link} to="/app/account/addnewuser">Add New User</Nav.Item>
-                        <Nav.Item eventKey="9-3" as={Link} to="/app/account/changeuserpassword">Change User Password</Nav.Item> */}
+                        <Nav.Item eventKey="11-2" as={Link} to="/app/account/manage-hero-slides">Manage Hero Slides</Nav.Item>
                     </Nav.Menu>
                     )}
                     {(isAdmin || isAgent || isEmployee || isClient) && (
