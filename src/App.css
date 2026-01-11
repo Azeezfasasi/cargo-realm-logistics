@@ -9,7 +9,7 @@
 }
 
 .rs-sidenav-default .rs-dropdown-item.rs-dropdown-item-active, .rs-sidenav-default .rs-dropdown.rs-dropdown-selected-within .rs-sidenav-item-icon, .rs-sidenav-default .rs-sidenav-item.rs-sidenav-item-active {
-  color: orangered !important;
+  color: rgb(243, 148, 45) !important;
   font-weight: bold !important;
 }
 
