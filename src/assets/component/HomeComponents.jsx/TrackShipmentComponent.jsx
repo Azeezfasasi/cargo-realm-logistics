@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '@/config/Api';
 
 export default function TrackShipmentComponent() {
@@ -6,18 +7,20 @@ export default function TrackShipmentComponent() {
   const [trackingResult, setTrackingResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchParams] = useSearchParams();
 
+  // Check for tracking parameter in URL on component mount
+  useEffect(() => {
+    const trackingParam = searchParams.get('tracking');
+    if (trackingParam) {
+      setTrackingNumber(trackingParam);
+      // Automatically fetch tracking info if parameter is provided
+      performTracking(trackingParam);
+    }
+  }, [searchParams]);
 
-  const handleTrackingChange = (e) => {
-    setTrackingNumber(e.target.value);
-    // Clear previous results/errors when input changes
-    setTrackingResult(null);
-    setError(null);
-  };
-
-  const handleTrackShipment = async (e) => {
-    e.preventDefault();
-    if (!trackingNumber.trim()) {
+  const performTracking = async (trackNum) => {
+    if (!trackNum.trim()) {
       setError('Please enter a tracking number.');
       return;
     }
@@ -27,7 +30,7 @@ export default function TrackShipmentComponent() {
 
     // Make an API call to the backend tracking endpoint
     try {
-      const response = await fetch(`${API_BASE_URL}/shipments/track/${trackingNumber}`);
+      const response = await fetch(`${API_BASE_URL}/shipments/track/${trackNum}`);
       
       // Check if the response is successful
       if (!response.ok) {
@@ -45,6 +48,18 @@ export default function TrackShipmentComponent() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTrackingChange = (e) => {
+    setTrackingNumber(e.target.value);
+    // Clear previous results/errors when input changes
+    setTrackingResult(null);
+    setError(null);
+  };
+
+  const handleTrackShipment = async (e) => {
+    e.preventDefault();
+    performTracking(trackingNumber);
   };
 
   // Helper function to format the date

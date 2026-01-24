@@ -174,6 +174,16 @@ export default function PrintModalContent({ shipment, onClose }) {
                   <p>Nacho Export Warehouse, Murital Muhammad International Airport, Ikeja Lagos.</p>
                   <p>Email: info@cargorealmandlosgistics.com</p>
                 </div>
+                {shipment.qrCodeUrl && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <img
+                      src={shipment.qrCodeUrl}
+                      alt="Shipment QR Code"
+                      style={{ width: '150px', height: '150px' }}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.5rem', textAlign: 'center' }}>Scan to track shipment</p>
+                  </div>
+                )}
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1F2937', borderBottom: '1px solid #E5E7EB', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
                 Shipment Details - <span style={{ color: '#22C55E' }}>{shipment.trackingNumber}</span>
