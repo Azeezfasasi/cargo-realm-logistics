@@ -43,11 +43,112 @@ export default function PrintModalContent({ shipment, onClose }) {
     setIsDownloading(true);
 
     try {
-      // Capture the entire content as a single canvas
-      const canvas = await window.html2canvas(printRef.current, {
+      // Create a style element that will override oklch colors
+      const styleOverride = document.createElement('style');
+      styleOverride.textContent = `
+        * {
+          color: #000000 !important;
+          background-color: transparent !important;
+          border-color: #cccccc !important;
+        }
+        button, a, [role="button"] {
+          color: #0066cc !important;
+        }
+      `;
+      document.head.appendChild(styleOverride);
+
+      // Clone the element
+      const clonedElement = printRef.current.cloneNode(true);
+      
+      // Create a temporary container
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.width = '1000px';
+      document.body.appendChild(tempContainer);
+      tempContainer.appendChild(clonedElement);
+
+      // Strip all classes and IDs to prevent CSS rules from applying
+      const stripElement = (el) => {
+        el.removeAttribute('class');
+        el.removeAttribute('id');
+        el.removeAttribute('style');
+        
+        // Process children
+        Array.from(el.children).forEach(child => stripElement(child));
+      };
+
+      // Don't strip the root element - just its attributes
+      const allElements = clonedElement.querySelectorAll('*');
+      allElements.forEach(el => {
+        // Preserve inline styles but remove dangerous attributes
+        el.removeAttribute('class');
+        el.removeAttribute('id');
+      });
+
+      // Apply safe basic styles via inline to replace what was removed
+      const applyBasicStyles = (el) => {
+        const computedStyle = window.getComputedStyle(el);
+        
+        // Only apply safe color values
+        el.style.backgroundColor = '#ffffff';
+        el.style.color = '#000000';
+        el.style.borderColor = '#cccccc';
+        
+        // Copy safe layout properties
+        const safeProps = {
+          display: computedStyle.display,
+          padding: computedStyle.padding,
+          margin: computedStyle.margin,
+          textAlign: computedStyle.textAlign,
+          fontSize: computedStyle.fontSize,
+          fontWeight: computedStyle.fontWeight,
+          border: computedStyle.border,
+        };
+
+        Object.entries(safeProps).forEach(([prop, value]) => {
+          if (value && value !== 'normal' && value !== '0px' && !value.includes('oklch')) {
+            el.style[prop] = value;
+          }
+        });
+
+        Array.from(el.children).forEach(child => applyBasicStyles(child));
+      };
+
+      applyBasicStyles(clonedElement);
+
+      // Disable all stylesheets temporarily
+      const disabledSheets = [];
+      Array.from(document.styleSheets).forEach(sheet => {
+        try {
+          if (sheet.disabled === false) {
+            disabledSheets.push(sheet);
+            sheet.disabled = true;
+          }
+        } catch (e) {
+          // Some stylesheets can't be disabled due to CORS
+        }
+      });
+
+      // Capture the element
+      const canvas = await window.html2canvas(clonedElement, {
         scale: 2,
         useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        allowTaint: true,
+        removeContainer: false,
       });
+
+      // Re-enable stylesheets
+      disabledSheets.forEach(sheet => {
+        sheet.disabled = false;
+      });
+
+      // Remove temporary container and style override
+      document.body.removeChild(tempContainer);
+      document.head.removeChild(styleOverride);
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
@@ -58,10 +159,8 @@ export default function PrintModalContent({ shipment, onClose }) {
 
       // Check if content fits on a single page
       if (pdfHeight < pdf.internal.pageSize.getHeight()) {
-        // If content fits, add as a single image
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       } else {
-        // If content is longer than one page, split into multiple pages
         let heightLeft = pdfHeight;
         let position = 0;
         const pageHeight = pdf.internal.pageSize.getHeight();
@@ -81,6 +180,7 @@ export default function PrintModalContent({ shipment, onClose }) {
 
     } catch (error) {
       console.error("Failed to generate PDF:", error);
+      alert('Failed to generate PDF. Please try again.');
     } finally {
       setIsDownloading(false);
     }
