@@ -35,7 +35,7 @@ export default function SMSBalance() {
           <div>
             <p className="text-blue-100 text-sm">Current Balance</p>
             <p className="text-3xl font-bold">
-              {isLoading ? 'Loading...' : data?.balance || '0'}
+              {isLoading ? 'Loading...' : (data?.balance?.total_balance ? data.balance.total_balance.toLocaleString() : '0')}
             </p>
             {data?.currency && <p className="text-blue-100 text-sm">{data.currency}</p>}
           </div>
@@ -50,18 +50,24 @@ export default function SMSBalance() {
         </button>
       </div>
 
-      {data?.data && (
-        <div className="mt-4 pt-4 border-t border-blue-400 grid grid-cols-2 gap-4 text-sm">
-          {data.data.phoneNumber && (
+      {data?.balance && (
+        <div className="mt-4 pt-4 border-t border-blue-400 grid grid-cols-3 gap-4 text-xs">
+          {data.balance.universal_wallet && (
             <div>
-              <span className="text-blue-100">Account Phone:</span>
-              <p className="font-medium">{data.data.phoneNumber}</p>
+              <span className="text-blue-100 block mb-1">Universal Wallet</span>
+              <p className="font-medium">{parseFloat(data.balance.universal_wallet).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
             </div>
           )}
-          {data.data.accountStatus && (
+          {data.balance.sms_bonus && (
             <div>
-              <span className="text-blue-100">Status:</span>
-              <p className="font-medium capitalize">{data.data.accountStatus}</p>
+              <span className="text-blue-100 block mb-1">SMS Bonus</span>
+              <p className="font-medium">{parseFloat(data.balance.sms_bonus).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
+            </div>
+          )}
+          {data.balance.sms_wallet && (
+            <div>
+              <span className="text-blue-100 block mb-1">SMS Wallet</span>
+              <p className="font-medium">{parseFloat(data.balance.sms_wallet).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
             </div>
           )}
         </div>

@@ -30,7 +30,7 @@ export default function SMSDashboard() {
             <div className='hidden lg:block w-[20%]'>
             <DashMenu />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-6 overflow-x-hidden">
             {/* Header */}
             <div className="bg-white rounded-lg shadow p-6 flex items-center space-x-4">
                 <MessageSquare className="w-12 h-12 text-blue-600" />
@@ -77,6 +77,8 @@ export default function SMSDashboard() {
                         </p>
                     </div>
 
+                    <SMSBalance />
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="bg-gray-50 rounded-lg p-4">
                         <h4 className="font-semibold mb-3">Quick Actions</h4>
@@ -122,8 +124,6 @@ export default function SMSDashboard() {
                         </ul>
                         </div>
                     </div>
-
-                    <SMSBalance />
                     </div>
                 )}
 
