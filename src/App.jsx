@@ -57,6 +57,12 @@ import ManageFacility from "./app/account/ManageFacility"
 import ManageShipmentStatus from "./app/account/ManageShipmentStatus"
 import ManageHeroSlides from "./app/account/ManageHeroSlides"
 import ManageOurServices from "./app/account/ManageOurServices"
+import SendTestSMS from "./components/SendTestSMS"
+import SMSBalance from "./components/SMSBalance"
+import SMSDashboard from "./components/SMSDashboard"
+import SMSLogs from "./components/SMSLogs"
+import SMSSettings from "./components/SMSSettings"
+import SMSStatistics from "./components/SMSStatistics"
 
 function App() {
 
@@ -121,6 +127,13 @@ function App() {
           <Route path="/app/account/manage-shipment-status" element={<ManageShipmentStatus />} />
           <Route path="/app/account/manage-hero-slides" element={<ManageHeroSlides />} />
           <Route path="/app/account/manage-our-services" element={<ManageOurServices />} />
+          {/* SMS Components */}
+          <Route path="/app/account/send-test-sms" element={<SendTestSMS />} />
+          <Route path="/app/account/sms-balance" element={<SMSBalance />} />
+          <Route path="/app/account/sms-dashboard" element={<SMSDashboard />} />
+          <Route path="/app/account/sms-logs" element={<SMSLogs />} />
+          <Route path="/app/account/sms-settings" element={<SMSSettings />} />
+          <Route path="/app/account/sms-statistics" element={<SMSStatistics />} />
         </Routes>
       </ProfileProvider>
     </>

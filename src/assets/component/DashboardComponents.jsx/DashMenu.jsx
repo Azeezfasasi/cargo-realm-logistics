@@ -47,9 +47,10 @@ function DashMenu() {
     '/app/account/addnewuser': { key: '9-2', parent: '9' },
     '/app/account/changeuserpassword': { key: '9-3', parent: '9' },
     '/app/account/profile': { key: '10', parent: null },
-    '/app/account/manage-message-slides': { key: '11-1', parent: '11' },
-    '/app/account/manage-hero-slides': { key: '11-2', parent: '11' },
-    '/app/account/manage-our-services': { key: '11-3', parent: '11' },
+    '/app/account/send-test-sms': { key: '11', parent: null },
+    '/app/account/manage-message-slides': { key: '12-1', parent: '11' },
+    '/app/account/manage-hero-slides': { key: '12-2', parent: '11' },
+    '/app/account/manage-our-services': { key: '12-3', parent: '11' },
   };
 
     // Normalize pathname to handle trailing slashes and query params
@@ -159,10 +160,15 @@ function DashMenu() {
                     </Nav.Item>
                     )}
                     {(isAdmin || isEmployee) && (
-                    <Nav.Menu eventKey="11" title="Settings" icon={<GearIcon />}>
-                        <Nav.Item eventKey="11-1" as={Link} to="/app/account/manage-message-slides">Manage Message Slides</Nav.Item>
-                        <Nav.Item eventKey="11-2" as={Link} to="/app/account/manage-hero-slides">Manage Hero Slides</Nav.Item>
-                        <Nav.Item eventKey="11-3" as={Link} to="/app/account/manage-our-services">Manage Our Services</Nav.Item>
+                    <Nav.Item eventKey="11" icon={<UserInfoIcon />} as={Link} to="/app/account/sms-dashboard">
+                        SMS Dashboard
+                    </Nav.Item>
+                    )}
+                    {(isAdmin || isEmployee) && (
+                    <Nav.Menu eventKey="12" title="Settings" icon={<GearIcon />}>
+                        <Nav.Item eventKey="12-1" as={Link} to="/app/account/manage-message-slides">Manage Message Slides</Nav.Item>
+                        <Nav.Item eventKey="12-2" as={Link} to="/app/account/manage-hero-slides">Manage Hero Slides</Nav.Item>
+                        <Nav.Item eventKey="12-3" as={Link} to="/app/account/manage-our-services">Manage Our Services</Nav.Item>
                     </Nav.Menu>
                     )}
                     {(isAdmin || isAgent || isEmployee || isClient) && (
