@@ -2,8 +2,8 @@ import React from 'react';
 import { Wallet, RefreshCw, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/Api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export default function SMSBalance() {
   const token = localStorage.getItem('token');

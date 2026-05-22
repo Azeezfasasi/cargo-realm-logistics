@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config/Api';
 
 export default function SMSStatistics() {
   const [dateRange, setDateRange] = useState({
