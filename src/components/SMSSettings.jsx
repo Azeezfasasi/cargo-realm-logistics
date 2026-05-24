@@ -82,7 +82,7 @@ export default function SMSSettings() {
       <form onSubmit={handleSubmit} className="p-6 space-y-8">
         {/* Global Settings */}
         <section>
-          <h4 className="font-semibold mb-4 text-blue-600">Global Settings</h4>
+          <h4 className="font-semibold mb-4 text-green-600">Global Settings</h4>
           <div className="space-y-4">
             <label className="flex items-center space-x-3">
               <input
@@ -90,7 +90,7 @@ export default function SMSSettings() {
                 name="enabled"
                 checked={formData.enabled}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">Enable SMS Notifications</span>
             </label>
@@ -101,7 +101,7 @@ export default function SMSSettings() {
                 name="logAllSMS"
                 checked={formData.logAllSMS}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">Log All SMS Activity</span>
             </label>
@@ -147,7 +147,7 @@ export default function SMSSettings() {
 
         {/* Event-based Settings */}
         <section>
-          <h4 className="font-semibold mb-4 text-blue-600">Event-Based Notifications</h4>
+          <h4 className="font-semibold mb-4 text-green-600">Event-Based Notifications</h4>
           <div className="space-y-3 grid grid-cols-2 gap-4">
             <label className="flex items-center space-x-3">
               <input
@@ -155,7 +155,7 @@ export default function SMSSettings() {
                 name="sendOnCreation"
                 checked={formData.sendOnCreation}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">On Shipment Creation</span>
             </label>
@@ -166,7 +166,7 @@ export default function SMSSettings() {
                 name="sendOnStatusUpdate"
                 checked={formData.sendOnStatusUpdate}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">On Status Update</span>
             </label>
@@ -177,7 +177,7 @@ export default function SMSSettings() {
                 name="sendOnDelivery"
                 checked={formData.sendOnDelivery}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">On Delivery</span>
             </label>
@@ -188,7 +188,7 @@ export default function SMSSettings() {
                 name="sendOnCancellation"
                 checked={formData.sendOnCancellation}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">On Cancellation</span>
             </label>
@@ -199,7 +199,7 @@ export default function SMSSettings() {
                 name="sendOnException"
                 checked={formData.sendOnException}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">On Exception/Issue</span>
             </label>
@@ -208,7 +208,7 @@ export default function SMSSettings() {
 
         {/* Recipient Settings */}
         <section>
-          <h4 className="font-semibold mb-4 text-blue-600">Notification Recipients</h4>
+          <h4 className="font-semibold mb-4 text-green-600">Notification Recipients</h4>
           <div className="space-y-3">
             <label className="flex items-center space-x-3">
               <input
@@ -216,7 +216,7 @@ export default function SMSSettings() {
                 name="notifyBothPartiesOnCreation"
                 checked={formData.notifyBothPartiesOnCreation}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">Notify Both Sender & Receiver on Creation</span>
             </label>
@@ -227,7 +227,7 @@ export default function SMSSettings() {
                 name="notifySenderOnStatusChange"
                 checked={formData.notifySenderOnStatusChange}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">Notify Sender on Status Change</span>
             </label>
@@ -238,7 +238,7 @@ export default function SMSSettings() {
                 name="notifyRecipientOnStatusChange"
                 checked={formData.notifyRecipientOnStatusChange}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-green-600 rounded"
               />
               <span className="text-gray-700">Notify Recipient on Status Change</span>
             </label>
@@ -249,7 +249,7 @@ export default function SMSSettings() {
         <button
           type="submit"
           disabled={updateMutation.isPending}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center space-x-2"
+          className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400 flex items-center justify-center space-x-2"
         >
           <Save className="w-4 h-4" />
           <span>{updateMutation.isPending ? 'Saving...' : 'Save Settings'}</span>

@@ -150,7 +150,7 @@ export default function SMSLogs() {
                 <div className="flex gap-2 pt-2 border-t">
                   <button
                     onClick={() => setSelectedLog(log)}
-                    className="flex-1 text-blue-600 hover:text-blue-800 py-1 text-xs font-medium"
+                    className="flex-1 text-green-600 hover:text-green-800 py-1 text-xs font-medium"
                   >
                     View
                   </button>
@@ -211,7 +211,7 @@ export default function SMSLogs() {
                       <div className="flex space-x-2 justify-center">
                         <button
                           onClick={() => setSelectedLog(log)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-green-600 hover:text-green-800"
                           title="View details"
                         >
                           <Eye className="w-4 h-4" />
@@ -307,7 +307,7 @@ export default function SMSLogs() {
             </div>
             <button
               onClick={() => setSelectedLog(null)}
-              className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm md:text-base"
+              className="w-full mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm md:text-base"
             >
               Close
             </button>

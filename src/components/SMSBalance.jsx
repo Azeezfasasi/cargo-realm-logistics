@@ -45,7 +45,7 @@ export default function SMSBalance() {
   
   return (
     <div className={`rounded-lg shadow p-6 text-white ${
-      error ? 'bg-red-600' : isCached ? 'bg-amber-600' : 'bg-gradient-to-r from-blue-600 to-blue-700'
+      error ? 'bg-red-600' : isCached ? 'bg-amber-600' : 'bg-gradient-to-r from-green-600 to-green-700'
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -55,14 +55,14 @@ export default function SMSBalance() {
             <Wallet className="w-12 h-12 opacity-80" />
           )}
           <div>
-            <p className={`text-sm ${error ? 'text-red-100' : isCached ? 'text-amber-100' : 'text-blue-100'}`}>
+            <p className={`text-sm ${error ? 'text-red-100' : isCached ? 'text-amber-100' : 'text-green-100'}`}>
               {error ? 'Balance - Error' : isCached ? 'Balance - Cached' : 'Current Balance'}
             </p>
             <p className="text-3xl font-bold">
               {isLoading && !data ? 'Loading...' : displayBalance.toLocaleString()}
             </p>
             {data?.currency && !error && (
-              <p className={`text-sm ${isCached ? 'text-amber-100' : 'text-blue-100'}`}>
+              <p className={`text-sm ${isCached ? 'text-amber-100' : 'text-green-100'}`}>
                 {data.currency}
                 {isCached && ` (${Math.floor((Date.now() - data.cacheAge) / 60000)}m old)`}
               </p>
@@ -90,19 +90,19 @@ export default function SMSBalance() {
         <div className="mt-4 pt-4 border-t border-opacity-30 grid grid-cols-3 gap-4 text-xs">
           {data.balance.universal_wallet && (
             <div>
-              <span className={`block mb-1 ${isCached ? 'text-amber-100' : 'text-blue-100'}`}>Universal Wallet</span>
+              <span className={`block mb-1 ${isCached ? 'text-amber-100' : 'text-green-100'}`}>Universal Wallet</span>
               <p className="font-medium">{parseFloat(data.balance.universal_wallet).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
             </div>
           )}
           {data.balance.sms_bonus && (
             <div>
-              <span className={`block mb-1 ${isCached ? 'text-amber-100' : 'text-blue-100'}`}>SMS Bonus</span>
+              <span className={`block mb-1 ${isCached ? 'text-amber-100' : 'text-green-100'}`}>SMS Bonus</span>
               <p className="font-medium">{parseFloat(data.balance.sms_bonus).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
             </div>
           )}
           {data.balance.sms_wallet && (
             <div>
-              <span className={`block mb-1 ${isCached ? 'text-amber-100' : 'text-blue-100'}`}>SMS Wallet</span>
+              <span className={`block mb-1 ${isCached ? 'text-amber-100' : 'text-green-100'}`}>SMS Wallet</span>
               <p className="font-medium">{parseFloat(data.balance.sms_wallet).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
             </div>
           )}

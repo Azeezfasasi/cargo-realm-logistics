@@ -61,7 +61,7 @@ export default function SendTestSMS() {
             value={formData.phoneNumber}
             onChange={handleChange}
             placeholder="+2348012345678"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-transparent"
             maxLength="20"
           />
           <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +234)</p>
@@ -76,7 +76,7 @@ export default function SendTestSMS() {
             placeholder="Enter your test message"
             rows="4"
             maxLength="480"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
           <div className="mt-2 flex justify-between text-xs text-gray-500">
             <span>{charCount}/480 characters</span>
@@ -87,7 +87,7 @@ export default function SendTestSMS() {
         <button
           type="submit"
           disabled={sendTestMutation.isPending}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center space-x-2"
+          className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400 flex items-center justify-center space-x-2"
         >
           <Send className="w-4 h-4" />
           <span>{sendTestMutation.isPending ? 'Sending...' : 'Send Test SMS'}</span>
