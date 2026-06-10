@@ -23,6 +23,7 @@ export default function DeliveredShipmentsMain({ token }) {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [facilities, setFacilities] = useState([]);
 
   const getTimestamp = (item) => {
     return new Date(
@@ -34,6 +35,26 @@ export default function DeliveredShipmentsMain({ token }) {
       0 // default if none found
     );
   };
+
+  // Fetch facilities and statuses on mount
+  useEffect(() => {
+    const fetchFacilitiesAndStatuses = async () => {
+      try {
+        const facilitiesRes = await axios.get(`${API_BASE_URL}/facilities`);
+        
+        // Transform facilities for display
+        const facilityList = facilitiesRes.data.map(f => ({
+          name: f.name,
+          count: 0 // Will be calculated from shipments
+        }));
+        setFacilities(facilityList);
+      } catch (err) {
+        console.error('Error fetching facilities:', err);
+      }
+    };
+    
+    fetchFacilitiesAndStatuses();
+  }, []);
 
   // Centralized filter application (pure function - no hook deps)
   const applyFilters = ({ shipmentsList, status, facility, term } = {}) => {
@@ -86,39 +107,65 @@ export default function DeliveredShipmentsMain({ token }) {
   }, [fetchShipments]);
 
   // compute facility counts from shipments
-  const facilities = React.useMemo(() => {
-    const map = {};
+  // const facilities = React.useMemo(() => {
+  //   const map = {};
+  //   shipments.forEach((s) => {
+  //     const raw = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
+  //     const name = raw.trim();
+  //     if (!name) return;
+  //     map[name] = (map[name] || 0) + 1;
+  //   });
+  //   // turn into array, preserving some static ordering for known facilities
+  //   const knownOrder = [
+  //     'Atlanta','Indianapolis','New York','New jersey','Maryland','Dallas','Houston','United States of America','Canada','Ontario','Calgary','Edmonton','United Kingdom'
+  //   ];
+  //   const result = [];
+  //   knownOrder.forEach((k) => {
+  //     if (map[k]) result.push({ name: k, count: map[k] });
+  //   });
+  //   // add any other facilities discovered
+  //   Object.keys(map).forEach((k) => {
+  //     if (!knownOrder.includes(k)) result.push({ name: k, count: map[k] });
+  //   });
+  //   return result;
+  // }, [shipments]);
+
+  // const handleSearch = (searchTerm) => {
+  //   setSearchQuery(searchTerm);
+  //   const applied = applyFilters({ term: searchTerm });
+  //   setFilteredShipments(applied);
+  // };
+  
+  // Compute facility counts from shipments
+  useEffect(() => {
+    if (facilities.length === 0) return;
+    
+    const facilityCounts = {};
     shipments.forEach((s) => {
       const raw = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
       const name = raw.trim();
       if (!name) return;
-      map[name] = (map[name] || 0) + 1;
+      facilityCounts[name] = (facilityCounts[name] || 0) + 1;
     });
-    // turn into array, preserving some static ordering for known facilities
-    const knownOrder = [
-      'Atlanta','Indianapolis','New York','New jersey','Maryland','Dallas','Houston','United States of America','Canada','Ontario','Calgary','Edmonton','United Kingdom'
-    ];
-    const result = [];
-    knownOrder.forEach((k) => {
-      if (map[k]) result.push({ name: k, count: map[k] });
-    });
-    // add any other facilities discovered
-    Object.keys(map).forEach((k) => {
-      if (!knownOrder.includes(k)) result.push({ name: k, count: map[k] });
-    });
-    return result;
+    // Create list with counts
+    const facilityList = facilities.map(f => ({
+      ...f,
+      count: facilityCounts[f.name] || 0
+    }));
+    setFacilities(facilityList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shipments]);
-
-  const handleSearch = (searchTerm) => {
-    setSearchQuery(searchTerm);
-    const applied = applyFilters({ term: searchTerm });
-    setFilteredShipments(applied);
-  };
 
 
   const handleFilter = (status) => {
     setSelectedStatus(status);
     const applied = applyFilters({ status });
+    setFilteredShipments(applied);
+  };
+
+  const handleSearch = (searchTerm) => {
+    setSearchQuery(searchTerm);
+    const applied = applyFilters({ term: searchTerm });
     setFilteredShipments(applied);
   };
 
@@ -249,6 +296,7 @@ export default function DeliveredShipmentsMain({ token }) {
                 shipment={selectedShipment}
                 onClose={closeModal}
                 onUpdate={fetchShipments}
+                facilities={facilities}
                 onSave={async (updatedShipment) => {
                 try {
                     await axios.put(`${API_BASE_URL}/shipments/${updatedShipment._id}`, updatedShipment, {

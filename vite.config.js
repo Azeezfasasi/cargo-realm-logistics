@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { BACKEND_URL } from './src/config/Api'
+// import { BACKEND_URL } from './src/config/Api'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: BACKEND_URL, // ✅ your backend URL
+        target: 'http://localhost:5000', // Development backend
         changeOrigin: true,
         secure: false,
       },
