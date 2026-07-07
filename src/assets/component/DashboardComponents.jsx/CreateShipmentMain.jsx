@@ -358,7 +358,7 @@ export default function CreateShipmentForm({ token }) {
                     {filteredUsers && filteredUsers.length > 0 ? (
                       filteredUsers.map((user) => (
                         <option key={user._id} value={user._id}>
-                          {user.name} ({user.email || user.phoneNumber || 'No email'})
+                          {user.name} - ({user.email}) - ({user.phoneNumber || 'No phone'})
                         </option>
                       ))
                     ) : (
