@@ -46,6 +46,7 @@ export default function CreateShipmentForm({ token }) {
   const [newItem, setNewItem] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [senderMode, setSenderMode] = useState('select'); // 'select' or 'email'
+  const [senderSearch, setSenderSearch] = useState('');
 
   // Fetch users for the sender dropdown (for auto-lookup)
   const {
@@ -169,7 +170,31 @@ export default function CreateShipmentForm({ token }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle sender email change and auto-lookup user
+  const handleSenderSelect = (e) => {
+    const selectedId = e.target.value;
+    const selectedUser = users?.find((user) => user._id === selectedId);
+
+    if (selectedUser) {
+      setForm((prev) => ({
+        ...prev,
+        sender: selectedId,
+        senderName: selectedUser.fullName || '',
+        senderPhone: selectedUser.phone || '',
+        senderEmail: selectedUser.email || '',
+        senderAddress: selectedUser.address || '',
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        sender: '',
+        senderName: '',
+        senderPhone: '',
+        senderEmail: '',
+        senderAddress: '',
+      }));
+    }
+  };
+
   const handleSenderEmailChange = (e) => {
     const email = e.target.value;
     setForm((prev) => ({ ...prev, senderEmail: email }));
@@ -231,6 +256,17 @@ export default function CreateShipmentForm({ token }) {
     
     mutation.mutate(sanitizedForm);
   };
+
+  const filteredUsers = senderSearch.trim().length > 0
+    ? users?.filter((user) => {
+      const searchValue = senderSearch.toLowerCase();
+      return (
+        user.fullName?.toLowerCase().includes(searchValue) ||
+        user.email?.toLowerCase().includes(searchValue) ||
+        user.phone?.toLowerCase().includes(searchValue)
+      );
+    })
+    : users;
 
   return (
      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -304,20 +340,32 @@ export default function CreateShipmentForm({ token }) {
               {/* Select Existing User Mode */}
               {senderMode === 'select' && (
                 <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg mb-6 animate-fadeIn">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Search sender</label>
+                  <input
+                    type="text"
+                    value={senderSearch}
+                    onChange={(e) => setSenderSearch(e.target.value)}
+                    placeholder="Search by name or email"
+                    className="w-full border-2 border-green-300 rounded-lg p-3 mb-4 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-300 transition text-gray-700 placeholder-gray-400"
+                  />
                   <select
                     name="sender"
                     value={form.sender}
-                    onChange={handleChange}
+                    onChange={handleSenderSelect}
                     className="w-full border-2 border-green-300 rounded-lg p-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-300 transition text-gray-700 font-medium"
                   >
                     <option value="">Select a user from the system</option>
-                    {users && users.map((user) => (
-                      <option key={user._id} value={user._id}>
-                        {user.fullName} ({user.email})
-                      </option>
-                    ))}
+                    {filteredUsers && filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <option key={user._id} value={user._id}>
+                          {user.name} ({user.email})
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>No matching users found</option>
+                    )}
                   </select>
-                  <p className="text-xs text-green-700 mt-3 font-medium">💡 Choose an existing user to assign as the sender.</p>
+                  <p className="text-xs text-green-700 mt-3 font-medium">💡 Type to narrow the list and choose an existing user.</p>
                 </div>
               )}
 
