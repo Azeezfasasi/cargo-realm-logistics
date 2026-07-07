@@ -178,10 +178,10 @@ export default function CreateShipmentForm({ token }) {
       setForm((prev) => ({
         ...prev,
         sender: selectedId,
-        senderName: selectedUser.fullName || '',
-        senderPhone: selectedUser.phone || '',
+        senderName: selectedUser.name || '',
+        senderPhone: selectedUser.phoneNumber || '',
         senderEmail: selectedUser.email || '',
-        senderAddress: selectedUser.address || '',
+        senderAddress: selectedUser.homeAddress || '',
       }));
     } else {
       setForm((prev) => ({
@@ -206,9 +206,9 @@ export default function CreateShipmentForm({ token }) {
         setForm((prev) => ({
           ...prev,
           sender: matchedUser._id,
-          senderName: matchedUser.fullName || '',
-          senderPhone: matchedUser.phone || '',
-          senderAddress: matchedUser.address || '',
+          senderName: matchedUser.name || '',
+          senderPhone: matchedUser.phoneNumber || '',
+          senderAddress: matchedUser.homeAddress || '',
         }));
       } else {
         // Clear sender if email doesn't match any user
@@ -261,9 +261,9 @@ export default function CreateShipmentForm({ token }) {
     ? users?.filter((user) => {
       const searchValue = senderSearch.toLowerCase();
       return (
-        user.fullName?.toLowerCase().includes(searchValue) ||
+        user.name?.toLowerCase().includes(searchValue) ||
         user.email?.toLowerCase().includes(searchValue) ||
-        user.phone?.toLowerCase().includes(searchValue)
+        user.phoneNumber?.toLowerCase().includes(searchValue)
       );
     })
     : users;
@@ -358,7 +358,7 @@ export default function CreateShipmentForm({ token }) {
                     {filteredUsers && filteredUsers.length > 0 ? (
                       filteredUsers.map((user) => (
                         <option key={user._id} value={user._id}>
-                          {user.name} ({user.email})
+                          {user.name} ({user.email || user.phoneNumber || 'No email'})
                         </option>
                       ))
                     ) : (
