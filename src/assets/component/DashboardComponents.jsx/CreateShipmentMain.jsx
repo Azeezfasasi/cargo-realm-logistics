@@ -345,7 +345,7 @@ export default function CreateShipmentForm({ token }) {
                     type="search"
                     value={senderSearch}
                     onChange={(e) => setSenderSearch(e.target.value)}
-                    placeholder="Search by name or email"
+                    placeholder="Search by name, email or phone number"
                     className="w-full border-2 border-green-300 rounded-lg p-3 mb-4 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-300 transition text-gray-700 placeholder-gray-400"
                   />
                   <select
