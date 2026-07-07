@@ -342,7 +342,7 @@ export default function CreateShipmentForm({ token }) {
                 <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg mb-6 animate-fadeIn">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Search sender</label>
                   <input
-                    type="text"
+                    type="search"
                     value={senderSearch}
                     onChange={(e) => setSenderSearch(e.target.value)}
                     placeholder="Search by name or email"
