@@ -1,308 +1,188 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, UserPlus, Loader2, Wand2, Check, ShieldAlert, Mail, ShieldCheck } from 'lucide-react';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
-import { Link, useNavigate } from 'react-router-dom';
+import PasswordField from './PasswordField';
+import { ROLES, STAFF_ROLES, assignableRoles, generatePassword } from './userUtils';
+
+const input = 'h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20';
+const EMPTY = { name: '', email: '', password: '', role: 'client', gender: '', phoneNumber: '', homeAddress: '', country: '', state: '' };
 
 function AddNewUserMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
   const navigate = useNavigate();
-
-   // Determine if the user has permission to manage events
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
   const hasPermission = isAuthenticated && (isAdmin || isEmployee);
+  const [form, setForm] = useState(EMPTY);
+  const [error, setError] = useState('');
+  const set = (k) => (v) => setForm((f) => ({ ...f, [k]: typeof v === 'object' && v?.target ? v.target.value : v }));
+  const roles = assignableRoles(isAdmin);
 
-  // State for form fields
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('client'); // Default role
-  const [gender, setGender] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [homeAddress, setHomeAddress] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
-
-  const [localError, setLocalError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  // Clear messages when form fields change
-  useEffect(() => {
-    setLocalError('');
-    setSuccessMessage('');
-  }, [name, email, password, role, gender, phoneNumber, homeAddress, country, state]);
-
-  // Mutation for adding a new user (using the existing register endpoint)
-  const addUserMutation = useMutation({
-    mutationFn: async (newUserData) => {
-      // Note: Your backend's /register endpoint is currently public.
-      // For a truly admin-only user creation, consider a new backend route
-      // protected by authorizeRole(['admin']).
-      const response = await axios.post(`${API_BASE_URL}/profile/register`, newUserData);
-      return response.data;
-    },
-    onSuccess: () => {
-      setSuccessMessage('User added successfully!');
-      setLocalError(''); // Clear any previous errors
-      // Invalidate the 'allUsers' query to refetch the list in ManageUsers
+  const addUser = useMutation({
+    mutationFn: async (data) => (await axios.post(`${API_BASE_URL}/profile/register`, data)).data,
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-
-      // Clear form fields
-      setName('');
-      setEmail('');
-      setPassword('');
-      setRole('client');
-      setGender('');
-      setPhoneNumber('');
-      setHomeAddress('');
-      setCountry('');
-      setState('');
-
-      // Optional: Redirect to the manage users page after a short delay
-      setTimeout(() => {
-        navigate('/app/account/allusers');
-      }, 2000);
+      toast.success(`${data?.user?.name || 'User'} added as ${ROLES[data?.user?.role]?.label || 'client'}`);
+      navigate('/app/account/allusers');
     },
-    onError: (err) => {
-      const errorMessage = err.response?.data?.message || 'Failed to add user. Please try again.';
-      setLocalError(errorMessage);
-      setSuccessMessage(''); // Clear success message on error
-    },
+    onError: (err) => setError(err?.response?.data?.message || 'Failed to add user. Please try again.'),
   });
 
-  const handleSubmit = (e) => {
+  const submit = (e) => {
     e.preventDefault();
-    setLocalError(''); // Clear previous local errors
-    setSuccessMessage(''); // Clear previous success messages
-
-    // Client-side validation
-    if (!name.trim() || !email.trim() || !password.trim() || !role.trim()) {
-      setLocalError('Please fill in all required fields (Name, Email, Password, Role).');
-      return;
-    }
-    if (password.length < 6) {
-        setLocalError('Password must be at least 6 characters long.');
-        return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-        setLocalError('Please enter a valid email address.');
-        return;
-    }
-
-    // Trigger the mutation
-    addUserMutation.mutate({
-      name,
-      email,
-      password,
-      role,
-      gender: gender || undefined, // Send undefined if empty to avoid empty string in DB if schema allows
-      phoneNumber: phoneNumber || undefined,
-      homeAddress: homeAddress || undefined,
-      country: country || undefined,
-      state: state || undefined,
-    });
+    setError('');
+    if (!form.name.trim() || !form.email.trim() || !form.password) return setError('Name, email and password are required.');
+    if (!/\S+@\S+\.\S+/.test(form.email)) return setError('Please enter a valid email address.');
+    if (form.password.length < 6) return setError('Password must be at least 6 characters.');
+    const payload = Object.fromEntries(Object.entries({ ...form, name: form.name.trim(), email: form.email.trim() }).filter(([, v]) => v !== ''));
+    addUser.mutate(payload);
   };
 
-  // Render loading state for authentication check
-  if (authLoading) {
-    return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center">
-        <div className="text-center text-lg text-gray-700 flex items-center">
-          <svg className="animate-spin h-6 w-6 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Checking permissions...
-        </div>
-      </section>
-    );
-  }
-
-  // Check if user is authenticated and is an admin
+  if (authLoading) return <div className="p-4 lg:p-6"><div className="h-96 animate-pulse rounded-2xl bg-gray-100" /></div>;
   if (!hasPermission) {
     return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center">
-        <div className="text-center text-lg text-red-600">
-          Access Denied. You must be logged in as an Administrator to add new users.
-          <div className="mt-4">
-            <Link to="/login" className="text-blue-600 hover:underline">Go to Login</Link>
-          </div>
+      <div className="flex min-h-[60vh] items-center justify-center p-4">
+        <div className="max-w-sm rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500"><ShieldAlert size={22} /></span>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">Access restricted</h2>
+          <p className="mt-1 text-sm text-gray-500">Only administrators and employees can add users.</p>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-100 font-inter min-h-screen flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Add New User
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {localError && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative" role="alert">
-              <span className="block sm:inline">{localError}</span>
-            </div>
-          )}
-          {successMessage && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md relative" role="alert">
-              <span className="block sm:inline">{successMessage}</span>
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="john.doe@example.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter a strong password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-              Role <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
-              required
-            >
-              <option value="">Choose Role</option>
-              <option value="admin">Admin</option>
-              <option value="employee">Employee</option>
-              <option value="client">Client</option>
-              <option value="agent">Agent</option>
-            </select>
-          </div>
-
-          {/* Optional fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
-                Gender
-              </label>
-              <select name="gender" id="gender" onChange={(e) => setGender(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                id="phoneNumber"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="080******"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="homeAddress" className="block text-sm font-medium text-gray-700 mb-1">
-              Home Address
-            </label>
-            <input
-              type="text"
-              id="homeAddress"
-              value={homeAddress}
-              onChange={(e) => setHomeAddress(e.target.value)}
-              placeholder="123 Main St, City"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-                Country
-              </label>
-              <input
-                type="text"
-                id="country"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                placeholder="E.g. Nigeria"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-                State
-              </label>
-              <input
-                type="text"
-                id="state"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                placeholder="E.g. Lagos State"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            disabled={addUserMutation.isPending}
-          >
-            {addUserMutation.isPending ? (
-              <svg className="animate-spin h-5 w-5 text-white mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            ) : (
-              'Add User'
-            )}
-          </button>
-        </form>
+    <form onSubmit={submit} className="space-y-5 p-4 lg:p-6">
+      <div>
+        <Link to="/app/account/allusers" className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-800">
+          <ArrowLeft size={15} /> All users
+        </Link>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 lg:text-4xl">Add user</h1>
+        <p className="mt-1 text-sm text-gray-500">Create an account and choose what they can access.</p>
       </div>
-    </section>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        <div className="space-y-5 xl:col-span-2">
+          {/* Account */}
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900">Account</h2>
+            <p className="mb-4 text-xs text-gray-500">Used to sign in.</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-gray-600">Full name <span className="text-rose-500">*</span></span>
+                <input value={form.name} onChange={set('name')} className={input} autoComplete="off" placeholder="e.g. Adaeze Okafor" />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-gray-600">Email <span className="text-rose-500">*</span></span>
+                <input type="email" value={form.email} onChange={set('email')} className={input} autoComplete="off" placeholder="name@example.com" />
+              </label>
+              <div className="sm:col-span-2">
+                <PasswordField
+                  id="new-user-password"
+                  label={<>Password <span className="text-rose-500">*</span></>}
+                  value={form.password}
+                  onChange={set('password')}
+                  showStrength
+                  placeholder="At least 6 characters"
+                  action={
+                    <button type="button" onClick={() => set('password')(generatePassword())}
+                      className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-green-700 hover:text-green-800">
+                      <Wand2 size={13} /> Generate
+                    </button>
+                  }
+                />
+                <p className="mt-1.5 text-xs text-gray-500">Share it with them securely; they can change it later from My Profile.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Role */}
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900">Role</h2>
+            <p className="mb-4 text-xs text-gray-500">{isAdmin ? 'Controls what they can see and do.' : 'Employees can add clients and agents. Ask an admin for staff accounts.'}</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Role">
+              {roles.map((r) => {
+                const selected = form.role === r;
+                return (
+                  <button key={r} type="button" role="radio" aria-checked={selected} onClick={() => set('role')(r)}
+                    className={`relative flex cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-colors ${selected ? 'border-green-500 bg-green-50/60 ring-2 ring-green-500/20' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}>
+                    <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-green-600 bg-green-600 text-white' : 'border-gray-300'}`}>
+                      {selected && <Check size={12} strokeWidth={3} />}
+                    </span>
+                    <span>
+                      <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+                        {ROLES[r].label}{STAFF_ROLES.includes(r) && <ShieldCheck size={14} className="text-violet-600" />}
+                      </span>
+                      <span className="block text-xs text-gray-500">{ROLES[r].description}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Contact */}
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900">Contact &amp; location</h2>
+            <p className="mb-4 text-xs text-gray-500">Optional.</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-gray-600">Phone</span>
+                <input value={form.phoneNumber} onChange={set('phoneNumber')} className={input} placeholder="+234…" />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-gray-600">Gender</span>
+                <select value={form.gender} onChange={set('gender')} className={`${input} cursor-pointer`}>
+                  <option value="">Not specified</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </label>
+              <label className="block space-y-1.5 sm:col-span-2">
+                <span className="text-xs font-medium text-gray-600">Address</span>
+                <input value={form.homeAddress} onChange={set('homeAddress')} className={input} />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-gray-600">Country</span>
+                <input value={form.country} onChange={set('country')} className={input} />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-gray-600">State / Province</span>
+                <input value={form.state} onChange={set('state')} className={input} />
+              </label>
+            </div>
+          </section>
+        </div>
+
+        {/* Summary */}
+        <aside className="xl:col-span-1">
+          <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm xl:sticky xl:top-[85px]">
+            <h2 className="text-sm font-semibold text-gray-900">Summary</h2>
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-gray-500">Name</dt><dd className="truncate font-medium text-gray-900">{form.name || '—'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500">Email</dt><dd className="truncate font-medium text-gray-900">{form.email || '—'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500">Role</dt><dd>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${ROLES[form.role].badge}`}>{ROLES[form.role].label}</span>
+              </dd></div>
+            </dl>
+            <p className="flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-xs text-gray-600">
+              <Mail size={14} className="mt-0.5 shrink-0 text-gray-400" /> They&apos;ll get a welcome email at this address.
+            </p>
+            {error && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
+            <button type="submit" disabled={addUser.isPending}
+              className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-green-600 text-sm font-semibold text-white shadow-sm hover:bg-green-700 disabled:opacity-60">
+              {addUser.isPending ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+              {addUser.isPending ? 'Creating…' : 'Create user'}
+            </button>
+            <Link to="/app/account/allusers" className="block text-center text-sm font-medium text-gray-500 hover:text-gray-800">Cancel</Link>
+          </div>
+        </aside>
+      </div>
+    </form>
   );
 }
 
