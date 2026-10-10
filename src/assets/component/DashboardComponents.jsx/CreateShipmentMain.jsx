@@ -5,15 +5,11 @@ import { toast } from 'react-hot-toast';
 import { FaSpinner, FaTimesCircle, FaUser, FaBox, FaMapMarkerAlt, FaFileAlt, FaPhone, FaEnvelope, FaMapPin, FaPlus, FaTrash } from 'react-icons/fa'; 
 import { API_BASE_URL } from '../../../config/Api';
 
-const generateTrackingNumber = () => {
-  const rand = Math.floor(10000000000 + Math.random() * 90000000000);
-  return `CAR${rand}`;
-};
-
 export default function CreateShipmentForm({ token }) {
+  // Tracking numbers are assigned by the server when the shipment is saved
+  const [lastTrackingNumber, setLastTrackingNumber] = useState('');
   const [form, setForm] = useState({
-    trackingNumber: generateTrackingNumber(),
-    sender: '', 
+    sender: '',
     senderName: '',
     senderPhone: '',
     senderEmail: '',
@@ -84,43 +80,25 @@ export default function CreateShipmentForm({ token }) {
 
   const mutation = useMutation({
     mutationFn: async (shipmentData) => {
-      // Client-side retry for duplicate tracking numbers
-      const maxAttempts = 5;
-      let attempt = 0;
-      let lastError;
-      let payload = { ...shipmentData };
-      while (attempt < maxAttempts) {
-        try {
-          const res = await axios.post(`${API_BASE_URL}/shipments`, payload, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          return res.data;
-        } catch (err) {
-          lastError = err;
-          // If duplicate key on trackingNumber, regenerate and retry
-          const isDuplicate = err?.response?.data?.errmsg?.includes('duplicate key') || err?.response?.status === 409 || (err?.code === 11000 || err?.response?.data?.code === 11000);
-          if (isDuplicate) {
-            attempt += 1;
-            payload = { ...shipmentData, trackingNumber: generateTrackingNumber() };
-            console.warn(`Duplicate tracking number detected. Retrying with new tracking number (attempt ${attempt})`);
-            continue;
-          }
-          // Non-retryable error: rethrow
-          throw err;
-        }
-      }
-      // if we exit loop without success, throw last error
-      throw lastError;
+      const res = await axios.post(`${API_BASE_URL}/shipments`, shipmentData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       setSubmitting(false);
-      toast.success('Shipment created successfully');
+      setLastTrackingNumber(created?.trackingNumber || '');
+      toast.success(
+        created?.trackingNumber
+          ? `Shipment created — tracking number ${created.trackingNumber}`
+          : 'Shipment created successfully',
+        { duration: 8000 }
+      );
       setSenderMode('select'); // Reset to select mode
       setForm((prev) => ({
         ...prev,
-        trackingNumber: generateTrackingNumber(), // reset tracking number
         sender: '', // Reset sender selection
         senderName: '',
         senderPhone: '',
@@ -155,12 +133,7 @@ export default function CreateShipmentForm({ token }) {
     onError: (err) => {
       setSubmitting(false);
       const message = err?.response?.data?.message || err?.message || 'Error creating shipment';
-      // Show helpful guidance if duplicate-key exhausted
-      if (err?.response?.data?.errmsg?.includes('duplicate key') || err?.code === 11000) {
-        toast.error('Duplicate tracking number. Please try again or contact support.');
-      } else {
-        toast.error(message);
-      }
+      toast.error(message);
       console.error('Create shipment error (frontend):', err);
     },
   });
@@ -293,10 +266,16 @@ export default function CreateShipmentForm({ token }) {
             </label>
             <input
               type="text"
-              value={form.trackingNumber}
+              value=""
+              placeholder="Assigned automatically when you create the shipment"
               readOnly
-              className="w-full bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-lg p-3 text-gray-800 font-mono font-semibold focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-300 transition"
+              className="w-full bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-lg p-3 text-gray-800 font-mono font-semibold placeholder:font-sans placeholder:font-normal placeholder:text-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-300 transition"
             />
+            {lastTrackingNumber && (
+              <p className="mt-2 text-sm text-gray-600">
+                Last shipment created: <span className="font-mono font-semibold text-green-700">{lastTrackingNumber}</span>
+              </p>
+            )}
           </div>
 
           {/* Sender Information Section */}
