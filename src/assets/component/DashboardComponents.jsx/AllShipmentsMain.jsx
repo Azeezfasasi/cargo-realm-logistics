@@ -1,12 +1,15 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import axios from 'axios';
 import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
 import InProgressSummary from '../shipments/InProgressSummary';
-import { isDelivered, daysSince, STALE_AFTER_DAYS } from '../shipments/shipmentStatusStyles';
+import { isDelivered, daysSince, STALE_AFTER_DAYS, makeStatusCanonicalizer, makeStatusLabeler } from '../shipments/shipmentStatusStyles';
 import { Plus, RotateCw, AlertTriangle, X, CheckSquare } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useProfile } from '../../context-api/ProfileContext';
+
+// PDF generation is heavy, so it's only downloaded when an invoice/waybill is opened
+const ShipmentDocumentModal = lazy(() => import('../shipments/documents/ShipmentDocumentModal'));
 
 const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
 import EditShipmentModal from '../shipments/EditShipmentModal';
@@ -17,6 +20,7 @@ import { exportToExcel } from '../../utils/exportToExcel';
 import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
+import PaymentsModal from '../shipments/PaymentsModal';
 import { FaSpinner } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
@@ -102,11 +106,16 @@ export default function AllShipmentsMain({ token }) {
 
   const refreshShipments = () => fetchShipments({ background: true });
 
+  // Match statuses by code or name, whichever the shipment was saved with
+  const canonicalStatus = useMemo(() => makeStatusCanonicalizer(statuses), [statuses]);
+  const statusLabel = useMemo(() => makeStatusLabeler(statuses), [statuses]);
+
   // Filters run locally on the fetched list (no refetch per keystroke)
   const filteredShipments = useMemo(() => {
+    const wantedStatus = selectedStatus ? canonicalStatus(selectedStatus) : '';
     const q = searchQuery.trim().toLowerCase();
     return shipments.filter((s) => {
-      const matchesStatus = !selectedStatus || s.status === selectedStatus;
+      const matchesStatus = !wantedStatus || canonicalStatus(s.status) === wantedStatus;
       const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
       const matchesFacility = !selectedFacility || facilityName === selectedFacility;
       const matchesSearch = !q || [s.trackingNumber, s.senderName, s.recipientName, s.destination, s.status]
@@ -114,7 +123,7 @@ export default function AllShipmentsMain({ token }) {
       const matchesStale = !staleOnly || (!isDelivered(s.status) && daysSince(s.createdAt) > STALE_AFTER_DAYS);
       return matchesStatus && matchesFacility && matchesSearch && matchesStale;
     });
-  }, [shipments, searchQuery, selectedStatus, selectedFacility, staleOnly]);
+  }, [shipments, searchQuery, selectedStatus, selectedFacility, staleOnly, canonicalStatus]);
 
   // Facility dropdown shows how many open shipments each facility has
   const facilitiesWithCounts = useMemo(() => {
@@ -188,11 +197,12 @@ export default function AllShipmentsMain({ token }) {
     }
     };
 
-    const handleStatusChange = async ({ shipmentId, newStatus, location }) => {
+    const handleStatusChange = async ({ shipmentId, newStatus, location, proofOfDelivery }) => {
         try {
-            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { 
+            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, {
               status: newStatus,
-              location: location
+              location: location,
+              proofOfDelivery,
             }, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -370,8 +380,10 @@ export default function AllShipmentsMain({ token }) {
       {/* In-progress overview */}
       <InProgressSummary
         shipments={shipments}
-        selectedStatus={selectedStatus}
+        selectedStatus={selectedStatus ? canonicalStatus(selectedStatus) : ''}
         onStatusSelect={handleFilter}
+        canonicalStatus={canonicalStatus}
+        statusLabel={statusLabel}
         staleOnly={staleOnly}
         onToggleStale={() => setStaleOnly((v) => !v)}
       />
@@ -564,6 +576,26 @@ export default function AllShipmentsMain({ token }) {
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'print'} onClose={closeModal}>
             <PrintModal shipment={selectedShipment} onClose={closeModal} />
+        </BasicModal>
+        )}
+
+        {selectedShipment && modalType === 'payments' && (
+        <BasicModal isOpen onClose={closeModal}>
+            <PaymentsModal
+                shipment={selectedShipment}
+                token={token}
+                isAdmin={isAdmin}
+                onUpdated={(updated) => setShipments((prev) => prev.map((s) => (s._id === updated._id ? { ...s, ...updated } : s)))}
+                onClose={closeModal}
+            />
+        </BasicModal>
+        )}
+
+        {selectedShipment && (modalType === 'invoice' || modalType === 'waybill') && (
+        <BasicModal isOpen onClose={closeModal}>
+            <Suspense fallback={<div className="flex h-40 items-center justify-center"><FaSpinner className="animate-spin text-2xl text-green-600" /></div>}>
+                <ShipmentDocumentModal shipment={selectedShipment} type={modalType} onClose={closeModal} />
+            </Suspense>
         </BasicModal>
         )}
 

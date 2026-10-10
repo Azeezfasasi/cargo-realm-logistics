@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Pencil, Mail, Eye, Trash2, RefreshCcw } from 'lucide-react';
+import { Pencil, Mail, Eye, Trash2, RefreshCcw, Receipt, ScrollText, Wallet } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -51,6 +51,15 @@ export default function DeliveredShipmentTable({ shipments = [], onActionClick =
               <td className="p-3">{shipment.shipmentFacility || 'N/A'}</td>
               <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>
               <td className="p-3 space-x-1">
+                <Button size="icon" variant="ghost" title="Invoice" onClick={() => onActionClick(shipment, 'invoice')}>
+                  <Receipt size={16} />
+                </Button>
+                <Button size="icon" variant="ghost" title="Waybill" onClick={() => onActionClick(shipment, 'waybill')}>
+                  <ScrollText size={16} />
+                </Button>
+                <Button size="icon" variant="ghost" title="Payments" onClick={() => onActionClick(shipment, 'payments')}>
+                  <Wallet size={16} />
+                </Button>
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'edit')}>
                   <Pencil size={16} />
                 </Button>

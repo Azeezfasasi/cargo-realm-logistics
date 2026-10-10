@@ -28,7 +28,11 @@ function StatCard({ icon, label, value, hint, accent, onClick, active, to }) {
   return <div className={base}>{content}</div>;
 }
 
-export default function InProgressSummary({ shipments = [], selectedStatus, onStatusSelect, staleOnly, onToggleStale }) {
+export default function InProgressSummary({
+  shipments = [], selectedStatus, onStatusSelect, staleOnly, onToggleStale,
+  canonicalStatus = (s) => String(s || '').trim().toLowerCase(), // groups 'In Transit' with 'in-transit'
+  statusLabel = formatStatus,
+}) {
   const stats = useMemo(() => {
     const open = shipments.filter((s) => !isDelivered(s.status));
     const delivered = shipments.length - open.length;
@@ -38,7 +42,7 @@ export default function InProgressSummary({ shipments = [], selectedStatus, onSt
 
     const byStatus = {};
     open.forEach((s) => {
-      const key = String(s.status || 'unknown');
+      const key = canonicalStatus(s.status) || 'unknown';
       byStatus[key] = (byStatus[key] || 0) + 1;
     });
     const stages = Object.entries(byStatus)
@@ -46,7 +50,7 @@ export default function InProgressSummary({ shipments = [], selectedStatus, onSt
       .sort((a, b) => b.count - a.count);
 
     return { open: open.length, delivered, stale, oldest, stages };
-  }, [shipments]);
+  }, [shipments, canonicalStatus]);
 
   const total = shipments.length;
   const openPct = total ? Math.round((stats.open / total) * 100) : 0;
@@ -127,7 +131,7 @@ export default function InProgressSummary({ shipments = [], selectedStatus, onSt
             {stats.stages.map(({ status, count }) => (
               <div
                 key={status}
-                title={`${formatStatus(status)}: ${count}`}
+                title={`${statusLabel(status)}: ${count}`}
                 className={`${getStatusTone(status).dot} h-full transition-opacity ${
                   selectedStatus && selectedStatus !== status ? 'opacity-30' : ''
                 }`}
@@ -152,7 +156,7 @@ export default function InProgressSummary({ shipments = [], selectedStatus, onSt
                   }`}
                 >
                   <span className={`h-2 w-2 shrink-0 rounded-full ${tone.dot}`} />
-                  <span className="truncate">{formatStatus(status)}</span>
+                  <span className="truncate">{statusLabel(status)}</span>
                   <span className={`rounded-full px-1.5 tabular-nums ${active ? 'bg-white/20' : 'bg-gray-100 text-gray-600'}`}>
                     {count}
                   </span>

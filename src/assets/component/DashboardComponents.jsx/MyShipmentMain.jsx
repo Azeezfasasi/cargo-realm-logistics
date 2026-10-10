@@ -1,4 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, lazy, Suspense } from 'react';
+import { Receipt, ScrollText } from 'lucide-react';
+import BasicModal from '@/components/ui/BasicModal';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { LuSearch, LuChevronLeft, LuChevronRight, LuEye, LuX } from 'react-icons/lu';
 import { API_BASE_URL } from '@/config/Api';
@@ -8,6 +10,9 @@ import { FaSpinner } from 'react-icons/fa';
 
 // Configure a new QueryClient
 const queryClient = new QueryClient();
+
+// PDF generation is heavy, so it's only downloaded when an invoice/waybill is opened
+const ShipmentDocumentModal = lazy(() => import('../shipments/documents/ShipmentDocumentModal'));
 
 // The Modal component to display individual shipment details
 const ShipmentDetailsModal = ({ shipment, onClose }) => {
@@ -156,6 +161,7 @@ function MyShipmentsMain() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedShipment, setSelectedShipment] = useState(null);
+  const [documentRequest, setDocumentRequest] = useState(null); // { shipment, type: 'invoice' | 'waybill' }
   const shipmentsPerPage = 10;
   
   const fetchMyShipments = async () => {
@@ -349,6 +355,14 @@ function MyShipmentsMain() {
                         <LuEye className="w-4 h-4" />
                         View
                       </button>
+                      <button onClick={() => setDocumentRequest({ shipment, type: 'invoice' })} className="flex flex-row items-center gap-1 rounded-md border border-solid border-gray-300 bg-white p-1 text-gray-700 transition-colors hover:bg-gray-50 cursor-pointer">
+                        <Receipt className="w-4 h-4" />
+                        Invoice
+                      </button>
+                      <button onClick={() => setDocumentRequest({ shipment, type: 'waybill' })} className="flex flex-row items-center gap-1 rounded-md border border-solid border-gray-300 bg-white p-1 text-gray-700 transition-colors hover:bg-gray-50 cursor-pointer">
+                        <ScrollText className="w-4 h-4" />
+                        Waybill
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -368,6 +382,18 @@ function MyShipmentsMain() {
 
       {/* Render the modal when a shipment is selected */}
       <ShipmentDetailsModal shipment={selectedShipment} onClose={closeModal} />
+
+      {documentRequest && (
+        <BasicModal isOpen onClose={() => setDocumentRequest(null)}>
+          <Suspense fallback={<div className="flex h-40 items-center justify-center"><FaSpinner className="animate-spin text-2xl text-green-600" /></div>}>
+            <ShipmentDocumentModal
+              shipment={documentRequest.shipment}
+              type={documentRequest.type}
+              onClose={() => setDocumentRequest(null)}
+            />
+          </Suspense>
+        </BasicModal>
+      )}
     </div>
   );
 }

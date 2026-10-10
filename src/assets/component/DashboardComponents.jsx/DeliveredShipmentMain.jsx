@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import axios from 'axios';
 import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
@@ -10,10 +10,14 @@ import { exportToExcel } from '../../utils/exportToExcel';
 import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
+import PaymentsModal from '../shipments/PaymentsModal';
 import { FaSpinner } from 'react-icons/fa';
 import DeliveredShipmentTable from '../shipments/DeliveredShipmentTable';
 import { toast } from 'react-hot-toast';
 import { useProfile } from '../../context-api/ProfileContext';
+
+// PDF generation is heavy, so it's only downloaded when an invoice/waybill is opened
+const ShipmentDocumentModal = lazy(() => import('../shipments/documents/ShipmentDocumentModal'));
 
 const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
 
@@ -66,7 +70,7 @@ export default function DeliveredShipmentsMain({ token }) {
     const list = Array.isArray(shipmentsList) ? shipmentsList : [];
     const q = (term || '').toLowerCase();
     return list.filter((s) => {
-      const matchesStatus = !status || s.status === status;
+      const matchesStatus = !status || String(s.status || '').trim().toLowerCase() === String(status).trim().toLowerCase();
       const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
       const matchesFacility = !facility || facilityName === facility;
       const matchesSearch = !q || (
@@ -224,11 +228,12 @@ export default function DeliveredShipmentsMain({ token }) {
     }
     };
 
-    const handleStatusChange = async ({ shipmentId, newStatus, location }) => {
+    const handleStatusChange = async ({ shipmentId, newStatus, location, proofOfDelivery }) => {
         try {
-            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { 
+            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, {
               status: newStatus,
-              location: location
+              location: location,
+              proofOfDelivery,
             }, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -347,6 +352,31 @@ export default function DeliveredShipmentsMain({ token }) {
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'print'} onClose={closeModal}>
             <PrintModal shipment={selectedShipment} onClose={closeModal} />
+        </BasicModal>
+        )}
+
+        {selectedShipment && modalType === 'payments' && (
+        <BasicModal isOpen onClose={closeModal}>
+            <PaymentsModal
+                shipment={selectedShipment}
+                token={token}
+                isAdmin={isAdmin}
+                onUpdated={(updated) => {
+                  // Update in place (a refetch would show the full-page loader and close this modal)
+                  const merge = (list) => list.map((s) => (s._id === updated._id ? { ...s, ...updated } : s));
+                  setShipments(merge);
+                  setFilteredShipments(merge);
+                }}
+                onClose={closeModal}
+            />
+        </BasicModal>
+        )}
+
+        {selectedShipment && (modalType === 'invoice' || modalType === 'waybill') && (
+        <BasicModal isOpen onClose={closeModal}>
+            <Suspense fallback={<div className="flex h-40 items-center justify-center"><FaSpinner className="animate-spin text-2xl text-green-600" /></div>}>
+                <ShipmentDocumentModal shipment={selectedShipment} type={modalType} onClose={closeModal} />
+            </Suspense>
         </BasicModal>
         )}
     </div>

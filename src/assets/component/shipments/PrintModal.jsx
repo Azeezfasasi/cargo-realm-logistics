@@ -271,8 +271,8 @@ export default function PrintModalContent({ shipment, onClose }) {
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
                   <p style={{ fontWeight: '600' }}>Cargo Realm and Logistics</p>
-                  <p>Nacho Export Warehouse, Murital Muhammad International Airport, <br /> Ikeja Lagos.</p>
-                  <p>Email: <br /> info@cargorealmandlosgistics.com</p>
+                  <p>Nacho Export Warehouse, Murtala Muhammed International Airport, <br /> Ikeja Lagos.</p>
+                  <p>Email: <br /> info@cargorealmandlogistics.com</p>
                 </div>
                 {shipment.qrCodeUrl && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -399,6 +399,39 @@ export default function PrintModalContent({ shipment, onClose }) {
                     </tbody>
                   </table>
                 </div>
+                {Number(shipment.cost) > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Payment</span>
+                    <span style={{ fontWeight: '500' }}>
+                      {shipment.paymentStatus === 'paid' ? 'Paid in full' : shipment.paymentStatus === 'partial' ? 'Part-paid' : 'Unpaid'}
+                      {' · '}Paid ₦{Number(shipment.amountPaid || 0).toLocaleString()} of ₦{Number(shipment.cost).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                {(shipment.deliveredAt || shipment.proofOfDelivery) && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2', border: '1px solid #BBF7D0', backgroundColor: '#F0FDF4', borderRadius: '0.5rem', padding: '0.75rem' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#166534', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Delivery confirmation</span>
+                    {shipment.proofOfDelivery?.receivedBy && (
+                      <span style={{ fontWeight: '500', color: '#111827' }}>Received by: {shipment.proofOfDelivery.receivedBy}</span>
+                    )}
+                    {shipment.deliveredAt && (
+                      <span style={{ color: '#374151' }}>Delivered: {new Date(shipment.deliveredAt).toLocaleString()}</span>
+                    )}
+                    {shipment.proofOfDelivery?.notes && (
+                      <span style={{ color: '#374151' }}>Notes: {shipment.proofOfDelivery.notes}</span>
+                    )}
+                    {shipment.proofOfDelivery?.photoUrl && (
+                      <a href={shipment.proofOfDelivery.photoUrl} target="_blank" rel="noreferrer" style={{ marginTop: '0.5rem', width: 'fit-content' }}>
+                        <img
+                          src={shipment.proofOfDelivery.photoUrl}
+                          alt="Proof of delivery"
+                          crossOrigin="anonymous"
+                          style={{ height: '120px', borderRadius: '0.375rem', border: '1px solid #E5E7EB' }}
+                        />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           ) : (

@@ -119,31 +119,68 @@
 import React, { useState, useEffect } from 'react';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Camera, X, PackageCheck } from 'lucide-react';
+import { compressImage } from './compressImage';
+
+const isDeliveredStatus = (s) => String(s || '').trim().toLowerCase() === 'delivered';
 
 export default function ChangeStatusModal({ shipment, onClose, onStatusChange, statuses = [] }) {
   const [status, setStatus] = useState('');
   const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Proof of delivery (only when marking as delivered)
+  const [receivedBy, setReceivedBy] = useState('');
+  const [podNotes, setPodNotes] = useState('');
+  const [photo, setPhoto] = useState(null); // compressed JPEG data URL
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   useEffect(() => {
     if (shipment) {
       setStatus(shipment.status || '');
       setLocation('');
       setError('');
+      setReceivedBy('');
+      setPodNotes('');
+      setPhoto(null);
     }
   }, [shipment]);
 
+  // Ask for proof of delivery when the shipment is being marked delivered now
+  const needsProof = isDeliveredStatus(status) && !isDeliveredStatus(shipment?.status);
+
+  const handlePhoto = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setPhotoBusy(true);
+    setError('');
+    try {
+      setPhoto(await compressImage(file));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
   const handleChangeStatus = async () => {
     if (!status) return;
+    if (needsProof && !receivedBy.trim()) {
+      setError('Enter the name of the person who received the shipment.');
+      return;
+    }
     setLoading(true);
     setError('');
-    
+
     try {
-      await onStatusChange({ 
-        shipmentId: shipment._id, 
+      await onStatusChange({
+        shipmentId: shipment._id,
         newStatus: status,
-        location: location.trim() || undefined
+        location: location.trim() || undefined,
+        proofOfDelivery: needsProof
+          ? { receivedBy: receivedBy.trim(), notes: podNotes.trim() || undefined, photo: photo || undefined }
+          : undefined,
       });
       onClose();
     } catch (err) {
@@ -203,6 +240,59 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange, s
         </p>
       </div>
 
+      {needsProof && (
+        <div className="space-y-3 rounded-xl border border-green-200 bg-green-50/60 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-green-800">
+            <PackageCheck size={16} /> Proof of delivery
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Received by <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              value={receivedBy}
+              onChange={(e) => setReceivedBy(e.target.value)}
+              placeholder="Name of the person who received it"
+              disabled={loading}
+              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Delivery notes (optional)</label>
+            <textarea
+              value={podNotes}
+              onChange={(e) => setPodNotes(e.target.value)}
+              rows={2}
+              placeholder="e.g. Left with security at reception"
+              disabled={loading}
+              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">Photo (optional)</label>
+            {photo ? (
+              <div className="relative w-fit">
+                <img src={photo} alt="Delivery" className="h-28 rounded-lg border border-gray-200 object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setPhoto(null)}
+                  disabled={loading}
+                  aria-label="Remove photo"
+                  className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-600 shadow ring-1 ring-gray-200 hover:text-red-600"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <label className={`inline-flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 hover:border-green-400 hover:text-green-700 ${photoBusy || loading ? 'pointer-events-none opacity-60' : ''}`}>
+                <Camera size={16} />
+                {photoBusy ? 'Processing photo…' : 'Add photo of signed waybill or package'}
+                <input type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
+              </label>
+            )}
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-600">{error}</p>
@@ -215,10 +305,10 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange, s
         </Button>
         <Button 
           onClick={handleChangeStatus} 
-          disabled={!status || loading}
-          className="bg-green-600 text-white hover:bg-blue-700"
+          disabled={!status || loading || photoBusy}
+          className="bg-green-600 text-white hover:bg-green-700"
         >
-          {loading ? 'Updating...' : 'Update Status & Location'}
+          {loading ? 'Updating...' : needsProof ? 'Confirm Delivery' : 'Update Status & Location'}
         </Button>
       </div>
     </div>

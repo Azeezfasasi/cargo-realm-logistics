@@ -60,6 +60,43 @@ const STATUS_TONE = {
 export const getStatusTone = (status) =>
   TONES[STATUS_TONE[String(status || '').trim().toLowerCase()]] || TONES.gray;
 
+// Shipments may store a status by its code ("in-transit") or by its name ("In Transit"),
+// depending on which screen set it. This maps any variant to one key per configured status:
+// the same value the status filter dropdown uses (code, else lower-cased name).
+export const makeStatusCanonicalizer = (statuses = []) => {
+  const lookup = new Map();
+  statuses.forEach((st) => {
+    const key = st.code || String(st.name || '').toLowerCase();
+    if (!key) return;
+    [st.code, st.name].forEach((v) => {
+      if (v) lookup.set(String(v).trim().toLowerCase(), key);
+    });
+  });
+  return (status) => {
+    const norm = String(status || '').trim().toLowerCase();
+    return lookup.get(norm) || norm;
+  };
+};
+
+// Display name for a canonical key (falls back to formatting the raw value)
+export const makeStatusLabeler = (statuses = []) => {
+  const names = new Map();
+  statuses.forEach((st) => {
+    const key = st.code || String(st.name || '').toLowerCase();
+    if (key && st.name) names.set(key, st.name);
+  });
+  return (key) => names.get(key) || formatStatus(key);
+};
+
+export const formatNaira = (n) =>
+  `₦${(Number(n) || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export const PAYMENT_BADGE = {
+  paid: { label: 'Paid', className: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' },
+  partial: { label: 'Part-paid', className: 'bg-amber-50 text-amber-800 ring-amber-600/20' },
+  unpaid: { label: 'Unpaid', className: 'bg-gray-50 text-gray-600 ring-gray-500/20' },
+};
+
 // "in-transit" -> "In Transit"; free-text statuses keep their wording
 export const formatStatus = (status) => {
   const s = String(status || '').trim();

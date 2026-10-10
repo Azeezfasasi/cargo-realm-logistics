@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Pencil, Mail, Eye, Trash2, RefreshCcw, QrCode, ArrowRight, MapPin, Building2, PackageSearch, ChevronLeft, ChevronRight } from 'lucide-react';
-import { isDelivered, daysSince, getStatusTone, formatStatus, STALE_AFTER_DAYS } from './shipmentStatusStyles';
+import { Pencil, Mail, Eye, Trash2, RefreshCcw, QrCode, Receipt, ScrollText, Wallet, ArrowRight, MapPin, Building2, PackageSearch, ChevronLeft, ChevronRight } from 'lucide-react';
+import { isDelivered, daysSince, getStatusTone, formatStatus, STALE_AFTER_DAYS, PAYMENT_BADGE } from './shipmentStatusStyles';
 
 const ITEMS_PER_PAGE = 10;
 
 const ACTIONS = [
   { type: 'qr', label: 'QR code', icon: QrCode, hover: 'hover:bg-indigo-50 hover:text-indigo-600' },
   { type: 'print', label: 'View / print', icon: Eye, hover: 'hover:bg-violet-50 hover:text-violet-600' },
+  { type: 'invoice', label: 'Invoice', icon: Receipt, hover: 'hover:bg-green-50 hover:text-green-700' },
+  { type: 'waybill', label: 'Waybill', icon: ScrollText, hover: 'hover:bg-teal-50 hover:text-teal-600' },
+  { type: 'payments', label: 'Payments', icon: Wallet, hover: 'hover:bg-amber-50 hover:text-amber-600' },
   { type: 'edit', label: 'Edit shipment', icon: Pencil, hover: 'hover:bg-sky-50 hover:text-sky-600' },
   { type: 'reply', label: 'Send email', icon: Mail, hover: 'hover:bg-emerald-50 hover:text-emerald-600' },
   { type: 'status', label: 'Change status', icon: RefreshCcw, hover: 'hover:bg-amber-50 hover:text-amber-600' },
@@ -134,6 +137,11 @@ export default function ShipmentTable({ shipments, onActionClick, canDelete = tr
                       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}`} />
                       <span className="truncate">{formatStatus(shipment.status)}</span>
                     </span>
+                    {(Number(shipment.cost) > 0 || Number(shipment.amountPaid) > 0) && (
+                      <span className={`mt-1.5 flex w-fit items-center rounded-md px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${(PAYMENT_BADGE[shipment.paymentStatus] || PAYMENT_BADGE.unpaid).className}`}>
+                        {(PAYMENT_BADGE[shipment.paymentStatus] || PAYMENT_BADGE.unpaid).label}
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-4 align-top">
                     <div className="max-w-[220px] space-y-1 text-xs">
