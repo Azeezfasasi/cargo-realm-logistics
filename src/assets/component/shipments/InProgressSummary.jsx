@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Truck, AlertTriangle, PackageCheck, Clock, ChevronRight, X } from 'lucide-react';
-import { isDelivered, daysSince, getStatusTone, formatStatus, STALE_AFTER_DAYS } from './shipmentStatusStyles';
+import { daysSince, getStatusTone, formatStatus, STALE_AFTER_DAYS } from './shipmentStatusStyles';
 
 function StatCard({ icon, label, value, hint, accent, onClick, active, to }) {
   const Icon = icon;
@@ -28,31 +28,31 @@ function StatCard({ icon, label, value, hint, accent, onClick, active, to }) {
   return <div className={base}>{content}</div>;
 }
 
+// stats comes from GET /api/shipments/stats (counts across all shipments, not just one page)
 export default function InProgressSummary({
-  shipments = [], selectedStatus, onStatusSelect, staleOnly, onToggleStale,
+  stats: serverStats, selectedStatus, onStatusSelect, staleOnly, onToggleStale,
   canonicalStatus = (s) => String(s || '').trim().toLowerCase(), // groups 'In Transit' with 'in-transit'
   statusLabel = formatStatus,
 }) {
   const stats = useMemo(() => {
-    const open = shipments.filter((s) => !isDelivered(s.status));
-    const delivered = shipments.length - open.length;
-    const ages = open.map((s) => daysSince(s.createdAt));
-    const stale = ages.filter((d) => d > STALE_AFTER_DAYS).length;
-    const oldest = ages.length ? Math.max(...ages) : 0;
-
     const byStatus = {};
-    open.forEach((s) => {
-      const key = canonicalStatus(s.status) || 'unknown';
-      byStatus[key] = (byStatus[key] || 0) + 1;
+    (serverStats?.byStatus || []).forEach(({ status, count }) => {
+      const key = canonicalStatus(status) || 'unknown';
+      byStatus[key] = (byStatus[key] || 0) + count;
     });
     const stages = Object.entries(byStatus)
       .map(([status, count]) => ({ status, count }))
       .sort((a, b) => b.count - a.count);
+    return {
+      open: serverStats?.open || 0,
+      delivered: serverStats?.delivered || 0,
+      stale: serverStats?.stale || 0,
+      oldest: serverStats?.oldestOpenCreatedAt ? daysSince(serverStats.oldestOpenCreatedAt) : 0,
+      stages,
+    };
+  }, [serverStats, canonicalStatus]);
 
-    return { open: open.length, delivered, stale, oldest, stages };
-  }, [shipments, canonicalStatus]);
-
-  const total = shipments.length;
+  const total = serverStats?.total || 0;
   const openPct = total ? Math.round((stats.open / total) * 100) : 0;
 
   return (

@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import axios from 'axios';
-import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
 import EditShipmentModal from '../shipments/EditShipmentModal';
 import ReplyModal from '../shipments/ReplyModal';
@@ -21,169 +20,103 @@ import { useProfile } from '../../context-api/ProfileContext';
 const ShipmentDocumentModal = lazy(() => import('../shipments/documents/ShipmentDocumentModal'));
 
 const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
+const PAGE_SIZE = 10;
 
 export default function DeliveredShipmentsMain({ token }) {
   const { isAdmin, currentUser } = useProfile(); // only admins may delete (enforced by the backend too)
+  // One page of delivered shipments from the server (this list only grows, so it's paged there)
   const [shipments, setShipments] = useState([]);
-  const [filteredShipments, setFilteredShipments] = useState([]);
+  const [pageInfo, setPageInfo] = useState({ page: 1, pages: 1, total: 0, limit: PAGE_SIZE });
+  const [page, setPage] = useState(1);
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedFacility, setSelectedFacility] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [facilities, setFacilities] = useState([]);
 
-  const getTimestamp = (item) => {
-    return new Date(
-      item.createdAt ||
-      item.shipmentDate ||
-      item.timestamp ||
-      item.dateCreated ||
-      item.updatedAt || // fallback
-      0 // default if none found
-    );
-  };
+  const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token || localStorage.getItem('token')}` }), [token]);
 
-  // Fetch facilities and statuses on mount
   useEffect(() => {
-    const fetchFacilitiesAndStatuses = async () => {
-      try {
-        const facilitiesRes = await axios.get(`${API_BASE_URL}/facilities`);
-        
-        // Transform facilities for display
-        const facilityList = facilitiesRes.data.map(f => ({
-          name: f.name,
-          count: 0 // Will be calculated from shipments
-        }));
-        setFacilities(facilityList);
-      } catch (err) {
-        console.error('Error fetching facilities:', err);
-      }
-    };
-    
-    fetchFacilitiesAndStatuses();
+    axios.get(`${API_BASE_URL}/facilities`)
+      .then((res) => setFacilities(res.data.map((f) => ({ name: f.name }))))
+      .catch((err) => console.error('Error fetching facilities:', err));
   }, []);
 
-  // Centralized filter application (pure function - no hook deps)
-  const applyFilters = ({ shipmentsList, status, facility, term } = {}) => {
-    const list = Array.isArray(shipmentsList) ? shipmentsList : [];
-    const q = (term || '').toLowerCase();
-    return list.filter((s) => {
-      const matchesStatus = !status || String(s.status || '').trim().toLowerCase() === String(status).trim().toLowerCase();
-      const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
-      const matchesFacility = !facility || facilityName === facility;
-      const matchesSearch = !q || (
-        s.trackingNumber?.toLowerCase().includes(q) ||
-        s.senderName?.toLowerCase().includes(q) ||
-        s.destination?.toLowerCase().includes(q) ||
-        s.status?.toLowerCase().includes(q)
-      );
-      return matchesStatus && matchesFacility && matchesSearch;
-    });
-  };
+  // Wait for a pause in typing before searching on the server
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
+  // Any filter change goes back to page 1
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, selectedFacility]);
+
+  const listParams = useMemo(() => ({
+    view: 'delivered',
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
+    ...(selectedFacility ? { facility: selectedFacility } : {}),
+  }), [debouncedSearch, selectedFacility]);
+
+  // First load shows the spinner; later loads (paging, filters, after edits) refresh in place
   const fetchShipments = useCallback(async () => {
-    setLoading(true); // Start loading
+    setRefreshing(true);
     setError(null);
     try {
-      const authToken = token || localStorage.getItem('token');
-      console.log('AllShipmentsMain: fetching shipments, token present?', !!authToken);
-      const res = await axios.get(`${API_BASE_URL}/shipments`, authToken ? {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      } : undefined);
-      console.log('AllShipmentsMain: fetch response status', res.status);
-      const sorted = Array.isArray(res.data) ? res.data.sort((a, b) => getTimestamp(b) - getTimestamp(a)) : [];
-      console.log('AllShipmentsMain: fetched shipments count', sorted.length);
-      setShipments(sorted);
-      // apply current filters to freshly fetched data using current UI state
-      const applied = applyFilters({ shipmentsList: sorted, status: selectedStatus, facility: selectedFacility, term: searchQuery });
-      setFilteredShipments(applied);
+      const res = await axios.get(`${API_BASE_URL}/shipments`, {
+        headers: authHeaders,
+        params: { ...listParams, page, limit: PAGE_SIZE },
+      });
+      setShipments(res.data.items || []);
+      setPageInfo({ page: res.data.page, pages: res.data.pages, total: res.data.total, limit: res.data.limit });
+      if (res.data.page !== page) setPage(res.data.page); // e.g. the last page emptied by a delete
+      setHasLoaded(true);
     } catch (err) {
       console.error('Failed to fetch shipments:', err);
       setError(err?.response?.data?.message || err.message || 'Failed to fetch shipments');
-      setShipments([]);
-      setFilteredShipments([]);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
+      setRefreshing(false);
     }
-  }, [token, selectedStatus, selectedFacility, searchQuery]);
+  }, [authHeaders, listParams, page]);
 
   useEffect(() => {
     fetchShipments();
   }, [fetchShipments]);
 
-  // compute facility counts from shipments
-  // const facilities = React.useMemo(() => {
-  //   const map = {};
-  //   shipments.forEach((s) => {
-  //     const raw = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
-  //     const name = raw.trim();
-  //     if (!name) return;
-  //     map[name] = (map[name] || 0) + 1;
-  //   });
-  //   // turn into array, preserving some static ordering for known facilities
-  //   const knownOrder = [
-  //     'Atlanta','Indianapolis','New York','New jersey','Maryland','Dallas','Houston','United States of America','Canada','Ontario','Calgary','Edmonton','United Kingdom'
-  //   ];
-  //   const result = [];
-  //   knownOrder.forEach((k) => {
-  //     if (map[k]) result.push({ name: k, count: map[k] });
-  //   });
-  //   // add any other facilities discovered
-  //   Object.keys(map).forEach((k) => {
-  //     if (!knownOrder.includes(k)) result.push({ name: k, count: map[k] });
-  //   });
-  //   return result;
-  // }, [shipments]);
-
-  // const handleSearch = (searchTerm) => {
-  //   setSearchQuery(searchTerm);
-  //   const applied = applyFilters({ term: searchTerm });
-  //   setFilteredShipments(applied);
-  // };
-  
-  // Compute facility counts from shipments
-  useEffect(() => {
-    if (facilities.length === 0) return;
-    
-    const facilityCounts = {};
-    shipments.forEach((s) => {
-      const raw = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
-      const name = raw.trim();
-      if (!name) return;
-      facilityCounts[name] = (facilityCounts[name] || 0) + 1;
-    });
-    // Create list with counts
-    const facilityList = facilities.map(f => ({
-      ...f,
-      count: facilityCounts[f.name] || 0
-    }));
-    setFacilities(facilityList);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shipments]);
-
-
-  const handleFilter = (status) => {
-    setSelectedStatus(status);
-    const applied = applyFilters({ status });
-    setFilteredShipments(applied);
+  // Export every delivered shipment matching the filters, not just this page
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/shipments`, {
+        headers: authHeaders,
+        params: { ...listParams, page: 1, limit: 'all' },
+      });
+      exportToExcel(res.data.items || [], 'Delivered_Shipments');
+    } catch (err) {
+      toast.error(apiError(err, 'Export failed'));
+    } finally {
+      setExporting(false);
+    }
   };
 
-  const handleSearch = (searchTerm) => {
-    setSearchQuery(searchTerm);
-    const applied = applyFilters({ term: searchTerm });
-    setFilteredShipments(applied);
+  const handleSearch = (searchTerm) => setSearchQuery(searchTerm);
+  const handleFacilityChange = (facility) => setSelectedFacility(facility);
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedFacility('');
   };
 
-  const handleFacilityChange = (facility) => {
-    setSelectedFacility(facility);
-    const applied = applyFilters({ facility });
-    setFilteredShipments(applied);
-  };
+  // Replace one shipment in the current page (payments/documents update in place)
+  const mergeShipment = (updated) =>
+    setShipments((list) => list.map((s) => (s._id === updated._id ? { ...s, ...updated } : s)));
 
   const openModal = (shipment, type) => {
     setSelectedShipment(shipment);
@@ -258,7 +191,7 @@ export default function DeliveredShipmentsMain({ token }) {
         );
       }
 
-  if (error) {
+  if (error && !hasLoaded) {
     return (
       <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
         <p className="text-red-600 mb-4">Error loading shipments: {String(error)}</p>
@@ -278,19 +211,26 @@ export default function DeliveredShipmentsMain({ token }) {
       <ShipmentToolbar
         searchQuery={searchQuery}
         onSearch={handleSearch}
-        onStatusChange={handleFilter}
+        showStatusFilter={false}
         onFacilityChange={handleFacilityChange}
         selectedFacility={selectedFacility}
         facilities={facilities}
-        onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
+        onClearFilters={clearFilters}
+        onExport={handleExport}
+        exporting={exporting}
       />
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">Refresh failed: {String(error)}</div>
+      )}
 
 
       {/* Table */}
       <DeliveredShipmentTable
-        shipments={filteredShipments}
+        shipments={shipments}
         onActionClick={openModal}
         canDelete={isAdmin}
+        serverPagination={{ ...pageInfo, loading: refreshing, onPageChange: setPage }}
       />
 
         {/* Modals */}
@@ -363,11 +303,7 @@ export default function DeliveredShipmentsMain({ token }) {
                 token={token}
                 isAdmin={isAdmin}
                 currentUserId={currentUser?._id}
-                onUpdated={(updated) => {
-                  const merge = (list) => list.map((s) => (s._id === updated._id ? { ...s, ...updated } : s));
-                  setShipments(merge);
-                  setFilteredShipments(merge);
-                }}
+                onUpdated={mergeShipment}
                 onClose={closeModal}
             />
         </BasicModal>
@@ -379,12 +315,7 @@ export default function DeliveredShipmentsMain({ token }) {
                 shipment={selectedShipment}
                 token={token}
                 isAdmin={isAdmin}
-                onUpdated={(updated) => {
-                  // Update in place (a refetch would show the full-page loader and close this modal)
-                  const merge = (list) => list.map((s) => (s._id === updated._id ? { ...s, ...updated } : s));
-                  setShipments(merge);
-                  setFilteredShipments(merge);
-                }}
+                onUpdated={mergeShipment}
                 onClose={closeModal}
             />
         </BasicModal>

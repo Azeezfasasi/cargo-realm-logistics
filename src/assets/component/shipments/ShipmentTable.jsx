@@ -81,25 +81,30 @@ function AgeBadge({ days }) {
   );
 }
 
-export default function ShipmentTable({ shipments, onActionClick, canDelete = true, selectedShipments = [], onSelectShipment, onSelectAll }) {
+// serverPagination: { page, pages, total, limit, loading, onPageChange } when the parent pages on the server;
+// without it the table filters and pages the given list itself.
+export default function ShipmentTable({ shipments, onActionClick, canDelete = true, selectedShipments = [], onSelectShipment, onSelectAll, serverPagination }) {
   const menuActions = canDelete ? MENU_ACTIONS : MENU_ACTIONS.filter((a) => a.type !== 'delete');
   const [menu, setMenu] = useState(null); // { shipment, anchor: DOMRect }
   const closeMenu = useCallback(() => setMenu(null), []);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Delivered shipments live on the Delivered Shipments page
-  const visibleShipments = shipments.filter((s) => !isDelivered(s.status));
-
-  const totalPages = Math.ceil(visibleShipments.length / ITEMS_PER_PAGE) || 1;
+  const visibleShipments = serverPagination ? shipments : shipments.filter((s) => !isDelivered(s.status));
+  const localTotalPages = Math.ceil(visibleShipments.length / ITEMS_PER_PAGE) || 1;
 
   // Jump back to page 1 whenever the filtered list changes size
   useEffect(() => {
     setCurrentPage(1);
   }, [visibleShipments.length]);
 
-  const page = Math.min(currentPage, totalPages);
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const paginated = visibleShipments.slice(start, start + ITEMS_PER_PAGE);
+  const total = serverPagination ? serverPagination.total : visibleShipments.length;
+  const totalPages = serverPagination ? serverPagination.pages : localTotalPages;
+  const page = serverPagination ? serverPagination.page : Math.min(currentPage, localTotalPages);
+  const pageSize = serverPagination ? serverPagination.limit : ITEMS_PER_PAGE;
+  const start = (page - 1) * pageSize;
+  const paginated = serverPagination ? shipments : visibleShipments.slice(start, start + ITEMS_PER_PAGE);
+  const goToPage = (p) => (serverPagination ? serverPagination.onPageChange(p) : setCurrentPage(p));
 
   const allPagedSelected = paginated.length > 0 && paginated.every((s) => selectedShipments.includes(s._id));
   const somePagedSelected = paginated.some((s) => selectedShipments.includes(s._id)) && !allPagedSelected;
@@ -112,11 +117,11 @@ export default function ShipmentTable({ shipments, onActionClick, canDelete = tr
           <p className="text-xs text-gray-500">Shipments that have not been marked as delivered</p>
         </div>
         <span className="shrink-0 whitespace-nowrap rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 ring-1 ring-inset ring-green-600/20 tabular-nums">
-          {visibleShipments.length} open
+          {total} open
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className={`overflow-x-auto transition-opacity ${serverPagination?.loading ? 'opacity-60' : ''}`}>
         <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="bg-gray-50/80 text-xs font-semibold uppercase tracking-wider text-gray-500">
             <tr>
@@ -285,19 +290,19 @@ export default function ShipmentTable({ shipments, onActionClick, canDelete = tr
       {/* Pagination */}
       <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-100 px-5 py-3 sm:flex-row">
         <p className="text-xs text-gray-500">
-          {visibleShipments.length > 0 ? (
+          {total > 0 ? (
             <>
               Showing <span className="font-semibold text-gray-700">{start + 1}</span>–
               <span className="font-semibold text-gray-700">{start + paginated.length}</span> of{' '}
-              <span className="font-semibold text-gray-700">{visibleShipments.length}</span>
+              <span className="font-semibold text-gray-700">{total}</span>
             </>
           ) : 'No results'}
         </p>
         <div className="flex items-center gap-2">
           <button
             type="button"
-            disabled={page === 1}
-            onClick={() => setCurrentPage(page - 1)}
+            disabled={page <= 1 || serverPagination?.loading}
+            onClick={() => goToPage(page - 1)}
             className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronLeft size={14} /> Prev
@@ -307,8 +312,8 @@ export default function ShipmentTable({ shipments, onActionClick, canDelete = tr
           </span>
           <button
             type="button"
-            disabled={page === totalPages}
-            onClick={() => setCurrentPage(page + 1)}
+            disabled={page >= totalPages || serverPagination?.loading}
+            onClick={() => goToPage(page + 1)}
             className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next <ChevronRight size={14} />

@@ -4,7 +4,8 @@ import { Pencil, Mail, Eye, Trash2, RefreshCcw, Receipt, ScrollText, Wallet, Pap
 
 const ITEMS_PER_PAGE = 10;
 
-export default function DeliveredShipmentTable({ shipments = [], onActionClick = () => {}, canDelete = true }) {
+// serverPagination: { page, pages, total, limit, loading, onPageChange } when paged on the server
+export default function DeliveredShipmentTable({ shipments = [], onActionClick = () => {}, canDelete = true, serverPagination }) {
   const [currentPage, setCurrentPage] = useState(1);
 
   // make filter defensive: ensure shipments is an array and match delivered robustly
@@ -13,11 +14,13 @@ export default function DeliveredShipmentTable({ shipments = [], onActionClick =
     String(s?.status ?? '').trim().toLowerCase() === 'delivered'
   );
 
-  const totalPages = Math.ceil(delivered.length / ITEMS_PER_PAGE) || 1;
-  const paginated = delivered.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const totalPages = serverPagination ? serverPagination.pages : Math.ceil(delivered.length / ITEMS_PER_PAGE) || 1;
+  const page = serverPagination ? serverPagination.page : currentPage;
+  const pageSize = serverPagination ? serverPagination.limit : ITEMS_PER_PAGE;
+  const paginated = serverPagination
+    ? delivered
+    : delivered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const goToPage = (p) => (serverPagination ? serverPagination.onPageChange(p) : setCurrentPage(p));
 
   return (
     <div className="rounded-xl border bg-white shadow-md overflow-x-auto">
@@ -38,7 +41,7 @@ export default function DeliveredShipmentTable({ shipments = [], onActionClick =
         <tbody>
           {paginated.map((shipment, idx) => (
             <tr key={shipment._id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
-              <td className="p-3">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
+              <td className="p-3">{(page - 1) * pageSize + idx + 1}</td>
               <td className="p-3 font-medium">{shipment.trackingNumber}</td>
               <td className="p-3">{shipment.senderName}</td>
               <td className="p-3">{shipment.recipientName}</td>
@@ -96,22 +99,22 @@ export default function DeliveredShipmentTable({ shipments = [], onActionClick =
 
       <div className="flex items-center justify-between p-4 border-t">
         <div className="text-sm text-gray-600 dark:text-gray-300">
-          Page {currentPage} of {totalPages}
+          Page {page} of {totalPages}{serverPagination ? ` · ${serverPagination.total} delivered` : ""}
         </div>
         <div className="space-x-2">
           <Button
             variant="outline"
             size="sm"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(prev => prev - 1)}
+            disabled={page <= 1 || serverPagination?.loading}
+            onClick={() => goToPage(page - 1)}
           >
             Prev
           </Button>
           <Button
             variant="outline"
             size="sm"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={page >= totalPages || serverPagination?.loading}
+            onClick={() => goToPage(page + 1)}
           >
             Next
           </Button>

@@ -37,6 +37,8 @@ const ShipmentToolbar = ({
   onSearch,
   onStatusChange,
   onExport,
+  exporting = false,
+  showStatusFilter = true, // the Delivered page has nothing to filter by status
   selectedStatus,
   onFacilityChange,
   selectedFacility,
@@ -81,6 +83,7 @@ const ShipmentToolbar = ({
             : FALLBACK_FACILITIES.map((name) => <option key={name} value={name}>{name}</option>)}
         </FilterSelect>
 
+        {showStatusFilter && (
         <FilterSelect icon={ListFilter} value={selectedStatus} onChange={onStatusChange} className="sm:w-56">
           <option value="">All statuses</option>
           {Array.isArray(statuses) && statuses.length > 0
@@ -93,6 +96,7 @@ const ShipmentToolbar = ({
               )
             : FALLBACK_STATUSES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </FilterSelect>
+        )}
 
         <div className="flex gap-2">
           {onClearFilters && hasFilters && (
@@ -107,9 +111,10 @@ const ShipmentToolbar = ({
           <button
             type="button"
             onClick={onExport}
-            className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:border-gray-300 hover:bg-gray-50 sm:flex-none"
+            disabled={exporting}
+            className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-wait disabled:opacity-60 sm:flex-none"
           >
-            <Download size={15} /> Export
+            <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
           </button>
         </div>
       </div>
