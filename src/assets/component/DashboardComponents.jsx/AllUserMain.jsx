@@ -1,467 +1,352 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  UserPlus, Search, X, RotateCw, Users, ShieldCheck, Briefcase, UserRound, UserX, MoreHorizontal, Pencil,
+  KeyRound, PauseCircle, PlayCircle, Ban, CheckCircle2, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Phone, MapPin,
+} from 'lucide-react';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
-import { Link } from 'react-router-dom';
+import UserAvatar from './UserAvatar';
+import UserEditModal from './UserEditModal';
+import { ROLES, STAFF_ROLES, accountStatus, canManage, joinedLabel } from './userUtils';
+
+const PAGE_SIZE = 15;
+const QUERY_KEY = ['allUsers'];
+const ROLE_TABS = [['all', 'All'], ['admin', 'Admins'], ['employee', 'Employees'], ['agent', 'Agents'], ['client', 'Clients']];
+const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
+
+function Stat({ icon, label, value, tone }) {
+  const Icon = icon;
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone}`}><Icon size={18} /></span>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</p>
+        <p className="text-xl font-bold tabular-nums text-gray-900">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// Row actions menu, fixed-positioned so the table's scroll area can't clip it
+function RowMenu({ anchor, items, onClose }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const close = (e) => { if (!ref.current?.contains(e.target)) onClose(); };
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onClose, true);
+    window.addEventListener('resize', onClose);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onClose, true);
+      window.removeEventListener('resize', onClose);
+    };
+  }, [onClose]);
+  const height = items.length * 38 + 8;
+  const openUp = anchor.bottom + height > window.innerHeight - 8;
+  return (
+    <div ref={ref} role="menu" className="fixed z-50 w-52 rounded-xl border border-gray-200 bg-white p-1 shadow-lg"
+      style={{ right: Math.max(8, window.innerWidth - anchor.right), top: openUp ? Math.max(8, anchor.top - height - 4) : anchor.bottom + 4 }}>
+      {items.map(({ label, icon, onClick, danger }) => {
+        const Icon = icon;
+        return (
+          <button key={label} type="button" role="menuitem" onClick={onClick}
+            className={`flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-sm ${danger ? 'text-rose-600 hover:bg-rose-50' : 'text-gray-700 hover:bg-gray-100'}`}>
+            <Icon size={15} className={danger ? '' : 'text-gray-400'} /> {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function AllUserMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
-
-  // State for editing mode
-  const [editingUserId, setEditingUserId] = useState(null);
-  const [editName, setEditName] = useState('');
-  const [editEmail, setEditEmail] = useState('');
-  const [editRole, setEditRole] = useState('');
-  const [editGender, setEditGender] = useState('');
-  const [editPhoneNumber, setEditPhoneNumber] = useState('');
-  const [editHomeAddress, setEditHomeAddress] = useState('');
-  const [editCountry, setEditCountry] = useState('');
-  const [editState, setEditState] = useState('');
-
-  const [actionMessage, setActionMessage] = useState(''); // For success messages
-  const [actionError, setActionError] = useState(''); // For specific action errors
-
-  // Clear messages when starting a new action or editing
-  useEffect(() => {
-    setActionError('');
-    setActionMessage('');
-  }, [editingUserId]);
-
-   // Determine if the user has permission to manage events
+  const navigate = useNavigate();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading, currentUser } = useProfile();
   const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
-  // Fetch all users for admin management
-  const {
-    data: users,
-    isLoading: usersLoading,
-    isError: usersError,
-    error: fetchError,
-  } = useQuery({
-    queryKey: ['allUsers'], // Unique key for fetching all users
-    queryFn: async () => {
-      // This endpoint is protected by authorize('admin') on the backend
-      const response = await axios.get(`${API_BASE_URL}/profile/all`);
-      return response.data;
-    },
-    staleTime: 5 * 60 * 1000, // Data considered fresh for 5 minutes
+  const [roleTab, setRoleTab] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [editing, setEditing] = useState(null);
+  const [menu, setMenu] = useState(null); // { user, anchor }
+  const closeMenu = useCallback(() => setMenu(null), []);
+
+  const { data: users = [], isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: async () => (await axios.get(`${API_BASE_URL}/profile/all`)).data,
+    staleTime: 60 * 1000,
     enabled: hasPermission,
   });
 
-  // Mutation for editing a user
-  const editUserMutation = useMutation({
-    mutationFn: async (updatedUser) => {
-      const response = await axios.put(`${API_BASE_URL}/profile/edit/${updatedUser._id}`, updatedUser);
-      return response.data;
+  const replaceUser = (updated) =>
+    queryClient.setQueryData(QUERY_KEY, (list = []) => list.map((u) => (u._id === updated._id ? { ...u, ...updated } : u)));
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, changes }) => (await axios.put(`${API_BASE_URL}/profile/edit/${id}`, changes)).data,
+    onSuccess: (updated) => replaceUser(updated),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => axios.delete(`${API_BASE_URL}/profile/delete/${id}`),
+    onSuccess: (_, id) => {
+      queryClient.setQueryData(QUERY_KEY, (list = []) => list.filter((u) => u._id !== id));
+      toast.success('User deleted');
     },
-    onSuccess: () => {
-      setActionMessage('User updated successfully!');
-      setActionError('');
-      setEditingUserId(null); // Exit edit mode
-      queryClient.invalidateQueries({ queryKey: ['allUsers'] }); // Refetch user list
-      queryClient.invalidateQueries({ queryKey: ['profileData'] }); // Invalidate current user's profile if it was edited
-      setTimeout(() => setActionMessage(''), 3000);
-    },
-    onError: (err) => {
-      setActionError(err.response?.data?.message || 'Failed to update user.');
-      setActionMessage('');
-    },
+    onError: (err) => toast.error(apiError(err, 'Failed to delete user')),
   });
 
-  // Mutation for deleting a user
-  const deleteUserMutation = useMutation({
-    mutationFn: async (userIdToDelete) => {
-      await axios.delete(`${API_BASE_URL}/profile/delete/${userIdToDelete}`);
-    },
-    onSuccess: () => {
-      setActionMessage('User deleted successfully!');
-      setActionError('');
-      queryClient.invalidateQueries({ queryKey: ['allUsers'] }); // Refetch user list
-      setTimeout(() => setActionMessage(''), 3000);
-    },
-    onError: (err) => {
-      setActionError(err.response?.data?.message || 'Failed to delete user.');
-      setActionMessage('');
-    },
-  });
-
-  // Mutation for toggling user disabled status
-  const toggleDisableUserMutation = useMutation({
-    mutationFn: async ({ userIdToToggle, isDisabled }) => {
-      const endpoint = isDisabled ? 'disable' : 'enable';
-      const response = await axios.put(`${API_BASE_URL}/profile/edit/${userIdToToggle}`, { isDisabled: !isDisabled });
-      return response.data;
-    },
-    onSuccess: (data) => {
-      setActionMessage(`User ${data.isDisabled ? 'disabled' : 'enabled'} successfully!`);
-      setActionError('');
-      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-      setTimeout(() => setActionMessage(''), 3000);
-    },
-    onError: (err) => {
-      setActionError(err.response?.data?.message || 'Failed to change user status.');
-      setActionMessage('');
-    },
-  });
-
-  // Mutation for toggling user suspended status
-  const toggleSuspendUserMutation = useMutation({
-    mutationFn: async ({ userIdToToggle, isSuspended }) => {
-      // Similar to disable, using PUT to editUser to set isSuspended.
-      const response = await axios.put(`${API_BASE_URL}/profile/edit/${userIdToToggle}`, { isSuspended: !isSuspended });
-      return response.data;
-    },
-    onSuccess: (data) => {
-      setActionMessage(`User ${data.isSuspended ? 'suspended' : 'unsuspended'} successfully!`);
-      setActionError('');
-      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-      setTimeout(() => setActionMessage(''), 3000);
-    },
-    onError: (err) => {
-      setActionError(err.response?.data?.message || 'Failed to change user suspension status.');
-      setActionMessage('');
-    },
-  });
-
-
-  // Handle edit button click
-  const handleEditClick = (user) => {
-    setEditingUserId(user._id);
-    setEditName(user.name || '');
-    setEditEmail(user.email || '');
-    setEditRole(user.role || 'member');
-    setEditGender(user.gender || '');
-    setEditPhoneNumber(user.phoneNumber || '');
-    setEditHomeAddress(user.homeAddress || '');
-    setEditCountry(user.country || '');
-    setEditState(user.state || '');
-    setActionMessage(''); // Clear messages when starting edit
-    setActionError('');
-  };
-
-  // Handle save edit
-  const handleSaveEdit = (e) => {
-    e.preventDefault();
-    if (!editName.trim() || !editEmail.trim() || !editRole.trim()) {
-      setActionError('Name, Email, and Role are required.');
-      return;
-    }
-    editUserMutation.mutate({
-      _id: editingUserId,
-      name: editName,
-      email: editEmail,
-      role: editRole,
-      gender: editGender,
-      phoneNumber: editPhoneNumber,
-      homeAddress: editHomeAddress,
-      country: editCountry,
-      state: editState,
+  const setFlag = (user, changes, message) => {
+    editMutation.mutate({ id: user._id, changes }, {
+      onSuccess: () => toast.success(message),
+      onError: (err) => toast.error(apiError(err, 'Failed to update user')),
     });
   };
 
-  // Handle delete
-  const handleDeleteClick = (userIdToDelete) => {
-    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      deleteUserMutation.mutate(userIdToDelete);
+  const menuItems = (u) => {
+    const items = [
+      { label: 'Edit details', icon: Pencil, onClick: () => { closeMenu(); setEditing(u); } },
+      { label: 'Change password', icon: KeyRound, onClick: () => navigate(`/app/account/changeuserpassword?email=${encodeURIComponent(u.email)}`) },
+      u.isSuspended
+        ? { label: 'Unsuspend', icon: PlayCircle, onClick: () => { closeMenu(); setFlag(u, { isSuspended: false }, `${u.name} unsuspended`); } }
+        : { label: 'Suspend', icon: PauseCircle, onClick: () => { closeMenu(); if (window.confirm(`Suspend ${u.name}? They won't be able to log in until unsuspended.`)) setFlag(u, { isSuspended: true }, `${u.name} suspended`); } },
+      u.isDisabled
+        ? { label: 'Enable account', icon: CheckCircle2, onClick: () => { closeMenu(); setFlag(u, { isDisabled: false }, `${u.name} enabled`); } }
+        : { label: 'Disable account', icon: Ban, onClick: () => { closeMenu(); if (window.confirm(`Disable ${u.name}'s account? They won't be able to log in.`)) setFlag(u, { isDisabled: true }, `${u.name} disabled`); } },
+    ];
+    if (isAdmin) {
+      items.push({ label: 'Delete user', icon: Trash2, danger: true, onClick: () => {
+        closeMenu();
+        if (window.confirm(`Permanently delete ${u.name} (${u.email})? This cannot be undone.`)) deleteMutation.mutate(u._id);
+      } });
     }
+    return items;
   };
 
-  // Handle toggle disable
-  const handleToggleDisable = (userIdToToggle, isDisabled) => {
-    if (window.confirm(`Are you sure you want to ${isDisabled ? 'enable' : 'disable'} this user?`)) {
-      toggleDisableUserMutation.mutate({ userIdToToggle, isDisabled });
-    }
-  };
+  const counts = useMemo(() => {
+    const c = { all: users.length, admin: 0, employee: 0, agent: 0, client: 0, inactive: 0 };
+    users.forEach((u) => {
+      c[u.role] = (c[u.role] || 0) + 1;
+      if (u.isDisabled || u.isSuspended) c.inactive += 1;
+    });
+    return c;
+  }, [users]);
 
-  // Handle toggle suspend
-  const handleToggleSuspend = (userIdToToggle, isSuspended) => {
-    if (window.confirm(`Are you sure you want to ${isSuspended ? 'unsuspend' : 'suspend'} this user?`)) {
-      toggleSuspendUserMutation.mutate({ userIdToToggle, isSuspended });
-    }
-  };
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return users.filter((u) => {
+      if (roleTab !== 'all' && u.role !== roleTab) return false;
+      if (statusFilter !== 'all' && accountStatus(u).key !== statusFilter) return false;
+      if (!q) return true;
+      return [u.name, u.email, u.phoneNumber, u.country, u.state].some((v) => v?.toLowerCase().includes(q));
+    });
+  }, [users, roleTab, statusFilter, search]);
 
-  // Render loading state for authentication check
+  useEffect(() => setPage(1), [roleTab, statusFilter, search]);
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   if (authLoading) {
-    return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-gray-700 flex items-center">
-          <svg className="animate-spin h-6 w-6 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Checking permissions...
-        </div>
-      </section>
-    );
+    return <div className="space-y-4 p-4 lg:p-6">{[0, 1, 2].map((i) => <div key={i} className="h-20 animate-pulse rounded-2xl bg-gray-100" />)}</div>;
   }
-
-  // Check if user is authenticated and is an admin
   if (!hasPermission) {
     return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-red-600">
-          Access Denied. You must be logged in as an Administrator to manage users.
-          <div className="mt-4">
-            <Link to="/login" className="text-blue-600 hover:underline">Go to Login</Link>
-          </div>
+      <div className="flex min-h-[60vh] items-center justify-center p-4">
+        <div className="max-w-sm rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500"><ShieldAlert size={22} /></span>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">Access restricted</h2>
+          <p className="mt-1 text-sm text-gray-500">Only administrators and employees can manage users.</p>
+          <Link to="/app/dashboard" className="mt-5 inline-flex h-10 items-center rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Back to dashboard</Link>
         </div>
-      </section>
-    );
-  }
-
-  // Render loading state for users data (only if authorized)
-  if (usersLoading) {
-    return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-gray-700 flex items-center">
-          <svg className="animate-spin h-6 w-6 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Loading users for management...
-        </div>
-      </section>
-    );
-  }
-
-  // Render error state for users data
-  if (usersError) {
-    return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-red-600">
-          Error loading users: {fetchError.response?.data?.message || fetchError.message}
-        </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="py-16 px-2 sm:px-3 lg:px-4 bg-gray-100 font-inter overflow-x-hidden">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Manage Users
-        </h2>
+    <div className="space-y-5 p-4 lg:p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-green-700">Administration</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-900 lg:text-4xl">Users</h1>
+          <p className="mt-1 text-sm text-gray-500">Manage accounts, roles and access.</p>
+        </div>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => refetch()} disabled={isFetching}
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 disabled:opacity-60">
+            <RotateCw size={15} className={isFetching ? 'animate-spin' : ''} /> <span className="hidden sm:inline">Refresh</span>
+          </button>
+          <Link to="/app/account/addnewuser"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+            <UserPlus size={16} /> Add user
+          </Link>
+        </div>
+      </div>
 
-        {actionMessage && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md mb-4" role="alert">
-            <span className="block sm:inline">{actionMessage}</span>
-          </div>
-        )}
-        {actionError && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
-            <span className="block sm:inline">{actionError}</span>
-          </div>
-        )}
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat icon={Users} label="Total users" value={isLoading ? '—' : counts.all} tone="bg-green-100 text-green-700" />
+        <Stat icon={UserRound} label="Clients" value={isLoading ? '—' : counts.client} tone="bg-gray-100 text-gray-600" />
+        <Stat icon={Briefcase} label="Staff & agents" value={isLoading ? '—' : counts.admin + counts.employee + counts.agent} tone="bg-sky-100 text-sky-700" />
+        <Stat icon={UserX} label="Suspended / disabled" value={isLoading ? '—' : counts.inactive} tone={counts.inactive ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'} />
+      </div>
 
-        {users && users.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <React.Fragment key={user._id}>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {editingUserId === user._id ? (
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
+      {/* Filters */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm xl:flex-row xl:items-center">
+        <div className="-mx-1 flex gap-1 overflow-x-auto px-1" role="tablist" aria-label="Filter by role">
+          {ROLE_TABS.map(([key, label]) => {
+            const active = roleTab === key;
+            return (
+              <button key={key} type="button" role="tab" aria-selected={active} onClick={() => setRoleTab(key)}
+                className={`inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors ${active ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                {label}
+                <span className={`rounded-full px-1.5 text-xs tabular-nums ${active ? 'bg-white/20' : 'bg-gray-100 text-gray-500'}`}>{counts[key] || 0}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row xl:ml-auto">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter by status"
+            className="h-10 cursor-pointer rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 sm:w-40">
+            <option value="all">Any status</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="disabled">Disabled</option>
+          </select>
+          <label className="relative block sm:w-72">
+            <span className="sr-only">Search users</span>
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, email, phone, country…"
+              className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50/60 pl-9 pr-9 text-sm focus:border-green-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20" />
+            {search && (
+              <button type="button" onClick={() => setSearch('')} aria-label="Clear search"
+                className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100"><X size={14} /></button>
+            )}
+          </label>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px] text-left text-sm">
+            <thead className="bg-gray-50/80 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <tr>
+                <th className="px-5 py-3">User</th>
+                <th className="px-3 py-3">Role</th>
+                <th className="px-3 py-3">Contact</th>
+                <th className="px-3 py-3">Status</th>
+                <th className="px-3 py-3">Joined</th>
+                <th className="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {isLoading && [0, 1, 2, 3, 4].map((i) => (
+                <tr key={i}><td colSpan={6} className="px-5 py-4"><div className="h-10 animate-pulse rounded-lg bg-gray-100" /></td></tr>
+              ))}
+              {isError && (
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-rose-600">Couldn&apos;t load users: {apiError(error, 'Unknown error')}</td></tr>
+              )}
+              {!isLoading && !isError && pageItems.length === 0 && (
+                <tr><td colSpan={6} className="px-5 py-14 text-center">
+                  <p className="text-sm font-semibold text-gray-900">No users found</p>
+                  <p className="mt-1 text-xs text-gray-500">Try another filter or search.</p>
+                </td></tr>
+              )}
+              {pageItems.map((u) => {
+                const role = ROLES[u.role] || ROLES.client;
+                const status = accountStatus(u);
+                const isMe = String(u._id) === String(currentUser?._id);
+                const manageable = canManage({ actorIsAdmin: isAdmin, actorId: currentUser?._id, target: u });
+                return (
+                  <tr key={u._id} className="hover:bg-gray-50/80">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <UserAvatar user={u} />
+                        <div className="min-w-0">
+                          <p className="flex items-center gap-2 truncate font-semibold text-gray-900">
+                            <span className="truncate">{u.name}</span>
+                            {isMe && <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-green-800">You</span>}
+                          </p>
+                          <p className="truncate text-xs text-gray-500">{u.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${role.badge}`}>
+                        {STAFF_ROLES.includes(u.role) && <ShieldCheck size={12} />}{role.label}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-gray-600">
+                      {u.phoneNumber ? <p className="flex items-center gap-1.5"><Phone size={12} className="text-gray-400" />{u.phoneNumber}</p> : <p className="text-gray-400">No phone</p>}
+                      {(u.country || u.state) && <p className="mt-0.5 flex items-center gap-1.5"><MapPin size={12} className="text-gray-400" />{[u.state, u.country].filter(Boolean).join(', ')}</p>}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${status.pill}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />{status.label}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-xs text-gray-500">{joinedLabel(u.createdAt)}</td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        {isMe ? (
+                          <Link to="/app/account/profile" className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50">My profile</Link>
+                        ) : manageable ? (
+                          <>
+                            <button type="button" onClick={() => setEditing(u)} title="Edit" aria-label={`Edit ${u.name}`}
+                              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 hover:bg-sky-50 hover:text-sky-600"><Pencil size={15} /></button>
+                            <button type="button" aria-label={`More actions for ${u.name}`} aria-haspopup="menu"
+                              onClick={(e) => { const anchor = e.currentTarget.getBoundingClientRect(); setMenu((m) => (m?.user._id === u._id ? null : { user: u, anchor })); }}
+                              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-100 hover:text-gray-700 ${menu?.user._id === u._id ? 'bg-gray-100 text-gray-700' : 'text-gray-400'}`}>
+                              <MoreHorizontal size={16} />
+                            </button>
+                          </>
                         ) : (
-                          user.name
+                          <span className="text-xs text-gray-400" title="Only an admin can manage staff accounts">Admin only</span>
                         )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {editingUserId === user._id ? (
-                          <input
-                            type="email"
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
-                        ) : (
-                          user.email
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {editingUserId === user._id ? (
-                          <select
-                            value={editRole}
-                            onChange={(e) => setEditRole(e.target.value)}
-                            className="w-full p-1 border rounded bg-white"
-                          >
-                            <option value="admin">Admin</option>
-                            <option value="client">Client</option>
-                            <option value="agent">Agent</option>
-                            <option value="employee">Employee</option>
-                          </select>
-                        ) : (
-                          user.role
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                          user.isDisabled ? 'bg-red-100 text-red-800' :
-                          user.isSuspended ? 'bg-orange-100 text-orange-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {user.isDisabled ? 'Disabled' : user.isSuspended ? 'Suspended' : 'Active'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {editingUserId === user._id ? (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={handleSaveEdit}
-                              className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                              disabled={editUserMutation.isPending}
-                            >
-                              {editUserMutation.isPending ? 'Saving...' : 'Save'}
-                            </button>
-                            <button
-                              onClick={() => setEditingUserId(null)}
-                              className="text-gray-600 hover:text-gray-900"
-                              disabled={editUserMutation.isPending}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={() => handleEditClick(user)}
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(user._id)}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                              disabled={deleteUserMutation.isPending}
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={() => handleToggleDisable(user._id, user.isDisabled)}
-                              className={`text-sm px-2 py-1 rounded-md ${
-                                user.isDisabled ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-red-500 text-white hover:bg-red-600'
-                              } disabled:opacity-50`}
-                              disabled={toggleDisableUserMutation.isPending}
-                            >
-                              {user.isDisabled ? 'Enable' : 'Disable'}
-                            </button>
-                            <button
-                              onClick={() => handleToggleSuspend(user._id, user.isSuspended)}
-                              className={`text-sm px-2 py-1 rounded-md ${
-                                user.isSuspended ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-orange-500 text-white hover:bg-orange-600'
-                              } disabled:opacity-50`}
-                              disabled={toggleSuspendUserMutation.isPending}
-                            >
-                              {user.isSuspended ? 'Unsuspend' : 'Suspend'}
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                    {editingUserId === user._id && (
-                      <tr>
-                        <td colSpan="5" className="px-6 py-4 text-sm text-gray-700 bg-gray-50">
-                          <div className="space-y-4">
-                            <div>
-                              <label htmlFor="editGender" className="block text-sm font-medium text-gray-700 mb-1">
-                                Gender
-                              </label>
-                              <input
-                                type="text"
-                                id="editGender"
-                                value={editGender}
-                                onChange={(e) => setEditGender(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="editPhoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                                Phone Number
-                              </label>
-                              <input
-                                type="text"
-                                id="editPhoneNumber"
-                                value={editPhoneNumber}
-                                onChange={(e) => setEditPhoneNumber(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="editHomeAddress" className="block text-sm font-medium text-gray-700 mb-1">
-                                Home Address
-                              </label>
-                              <input
-                                type="text"
-                                id="editHomeAddress"
-                                value={editHomeAddress}
-                                onChange={(e) => setEditHomeAddress(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="editCountry" className="block text-sm font-medium text-gray-700 mb-1">
-                                Country
-                              </label>
-                              <input
-                                type="text"
-                                id="editCountry"
-                                value={editCountry}
-                                onChange={(e) => setEditCountry(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="editState" className="block text-sm font-medium text-gray-700 mb-1">
-                                State
-                              </label>
-                              <input
-                                type="text"
-                                id="editState"
-                                value={editState}
-                                onChange={(e) => setEditState(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {!isLoading && filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
+            <p className="text-xs text-gray-500">
+              Showing <span className="font-semibold text-gray-700">{(page - 1) * PAGE_SIZE + 1}</span>–<span className="font-semibold text-gray-700">{Math.min(page * PAGE_SIZE, filtered.length)}</span> of <span className="font-semibold text-gray-700">{filtered.length}</span>
+            </p>
+            <div className="flex gap-2">
+              <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"><ChevronLeft size={14} /> Prev</button>
+              <button type="button" disabled={page >= pages} onClick={() => setPage(page + 1)} className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40">Next <ChevronRight size={14} /></button>
+            </div>
           </div>
-        ) : (
-          <p className="text-center text-gray-600">No users to manage.</p>
         )}
       </div>
-    </section>
+
+      {menu && <RowMenu anchor={menu.anchor} items={menuItems(menu.user)} onClose={closeMenu} />}
+
+      {editing && (
+        <UserEditModal
+          user={editing}
+          actorIsAdmin={isAdmin}
+          saving={editMutation.isPending}
+          onClose={() => setEditing(null)}
+          onSave={(changes, { onError }) => editMutation.mutate({ id: editing._id, changes }, {
+            onSuccess: () => { toast.success('User updated'); setEditing(null); },
+            onError: (err) => onError(apiError(err, 'Failed to update user')),
+          })}
+        />
+      )}
+    </div>
   );
 }
 
