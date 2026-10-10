@@ -1,531 +1,291 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/Api'; 
-import { useProfile } from '../../context-api/ProfileContext'; 
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import {
+  Search, X, RotateCw, Inbox, ArrowRight, Reply, ChevronLeft, ChevronRight, ShieldAlert,
+} from 'lucide-react';
+import { API_BASE_URL } from '../../../config/Api';
+import { useProfile } from '../../context-api/ProfileContext';
 import ContactFormDetailModal from './ContactFormDetailModal';
+import QuoteReplyModal from './QuoteReplyModal';
+import QuoteEditModal from './QuoteEditModal';
+import Avatar from './QuoteAvatar';
+import { QUOTE_STATUS, shippingIcon, relativeTime, formatWeight } from './quoteRequestUtils';
 
-// Helper function to format timestamp
-const formatTimestamp = (timestamp) => {
-  if (!timestamp) return 'N/A';
-  const date = new Date(timestamp);
-  return date.toLocaleString();
-};
+const PAGE_SIZE = 10;
+const QUERY_KEY = ['allContactForms'];
+
+const TABS = [['all', 'All'], ['new', 'New'], ['read', 'Read'], ['replied', 'Replied'], ['archived', 'Archived']];
+
+const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
 
 function ContactFormResponsesMain() {
   const queryClient = useQueryClient();
   const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
-
-  // State for editing mode
-  const [editingContactId, setEditingContactId] = useState(null);
-  const [editName, setEditName] = useState('');
-  const [editEmail, setEditEmail] = useState('');
-  const [editPhoneNumber, setEditPhoneNumber] = useState('');
-  const [editMessage, setEditMessage] = useState('');
-  const [editStatus, setEditStatus] = useState('');
-
-  // State for reply modal
-  const [showReplyModal, setShowReplyModal] = useState(false);
-  const [currentContactForReply, setCurrentContactForReply] = useState(null); // Stores the full contact object
-  const [replySubject, setReplySubject] = useState('');
-  const [replyContent, setReplyContent] = useState('');
-  const [replyError, setReplyError] = useState('');
-
-  const [actionMessage, setActionMessage] = useState(''); // For general success messages
-  const [actionError, setActionError] = useState(''); // For general action errors
-  // Modal state for viewing details
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [detailContact, setDetailContact] = useState(null);
-
-  // Clear messages when starting a new action or editing
-  useEffect(() => {
-    setActionError('');
-    setActionMessage('');
-    setReplyError(''); // Clear reply specific error
-  }, [editingContactId, showReplyModal]);
-
-  // Determine if the user has permission to manage contact forms
   const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
-  // Fetch all contact forms for admin/pastor management
-  const {
-    data: contacts,
-    isLoading: contactsLoading,
-    isError: contactsError,
-    error: fetchError,
-  } = useQuery({
-    queryKey: ['allContactForms'], // Unique key for fetching all contact forms
+  const [tab, setTab] = useState('all');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [openId, setOpenId] = useState(null);
+  const [replyTo, setReplyTo] = useState(null);
+  const [editing, setEditing] = useState(null);
+
+  const { data: contacts = [], isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: QUERY_KEY,
     queryFn: async () => {
-      // This endpoint is now accessible by admin and pastor on the backend
       const response = await axios.get(`${API_BASE_URL}/contact`);
-      return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by creation date
+      return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     },
-    staleTime: 5 * 60 * 1000,
-    enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isEmployee)
+    staleTime: 60 * 1000,
+    enabled: hasPermission,
   });
 
-  // Mutation for editing a contact form
-  const editContactFormMutation = useMutation({
-    mutationFn: async (updatedContact) => {
-      const response = await axios.put(`${API_BASE_URL}/contact/${updatedContact._id}`, updatedContact);
-      return response.data;
+  // Keep repliedBy (populated by the list endpoint) when merging an updated record
+  const mergeLocal = (updated) =>
+    queryClient.setQueryData(QUERY_KEY, (list = []) =>
+      list.map((c) => (c._id === updated._id ? { ...c, ...updated, repliedBy: c.repliedBy && typeof updated.repliedBy === 'string' ? c.repliedBy : updated.repliedBy ?? c.repliedBy } : c)));
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, changes }) => (await axios.put(`${API_BASE_URL}/contact/${id}`, changes)).data,
+    onSuccess: (updated) => mergeLocal(updated),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => axios.delete(`${API_BASE_URL}/contact/${id}`),
+    onSuccess: (_, id) => {
+      queryClient.setQueryData(QUERY_KEY, (list = []) => list.filter((c) => c._id !== id));
+      toast.success('Quote request deleted');
     },
+    onError: (err) => toast.error(apiError(err, 'Failed to delete quote request')),
+  });
+  const replyMutation = useMutation({
+    mutationFn: async ({ id, subject, replyContent }) =>
+      (await axios.post(`${API_BASE_URL}/contact/${id}/reply`, { subject, replyContent })).data,
     onSuccess: () => {
-      setActionMessage('Contact form updated successfully!');
-      setActionError('');
-      setEditingContactId(null); // Exit edit mode
-      queryClient.invalidateQueries({ queryKey: ['allContactForms'] }); // Refetch list
-      setTimeout(() => setActionMessage(''), 3000);
-    },
-    onError: (err) => {
-      setActionError(err.response?.data?.message || 'Failed to update contact form.');
-      setActionMessage('');
+      toast.success('Reply sent');
+      setReplyTo(null);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY }); // picks up repliedBy/repliedAt
     },
   });
 
-  // Mutation for deleting a contact form
-  const deleteContactFormMutation = useMutation({
-    mutationFn: async (contactId) => {
-      await axios.delete(`${API_BASE_URL}/contact/${contactId}`);
-    },
-    onSuccess: () => {
-      setActionMessage('Contact form deleted successfully!');
-      setActionError('');
-      queryClient.invalidateQueries({ queryKey: ['allContactForms'] }); // Refetch list
-      setTimeout(() => setActionMessage(''), 3000);
-    },
-    onError: (err) => {
-      setActionError(err.response?.data?.message || 'Failed to delete contact form.');
-      setActionMessage('');
-    },
-  });
-
-  // Mutation for replying to a contact form
-  const replyToContactFormMutation = useMutation({
-    mutationFn: async ({ contactId, subject, replyContent }) => {
-      const response = await axios.post(`${API_BASE_URL}/contact/${contactId}/reply`, { subject, replyContent });
-      return response.data;
-    },
-    onSuccess: () => {
-      setActionMessage('Reply sent successfully!');
-      setReplyError('');
-      setShowReplyModal(false); // Close modal
-      setReplySubject('');
-      setReplyContent('');
-      queryClient.invalidateQueries({ queryKey: ['allContactForms'] }); // Refetch list to show updated status
-      setTimeout(() => setActionMessage(''), 3000);
-    },
-    onError: (err) => {
-      setReplyError(err.response?.data?.message || 'Failed to send reply.');
-      setActionMessage('');
-    },
-  });
-
-  // Handle edit button click
-  const handleEditClick = (contact) => {
-    setEditingContactId(contact._id);
-    setEditName(contact.name || '');
-    setEditEmail(contact.email || '');
-    setEditPhoneNumber(contact.phoneNumber || '');
-    setEditMessage(contact.message || '');
-    setEditStatus(contact.status || 'new');
-    setActionMessage(''); // Clear messages when starting edit
-    setActionError('');
-  };
-
-  // Handle save edit
-  const handleSaveEdit = (e) => {
-    e.preventDefault();
-    if (!editName.trim() || !editEmail.trim() || !editMessage.trim()) {
-      setActionError('Name, Email, and Message are required.');
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(editEmail)) {
-      setActionError('Please enter a valid email address.');
-      return;
-    }
-
-    editContactFormMutation.mutate({
-      _id: editingContactId,
-      name: editName,
-      email: editEmail,
-      phoneNumber: editPhoneNumber || undefined,
-      message: editMessage,
-      status: editStatus,
-    });
-  };
-
-  // Handle delete
-  const handleDeleteClick = (contactId) => {
-    if (window.confirm('Are you sure you want to delete this contact form submission? This action cannot be undone.')) {
-      deleteContactFormMutation.mutate(contactId);
-    }
-  };
-
-  // Handle opening reply modal
-  const handleReplyClick = (contact) => {
-    setCurrentContactForReply(contact);
-    setReplySubject(`Re: Quote Request for Shipment`); // Pre-fill subject
-    setReplyContent(''); // Clear previous content
-    setShowReplyModal(true);
-    setReplyError('');
-  };
-
-  // Handle submitting reply from modal
-  const handleReplySubmit = (e) => {
-    e.preventDefault();
-    if (!replySubject.trim() || !replyContent.trim()) {
-      setReplyError('Subject and Reply Content cannot be empty.');
-      return;
-    }
-    if (!currentContactForReply || !currentContactForReply.email) {
-      setReplyError('Cannot send reply: Sender email is missing.');
-      return;
-    }
-
-    replyToContactFormMutation.mutate({
-      contactId: currentContactForReply._id,
-      subject: replySubject,
-      replyContent: replyContent,
-    });
-  };
-
-  // Render loading state for authentication check
-  if (authLoading) {
-    return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-gray-700 flex items-center">
-          <svg className="animate-spin h-6 w-6 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Checking permissions...
-        </div>
-      </section>
+  const setStatus = (contact, status, { silent = false } = {}) => {
+    updateMutation.mutate(
+      { id: contact._id, changes: { status } },
+      {
+        onSuccess: () => !silent && toast.success(`Marked as ${QUOTE_STATUS[status].label.toLowerCase()}`),
+        onError: (err) => toast.error(apiError(err, 'Failed to update status')),
+      }
     );
+  };
+
+  // Opening a new request marks it as read
+  const openContact = (contact) => {
+    setOpenId(contact._id);
+    if ((contact.status || 'new') === 'new') setStatus(contact, 'read', { silent: true });
+  };
+
+  const handleDelete = (contact) => {
+    if (!window.confirm(`Delete the quote request from ${contact.name}? This cannot be undone.`)) return;
+    deleteMutation.mutate(contact._id);
+    if (openId === contact._id) setOpenId(null);
+  };
+
+  const counts = useMemo(() => {
+    const c = { all: contacts.length, new: 0, read: 0, replied: 0, archived: 0 };
+    contacts.forEach((x) => { c[x.status || 'new'] = (c[x.status || 'new'] || 0) + 1; });
+    return c;
+  }, [contacts]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return contacts.filter((c) => {
+      if (tab !== 'all' && (c.status || 'new') !== tab) return false;
+      if (!q) return true;
+      return [c.name, c.email, c.phoneNumber, c.message, c.originCountry, c.destinationCountry, c.shippingType]
+        .some((v) => v?.toLowerCase().includes(q));
+    });
+  }, [contacts, tab, search]);
+
+  useEffect(() => setPage(1), [tab, search]);
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const openContactObj = contacts.find((c) => c._id === openId) || null;
+
+  if (authLoading) {
+    return <div className="space-y-4 p-4 lg:p-6">{[0, 1, 2, 3].map((i) => <div key={i} className="h-20 animate-pulse rounded-2xl bg-gray-100" />)}</div>;
   }
 
-  // Check if user is authenticated AND (isAdmin OR isEmployee)
   if (!hasPermission) {
     return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-red-600">
-          Access Denied. You must be logged in as an Administrator or Pastor to manage contact forms.
-          <div className="mt-4">
-            <Link to="/login" className="text-blue-600 hover:underline">Go to Login</Link>
-          </div>
+      <div className="flex min-h-[60vh] items-center justify-center p-4">
+        <div className="max-w-sm rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500"><ShieldAlert size={22} /></span>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">Access restricted</h2>
+          <p className="mt-1 text-sm text-gray-500">Only administrators and employees can manage quote requests.</p>
+          <Link to="/app/dashboard" className="mt-5 inline-flex h-10 items-center rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Back to dashboard</Link>
         </div>
-      </section>
-    );
-  }
-
-  // Render loading state for contact forms data (only if authorized)
-  if (contactsLoading) {
-    return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-gray-700 flex items-center">
-          <svg className="animate-spin h-6 w-6 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Loading contact forms for management...
-        </div>
-      </section>
-    );
-  }
-
-  // Render error state for contact forms data
-  if (contactsError) {
-    return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="text-center text-lg text-red-600">
-          Error loading contact forms: {fetchError.response?.data?.message || fetchError.message}
-          <br/>
-          Please ensure your backend route `/contact-forms` is configured to allow 'pastor' role access if intended.
-        </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="py-16 px-2 sm:px-3 lg:px-4 bg-gray-100 font-inter overflow-x-hidden">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Manage  Quote Requests
-        </h2>
+    <div className="space-y-5 p-4 lg:p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-green-700">Customers</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-900 lg:text-4xl">Quote Requests</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {counts.new > 0 ? <><strong className="text-gray-900">{counts.new}</strong> new request{counts.new === 1 ? '' : 's'} waiting for a response.</> : 'You’re all caught up.'}
+          </p>
+        </div>
+        <button type="button" onClick={() => refetch()} disabled={isFetching}
+          className="inline-flex h-10 cursor-pointer items-center gap-2 self-start rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 disabled:opacity-60 sm:self-auto">
+          <RotateCw size={15} className={isFetching ? 'animate-spin' : ''} /> Refresh
+        </button>
+      </div>
 
-        {actionMessage && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md mb-4" role="alert">
-            <span className="block sm:inline">{actionMessage}</span>
-          </div>
-        )}
-        {actionError && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
-            <span className="block sm:inline">{actionError}</span>
-          </div>
-        )}
+      {/* Tabs + search */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm lg:flex-row lg:items-center">
+        <div className="-mx-1 flex gap-1 overflow-x-auto px-1" role="tablist" aria-label="Filter by status">
+          {TABS.map(([key, label]) => {
+            const active = tab === key;
+            return (
+              <button key={key} type="button" role="tab" aria-selected={active} onClick={() => setTab(key)}
+                className={`inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors ${
+                  active ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                {key !== 'all' && <span className={`h-2 w-2 rounded-full ${QUOTE_STATUS[key].dot}`} />}
+                {label}
+                <span className={`rounded-full px-1.5 text-xs tabular-nums ${active ? 'bg-white/20' : 'bg-gray-100 text-gray-500'}`}>{counts[key] || 0}</span>
+              </button>
+            );
+          })}
+        </div>
+        <label className="relative block lg:ml-auto lg:w-80">
+          <span className="sr-only">Search quote requests</span>
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, email, route, message…"
+            className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50/60 pl-9 pr-9 text-sm focus:border-green-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20" />
+          {search && (
+            <button type="button" onClick={() => setSearch('')} aria-label="Clear search"
+              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100"><X size={14} /></button>
+          )}
+        </label>
+      </div>
 
-        {contacts && contacts.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Message Snippet
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Received At
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {contacts.map((contact) => (
-                  <React.Fragment key={contact._id}>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {editingContactId === contact._id ? (
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
-                        ) : (
-                          contact.name
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {editingContactId === contact._id ? (
-                          <input
-                            type="email"
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
-                        ) : (
-                          contact.email
-                        )}
-                      </td>
-                      <td className="px-6 py-4 max-w-xs truncate text-sm text-gray-700">
-                        {editingContactId === contact._id ? (
-                          <textarea
-                            value={editMessage}
-                            onChange={(e) => setEditMessage(e.target.value)}
-                            rows="2"
-                            className="w-full p-1 border rounded resize-y"
-                          ></textarea>
-                        ) : (
-                          contact.message
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {editingContactId === contact._id ? (
-                          <select
-                            value={editStatus}
-                            onChange={(e) => setEditStatus(e.target.value)}
-                            className="w-full p-1 border rounded bg-white"
-                          >
-                            <option value="new">New</option>
-                            <option value="read">Read</option>
-                            <option value="replied">Replied</option>
-                            <option value="archived">Archived</option>
-                          </select>
-                        ) : (
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                            contact.status === 'new' ? 'bg-orange-100 text-orange-800' :
-                            contact.status === 'read' ? 'bg-blue-100 text-blue-800' :
-                            contact.status === 'replied' ? 'bg-green-100 text-green-800' :
-                            'bg-gray-100 text-gray-800' // archived
-                          }`}>
-                            {contact.status}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {formatTimestamp(contact.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {editingContactId === contact._id ? (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={handleSaveEdit}
-                              className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                              disabled={editContactFormMutation.isPending}
-                            >
-                              {editContactFormMutation.isPending ? 'Saving...' : 'Save'}
-                            </button>
-                            <button
-                              onClick={() => setEditingContactId(null)}
-                              className="text-gray-600 hover:text-gray-900"
-                              disabled={editContactFormMutation.isPending}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={() => { setDetailContact(contact); setShowDetailModal(true); }}
-                              className="text-green-600 hover:text-green-900 cursor-pointer"
-                            >
-                              View
-                            </button>
-                            <button
-                              onClick={() => handleEditClick(contact)}
-                              className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(contact._id)}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50 cursor-pointer"
-                              disabled={deleteContactFormMutation.isPending}
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={() => handleReplyClick(contact)}
-                              className="text-purple-600 hover:text-purple-900 disabled:opacity-50 cursor-pointer"
-                              disabled={!contact.email} // Disable if no email to reply to
-                            >
-                              Reply
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                    {/* Expanded row for additional details and reply info */}
-                    {editingContactId === contact._id && (
-                      <tr>
-                        <td colSpan="7" className="px-6 py-4 text-sm text-gray-700 bg-gray-50">
-                          <div className="space-y-4">
-                            <div>
-                              <label htmlFor="editPhoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                                Phone Number
-                              </label>
-                              <input
-                                type="text"
-                                id="editPhoneNumber"
-                                value={editPhoneNumber}
-                                onChange={(e) => setEditPhoneNumber(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                            {contact.repliedBy && (
-                              <div>
-                                <p className="text-sm font-medium text-gray-700">
-                                  Replied By: <span className="font-normal">{contact.repliedBy.name} ({contact.repliedBy.email})</span>
-                                </p>
-                                <p className="text-sm font-medium text-gray-700">
-                                  Replied At: <span className="font-normal">{formatTimestamp(contact.repliedAt)}</span>
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+      {/* List */}
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        {isLoading ? (
+          <div className="divide-y divide-gray-100">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="flex gap-3 p-4"><div className="h-10 w-10 animate-pulse rounded-full bg-gray-100" /><div className="flex-1 space-y-2"><div className="h-4 w-1/3 animate-pulse rounded bg-gray-100" /><div className="h-3 w-2/3 animate-pulse rounded bg-gray-100" /></div></div>)}</div>
+        ) : isError ? (
+          <div className="p-10 text-center text-sm text-rose-600">Couldn&apos;t load quote requests: {apiError(error, 'Unknown error')}</div>
+        ) : pageItems.length === 0 ? (
+          <div className="flex flex-col items-center px-6 py-16 text-center">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-gray-400"><Inbox size={26} /></span>
+            <p className="mt-4 text-sm font-semibold text-gray-900">{search || tab !== 'all' ? 'No matching quote requests' : 'No quote requests yet'}</p>
+            <p className="mt-1 text-xs text-gray-500">{search || tab !== 'all' ? 'Try another filter or search.' : 'Requests from the website will appear here.'}</p>
           </div>
         ) : (
-          <p className="text-center text-gray-600">No contact form submissions to manage.</p>
+          <ul className="divide-y divide-gray-100">
+            {pageItems.map((c) => {
+              const status = QUOTE_STATUS[c.status || 'new'] || QUOTE_STATUS.new;
+              const isNew = (c.status || 'new') === 'new';
+              const ShipIcon = shippingIcon(c.shippingType);
+              const route = [c.originCountry, c.destinationCountry].filter(Boolean);
+              return (
+                <li key={c._id} className={`group relative ${openId === c._id ? 'bg-green-50/60' : 'hover:bg-gray-50/80'}`}>
+                  {isNew && <span className="absolute inset-y-0 left-0 w-1 bg-amber-400" aria-hidden="true" />}
+                  <button type="button" onClick={() => openContact(c)} className="flex w-full cursor-pointer items-start gap-3 p-4 pr-24 text-left sm:pr-28">
+                    <Avatar name={c.name} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <p className={`truncate text-sm ${isNew ? 'font-bold text-gray-900' : 'font-semibold text-gray-800'}`}>{c.name}</p>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${status.pill}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />{status.label}
+                        </span>
+                      </div>
+                      <p className="truncate text-xs text-gray-500">{c.email}{c.phoneNumber ? ` · ${c.phoneNumber}` : ''}</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2 py-1">
+                          <ShipIcon size={13} className="text-gray-500" />
+                          {c.shippingType || 'Shipment'}
+                        </span>
+                        {route.length > 0 && (
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1">
+                            {c.originCountry || '—'} <ArrowRight size={12} className="text-gray-400" /> {c.destinationCountry || '—'}
+                          </span>
+                        )}
+                        {c.weight && <span className="rounded-lg bg-gray-100 px-2 py-1">{formatWeight(c.weight)}</span>}
+                      </div>
+                      {c.message && <p className={`mt-2 line-clamp-2 text-sm ${isNew ? 'text-gray-700' : 'text-gray-500'}`}>{c.message}</p>}
+                    </div>
+                  </button>
+                  <div className="absolute right-4 top-4 flex flex-col items-end gap-2">
+                    <span className="whitespace-nowrap text-xs text-gray-500" title={new Date(c.createdAt).toLocaleString()}>{relativeTime(c.createdAt)}</span>
+                    {c.email && (
+                      <button type="button" onClick={() => setReplyTo(c)}
+                        className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-green-300 hover:text-green-700">
+                        <Reply size={13} /> Reply
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {!isLoading && filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+            <p className="text-xs text-gray-500">
+              Showing <span className="font-semibold text-gray-700">{(page - 1) * PAGE_SIZE + 1}</span>–<span className="font-semibold text-gray-700">{Math.min(page * PAGE_SIZE, filtered.length)}</span> of <span className="font-semibold text-gray-700">{filtered.length}</span>
+            </p>
+            <div className="flex gap-2">
+              <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"><ChevronLeft size={14} /> Prev</button>
+              <button type="button" disabled={page >= pages} onClick={() => setPage(page + 1)} className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40">Next <ChevronRight size={14} /></button>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Reply Modal */}
-      {showReplyModal && currentContactForReply && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-          <div className="relative p-8 bg-white w-full max-w-md mx-auto rounded-xl shadow-lg">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Reply to {currentContactForReply.name}
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Original Message: <span className="italic">"{currentContactForReply.message.substring(0, 100)}..."</span>
-            </p>
-            <form onSubmit={handleReplySubmit} className="space-y-4">
-              {replyError && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative" role="alert">
-                  <span className="block sm:inline">{replyError}</span>
-                </div>
-              )}
-              <div>
-                <label htmlFor="replySubject" className="block text-sm font-medium text-gray-700 mb-1">
-                  Subject <span className="text-red-500">*</span>
-                  <span className='ml-2 text-[11px]'>(You can rephrase the subject)</span>
-                </label>
-                <input
-                  type="text"
-                  id="replySubject"
-                  value={replySubject}
-                  onChange={(e) => setReplySubject(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="replyContent" className="block text-sm font-medium text-gray-700 mb-1">
-                  Reply Content <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="replyContent"
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  rows="8"
-                  placeholder='Enter your reply here...'
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
-                  required
-                ></textarea>
-              </div>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowReplyModal(false)}
-                  className="px-5 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-200"
-                  disabled={replyToContactFormMutation.isPending}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  disabled={replyToContactFormMutation.isPending}
-                >
-                  {replyToContactFormMutation.isPending ? (
-                    <svg className="animate-spin h-5 w-5 text-white mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  ) : (
-                    'Send Reply'
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {openContactObj && (
+        <ContactFormDetailModal
+          contact={openContactObj}
+          isAdmin={isAdmin}
+          onClose={() => setOpenId(null)}
+          onReply={() => setReplyTo(openContactObj)}
+          onEdit={() => setEditing(openContactObj)}
+          onDelete={() => handleDelete(openContactObj)}
+          onSetStatus={(status) => setStatus(openContactObj, status)}
+          busy={updateMutation.isPending}
+        />
       )}
 
-      {/* Detail Modal */}
-      {showDetailModal && detailContact && (
-        <ContactFormDetailModal contact={detailContact} onClose={() => { setShowDetailModal(false); setDetailContact(null); }} />
+      {replyTo && (
+        <QuoteReplyModal
+          contact={replyTo}
+          sending={replyMutation.isPending}
+          onClose={() => setReplyTo(null)}
+          onSend={(subject, replyContent, { onError }) =>
+            replyMutation.mutate({ id: replyTo._id, subject, replyContent }, { onError: (err) => onError(apiError(err, 'Failed to send reply')) })}
+        />
       )}
-    </section>
+
+      {editing && (
+        <QuoteEditModal
+          contact={editing}
+          saving={updateMutation.isPending}
+          onClose={() => setEditing(null)}
+          onSave={(changes, { onError }) =>
+            updateMutation.mutate({ id: editing._id, changes }, {
+              onSuccess: () => { toast.success('Quote request updated'); setEditing(null); },
+              onError: (err) => onError(apiError(err, 'Failed to update quote request')),
+            })}
+        />
+      )}
+    </div>
   );
 }
 
