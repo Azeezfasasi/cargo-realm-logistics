@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import axios from 'axios';
 import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
@@ -7,6 +7,9 @@ import { isDelivered, daysSince, STALE_AFTER_DAYS } from '../shipments/shipmentS
 import { Plus, RotateCw, AlertTriangle, X, CheckSquare } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useProfile } from '../../context-api/ProfileContext';
+
+// PDF generation is heavy, so it's only downloaded when an invoice/waybill is opened
+const ShipmentDocumentModal = lazy(() => import('../shipments/documents/ShipmentDocumentModal'));
 
 const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
 import EditShipmentModal from '../shipments/EditShipmentModal';
@@ -564,6 +567,14 @@ export default function AllShipmentsMain({ token }) {
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'print'} onClose={closeModal}>
             <PrintModal shipment={selectedShipment} onClose={closeModal} />
+        </BasicModal>
+        )}
+
+        {selectedShipment && (modalType === 'invoice' || modalType === 'waybill') && (
+        <BasicModal isOpen onClose={closeModal}>
+            <Suspense fallback={<div className="flex h-40 items-center justify-center"><FaSpinner className="animate-spin text-2xl text-green-600" /></div>}>
+                <ShipmentDocumentModal shipment={selectedShipment} type={modalType} onClose={closeModal} />
+            </Suspense>
         </BasicModal>
         )}
 
