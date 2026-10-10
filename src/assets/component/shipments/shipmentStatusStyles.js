@@ -60,6 +60,15 @@ const STATUS_TONE = {
 export const getStatusTone = (status) =>
   TONES[STATUS_TONE[String(status || '').trim().toLowerCase()]] || TONES.gray;
 
+export const formatNaira = (n) =>
+  `₦${(Number(n) || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export const PAYMENT_BADGE = {
+  paid: { label: 'Paid', className: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' },
+  partial: { label: 'Part-paid', className: 'bg-amber-50 text-amber-800 ring-amber-600/20' },
+  unpaid: { label: 'Unpaid', className: 'bg-gray-50 text-gray-600 ring-gray-500/20' },
+};
+
 // "in-transit" -> "In Transit"; free-text statuses keep their wording
 export const formatStatus = (status) => {
   const s = String(status || '').trim();

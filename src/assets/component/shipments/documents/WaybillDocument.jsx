@@ -25,6 +25,7 @@ const s = StyleSheet.create({
   sigRow: { flexDirection: 'row', gap: 12, marginTop: 6 },
   sigBox: { flex: 1, borderWidth: 1, borderColor: LINE, borderRadius: 4, padding: 10, minHeight: 110 },
   sigLine: { borderBottomWidth: 1, borderBottomColor: '#9ca3af', marginTop: 26, marginBottom: 3 },
+  sigValue: { marginTop: 12, fontSize: 9.5 },
   terms: { marginTop: 12, fontSize: 7.5, color: MUTED },
 });
 
@@ -49,13 +50,17 @@ function Party({ title, name, address, phone, email }) {
   );
 }
 
-function Signature({ title, lines }) {
+// `values` pre-fills lines (e.g. from the recorded proof of delivery)
+function Signature({ title, lines, values = [] }) {
   return (
     <View style={s.sigBox}>
       <Text style={base.cardTitle}>{title}</Text>
-      {lines.map((l) => (
+      {lines.map((l, i) => (
         <View key={l}>
-          <View style={s.sigLine} />
+          {values[i] ? (
+            <Text style={[s.sigValue, base.bold]}>{values[i]}</Text>
+          ) : null}
+          <View style={[s.sigLine, values[i] ? { marginTop: 2 } : null]} />
           <Text style={[base.muted, { fontSize: 7.5 }]}>{l}</Text>
         </View>
       ))}
@@ -133,7 +138,16 @@ export default function WaybillDocument({ shipment }) {
         <View style={s.sigRow} wrap={false}>
           <Signature title="Shipper" lines={['Signature', 'Date']} />
           <Signature title="Received by carrier" lines={['Agent name & signature', 'Date']} />
-          <Signature title="Delivered to consignee" lines={['Name & signature', 'Date & time']} />
+          <Signature
+            title="Delivered to consignee"
+            lines={['Name & signature', 'Date & time']}
+            values={[
+              shipment.proofOfDelivery?.receivedBy,
+              shipment.deliveredAt
+                ? new Date(shipment.deliveredAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : null,
+            ]}
+          />
         </View>
 
         <Text style={s.terms}>

@@ -20,6 +20,7 @@ import { exportToExcel } from '../../utils/exportToExcel';
 import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
+import PaymentsModal from '../shipments/PaymentsModal';
 import { FaSpinner } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
@@ -191,11 +192,12 @@ export default function AllShipmentsMain({ token }) {
     }
     };
 
-    const handleStatusChange = async ({ shipmentId, newStatus, location }) => {
+    const handleStatusChange = async ({ shipmentId, newStatus, location, proofOfDelivery }) => {
         try {
-            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { 
+            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, {
               status: newStatus,
-              location: location
+              location: location,
+              proofOfDelivery,
             }, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -567,6 +569,18 @@ export default function AllShipmentsMain({ token }) {
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'print'} onClose={closeModal}>
             <PrintModal shipment={selectedShipment} onClose={closeModal} />
+        </BasicModal>
+        )}
+
+        {selectedShipment && modalType === 'payments' && (
+        <BasicModal isOpen onClose={closeModal}>
+            <PaymentsModal
+                shipment={selectedShipment}
+                token={token}
+                isAdmin={isAdmin}
+                onUpdated={(updated) => setShipments((prev) => prev.map((s) => (s._id === updated._id ? { ...s, ...updated } : s)))}
+                onClose={closeModal}
+            />
         </BasicModal>
         )}
 

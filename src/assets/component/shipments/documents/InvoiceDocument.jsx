@@ -6,6 +6,8 @@ import {
   base, show, formatDate, formatMoney, formatStatus, items,
 } from './pdfShared';
 
+const PAYMENT_METHOD_LABELS = { cash: 'Cash', 'bank-transfer': 'Bank transfer', card: 'Card', pos: 'POS', other: 'Other' };
+
 const s = StyleSheet.create({
   title: { fontSize: 26, lineHeight: 1, fontFamily: 'Helvetica-Bold', color: BRAND, letterSpacing: 1, textAlign: 'right', marginBottom: 10 },
   metaRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 3 },
@@ -34,6 +36,9 @@ export default function InvoiceDocument({ shipment }) {
   const hasCost = Number.isFinite(cost) && cost > 0;
   const contents = items(shipment);
   const issued = shipment.shipmentDate || shipment.createdAt;
+  const paid = Number(shipment.amountPaid) || 0;
+  const balance = hasCost ? Math.max(0, cost - paid) : 0;
+  const isPaid = shipment.paymentStatus === 'paid';
 
   return (
     <Document title={`Invoice ${shipment.trackingNumber}`} author={COMPANY.name}>
@@ -108,11 +113,33 @@ export default function InvoiceDocument({ shipment }) {
         {/* Totals */}
         <View style={s.totals}>
           <View style={s.totalLine}><Text style={base.muted}>Subtotal</Text><Text>{hasCost ? formatMoney(cost) : '—'}</Text></View>
-          <View style={s.grandTotal}>
+          <View style={s.totalLine}>
             <Text style={base.bold}>Total</Text>
             <Text style={base.bold}>{hasCost ? formatMoney(cost) : 'To be confirmed'}</Text>
           </View>
+          {paid > 0 && (
+            <View style={s.totalLine}><Text style={base.muted}>Amount paid</Text><Text>- {formatMoney(paid)}</Text></View>
+          )}
+          <View style={[s.grandTotal, isPaid ? { backgroundColor: '#047857' } : null]}>
+            <Text style={base.bold}>{isPaid ? 'PAID IN FULL' : 'Balance due'}</Text>
+            <Text style={base.bold}>{hasCost ? formatMoney(balance) : 'To be confirmed'}</Text>
+          </View>
         </View>
+
+        {/* Payments received */}
+        {Array.isArray(shipment.payments) && shipment.payments.length > 0 && (
+          <View style={{ marginTop: 18 }} wrap={false}>
+            <Text style={base.label}>Payments received</Text>
+            {shipment.payments.map((p, i) => (
+              <View key={p._id || i} style={[base.between, { paddingVertical: 3, borderBottomWidth: 1, borderBottomColor: LINE }]}>
+                <Text>
+                  {formatDate(p.paidAt)} · {PAYMENT_METHOD_LABELS[p.method] || 'Other'}{p.reference ? ` · Ref ${p.reference}` : ''}
+                </Text>
+                <Text>{formatMoney(p.amount)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Notes + QR */}
         <View style={s.bottom} wrap={false}>
