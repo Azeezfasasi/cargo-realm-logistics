@@ -4,7 +4,7 @@ import { Pencil, Mail, Eye, Trash2, RefreshCcw } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function DeliveredShipmentTable({ shipments = [], onActionClick = () => {} }) {
+export default function DeliveredShipmentTable({ shipments = [], onActionClick = () => {}, canDelete = true }) {
   const [currentPage, setCurrentPage] = useState(1);
 
   // make filter defensive: ensure shipments is an array and match delivered robustly
@@ -63,9 +63,11 @@ export default function DeliveredShipmentTable({ shipments = [], onActionClick =
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')}>
                   <Eye size={16} />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')}>
-                  <Trash2 size={16} className="text-red-500" />
-                </Button>
+                {canDelete && (
+                  <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')}>
+                    <Trash2 size={16} className="text-red-500" />
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

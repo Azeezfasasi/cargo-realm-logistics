@@ -63,12 +63,14 @@ import SMSDashboard from "./components/SMSDashboard"
 import SMSLogs from "./components/SMSLogs"
 import SMSSettings from "./components/SMSSettings"
 import SMSStatistics from "./components/SMSStatistics"
+import { Toaster } from "react-hot-toast"
 
 function App() {
 
   return (
     <>
       <ProfileProvider>
+        <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         <ScrollToTop />
         <Routes>
           {/* Public Routes */}

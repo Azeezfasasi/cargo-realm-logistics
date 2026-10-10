@@ -1,7 +1,14 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
+import InProgressSummary from '../shipments/InProgressSummary';
+import { isDelivered, daysSince, STALE_AFTER_DAYS } from '../shipments/shipmentStatusStyles';
+import { Plus, RotateCw, AlertTriangle, X, CheckSquare } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { useProfile } from '../../context-api/ProfileContext';
+
+const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
 import EditShipmentModal from '../shipments/EditShipmentModal';
 import ReplyModal from '../shipments/ReplyModal';
 import ChangeStatusModal from '../shipments/ChangeStatusModal';
@@ -14,14 +21,16 @@ import { FaSpinner } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 export default function AllShipmentsMain({ token }) {
+  const { isAdmin } = useProfile(); // only admins may delete (enforced by the backend too)
   const [shipments, setShipments] = useState([]);
-  const [filteredShipments, setFilteredShipments] = useState([]);
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFacility, setSelectedFacility] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [staleOnly, setStaleOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [facilities, setFacilities] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -50,12 +59,8 @@ export default function AllShipmentsMain({ token }) {
           axios.get(`${API_BASE_URL}/shipment-statuses`)
         ]);
         
-        // Transform facilities for display
-        const facilityList = facilitiesRes.data.map(f => ({
-          name: f.name,
-          count: 0 // Will be calculated from shipments
-        }));
-        setFacilities(facilityList);
+        // Facility names; open-shipment counts are derived below
+        setFacilities(facilitiesRes.data.map(f => ({ name: f.name })));
         
         // Set statuses
         setStatuses(statusesRes.data || []);
@@ -67,94 +72,76 @@ export default function AllShipmentsMain({ token }) {
     fetchFacilitiesAndStatuses();
   }, []);
 
-  // Centralized filter application (pure function - no hook deps)
-  const applyFilters = ({ shipmentsList, status, facility, term } = {}) => {
-    const list = Array.isArray(shipmentsList) ? shipmentsList : [];
-    const q = (term || '').toLowerCase();
-    return list.filter((s) => {
-      const matchesStatus = !status || s.status === status;
-      const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
-      const matchesFacility = !facility || facilityName === facility;
-      const matchesSearch = !q || (
-        s.trackingNumber?.toLowerCase().includes(q) ||
-        s.senderName?.toLowerCase().includes(q) ||
-        s.destination?.toLowerCase().includes(q) ||
-        s.status?.toLowerCase().includes(q)
-      );
-      return matchesStatus && matchesFacility && matchesSearch;
-    });
-  };
-
-  const fetchShipments = useCallback(async () => {
-    setLoading(true); // Start loading
+  // Fetch once on mount; later calls (after edits) refresh in the background
+  const fetchShipments = useCallback(async ({ background = false } = {}) => {
+    if (background) setRefreshing(true);
+    else setLoading(true);
     setError(null);
     try {
       const authToken = token || localStorage.getItem('token');
-      console.log('AllShipmentsMain: fetching shipments, token present?', !!authToken);
       const res = await axios.get(`${API_BASE_URL}/shipments`, authToken ? {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
       } : undefined);
-      console.log('AllShipmentsMain: fetch response status', res.status);
       const sorted = Array.isArray(res.data) ? res.data.sort((a, b) => getTimestamp(b) - getTimestamp(a)) : [];
-      console.log('AllShipmentsMain: fetched shipments count', sorted.length);
       setShipments(sorted);
-      // apply current filters to freshly fetched data using current UI state
-      const applied = applyFilters({ shipmentsList: sorted, status: selectedStatus, facility: selectedFacility, term: searchQuery });
-      setFilteredShipments(applied);
     } catch (err) {
       console.error('Failed to fetch shipments:', err);
       setError(err?.response?.data?.message || err.message || 'Failed to fetch shipments');
-      setShipments([]);
-      setFilteredShipments([]);
+      if (!background) setShipments([]);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
+      setRefreshing(false);
     }
-  }, [token, selectedStatus, selectedFacility, searchQuery]);
+  }, [token]);
 
   useEffect(() => {
     fetchShipments();
   }, [fetchShipments]);
 
-  // Compute facility counts from shipments
-  useEffect(() => {
-    if (facilities.length === 0) return;
-    
-    const facilityCounts = {};
-    shipments.forEach((s) => {
-      const raw = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
-      const name = raw.trim();
-      if (!name) return;
-      facilityCounts[name] = (facilityCounts[name] || 0) + 1;
+  const refreshShipments = () => fetchShipments({ background: true });
+
+  // Filters run locally on the fetched list (no refetch per keystroke)
+  const filteredShipments = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return shipments.filter((s) => {
+      const matchesStatus = !selectedStatus || s.status === selectedStatus;
+      const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
+      const matchesFacility = !selectedFacility || facilityName === selectedFacility;
+      const matchesSearch = !q || [s.trackingNumber, s.senderName, s.recipientName, s.destination, s.status]
+        .some((v) => v?.toLowerCase().includes(q));
+      const matchesStale = !staleOnly || (!isDelivered(s.status) && daysSince(s.createdAt) > STALE_AFTER_DAYS);
+      return matchesStatus && matchesFacility && matchesSearch && matchesStale;
     });
-    
-    // Create list with counts
-    const facilityList = facilities.map(f => ({
-      ...f,
-      count: facilityCounts[f.name] || 0
-    }));
-    setFacilities(facilityList);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shipments]);
+  }, [shipments, searchQuery, selectedStatus, selectedFacility, staleOnly]);
 
-  const handleSearch = (searchTerm) => {
-    setSearchQuery(searchTerm);
-    const applied = applyFilters({ term: searchTerm });
-    setFilteredShipments(applied);
-  };
+  // Facility dropdown shows how many open shipments each facility has
+  const facilitiesWithCounts = useMemo(() => {
+    const counts = {};
+    shipments.forEach((s) => {
+      if (isDelivered(s.status)) return;
+      const name = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString().trim();
+      if (name) counts[name] = (counts[name] || 0) + 1;
+    });
+    return facilities.map((f) => ({ ...f, count: counts[f.name] || 0 }));
+  }, [shipments, facilities]);
 
+  // Delivered shipments are hidden on this page, so don't offer them as a filter
+  const openStatuses = useMemo(
+    () => statuses.filter((st) => !isDelivered(st.code || st.name)),
+    [statuses]
+  );
 
-  const handleFilter = (status) => {
-    setSelectedStatus(status);
-    const applied = applyFilters({ status });
-    setFilteredShipments(applied);
-  };
+  const handleSearch = (searchTerm) => setSearchQuery(searchTerm);
+  const handleFilter = (status) => setSelectedStatus(status);
+  const handleFacilityChange = (facility) => setSelectedFacility(facility);
 
-  const handleFacilityChange = (facility) => {
-    setSelectedFacility(facility);
-    const applied = applyFilters({ facility });
-    setFilteredShipments(applied);
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedStatus('');
+    setSelectedFacility('');
+    setStaleOnly(false);
   };
 
   const openModal = (shipment, type) => {
@@ -168,24 +155,24 @@ export default function AllShipmentsMain({ token }) {
   };
 
     const handleDeleteShipment = async (id) => {
-    console.log("Trying to delete shipment:", id);
       try {
-        const res = await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
+        await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("Delete success:", res.data);
-        fetchShipments();
+        toast.success('Shipment deleted');
+        refreshShipments();
       } catch (err) {
         console.error("Delete failed:", err.response?.data || err.message);
+        toast.error(apiError(err, 'Failed to delete shipment'));
       }
     };
 
     const handleSendReply = async ({ shipmentId, message }) => {
     try {
         const token = localStorage.getItem("token");
-        await axios.post(`${API_BASE_URL}/shipments/${shipmentId}/reply`, 
+        await axios.post(`${API_BASE_URL}/shipments/${shipmentId}/reply`,
         { message },
         {
             headers: {
@@ -193,10 +180,11 @@ export default function AllShipmentsMain({ token }) {
             },
         }
         );
-        // Optionally show a toast or refetch shipment notes/messages
-        console.log("Reply sent successfully");
+        toast.success('Message sent');
+        refreshShipments();
     } catch (error) {
         console.error("Error sending reply:", error);
+        toast.error(apiError(error, 'Failed to send message'));
     }
     };
 
@@ -210,7 +198,8 @@ export default function AllShipmentsMain({ token }) {
                 Authorization: `Bearer ${token}`,
             },
             });
-            await fetchShipments(); 
+            toast.success('Status updated');
+            await refreshShipments();
         } catch (err) {
             console.error("Failed to update status", err);
             throw new Error(err?.response?.data?.message || 'Failed to update status. Please try again.');
@@ -259,14 +248,15 @@ export default function AllShipmentsMain({ token }) {
 
     const handleBulkStatusChange = async () => {
       if (selectedShipments.length === 0 || !bulkStatusFilter) {
-        alert('Please select shipments and a status');
+        toast.error('Please select shipments and a status');
         return;
       }
 
       setBulkLoading(true);
       try {
         const authToken = token || localStorage.getItem('token');
-        await Promise.all(
+        // allSettled so one failure doesn't hide which updates succeeded
+        const results = await Promise.allSettled(
           selectedShipments.map(shipmentId =>
             axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: bulkStatusFilter }, {
               headers: {
@@ -275,15 +265,24 @@ export default function AllShipmentsMain({ token }) {
             })
           )
         );
-        alert(`Successfully updated ${selectedShipments.length} shipment(s)`);
-        setSelectedShipments([]);
-        setBulkModalOpen(false);
-        setBulkStatusFilter('');
-        fetchShipments();
-      } catch (err) {
-        console.error("Failed to bulk update status", err);
-        alert(`Error: ${err.response?.data?.message || err.message}`);
-        } finally {
+        const failedIds = selectedShipments.filter((_, i) => results[i].status === 'rejected');
+        const okCount = selectedShipments.length - failedIds.length;
+
+        if (failedIds.length === 0) {
+          toast.success(`Updated ${okCount} shipment(s)`);
+        } else {
+          const firstError = results.find((r) => r.status === 'rejected').reason;
+          console.error("Bulk status update failures", results);
+          toast.error(`${failedIds.length} of ${selectedShipments.length} failed: ${apiError(firstError, 'update failed')}`);
+        }
+        // Keep failed ones selected so they can be retried
+        setSelectedShipments(failedIds);
+        if (failedIds.length === 0) {
+          setBulkModalOpen(false);
+          setBulkStatusFilter('');
+        }
+        refreshShipments();
+      } finally {
         setBulkLoading(false);
       }
     };
@@ -293,44 +292,90 @@ export default function AllShipmentsMain({ token }) {
     };
     
     
-    if (loading) { 
-        return (
-          <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
-            <FaSpinner className="animate-spin text-green-600 text-4xl" />
-            <p className="ml-3 text-lg text-gray-700">Loading all shipments...</p>
-          </section>
-        );
-      }
-
-  if (error) {
+  if (loading) {
     return (
-      <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
-        <p className="text-red-600 mb-4">Error loading shipments: {String(error)}</p>
-        <button
-          className="px-4 py-2 bg-green-600 text-white rounded"
-          onClick={() => fetchShipments()}
-        >
-          Retry
-        </button>
-      </section>
+      <div className="space-y-6 p-4 lg:p-6">
+        <div className="h-10 w-64 animate-pulse rounded-lg bg-gray-200" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-32 animate-pulse rounded-2xl bg-gray-100" />
+          ))}
+        </div>
+        <div className="h-16 animate-pulse rounded-2xl bg-gray-100" />
+        <div className="flex h-80 items-center justify-center rounded-2xl bg-gray-50">
+          <FaSpinner className="animate-spin text-3xl text-green-600" />
+          <p className="ml-3 text-sm text-gray-600">Loading shipments…</p>
+        </div>
+      </div>
     );
   }
 
-  return (
-    <div className="p-4 space-y-6">
-      {/* <div className='font-bold text-[20px] lg:text-[28px]'>All Shipments</div> */}
-      <div className="flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
-        <div>
-          <h1 className='font-bold text-3xl lg:text-4xl text-gray-900'>All Shipments</h1>
-          <p className="text-gray-600 text-sm mt-1">Manage and track your logistics shipments</p>
+  if (error && shipments.length === 0) {
+    return (
+      <div className="flex min-h-[calc(100vh-120px)] items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-2xl border border-rose-100 bg-white p-8 text-center shadow-sm">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+            <AlertTriangle size={26} />
+          </span>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">Couldn&apos;t load shipments</h2>
+          <p className="mt-1 text-sm text-gray-500">{String(error)}</p>
+          <button
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700"
+            onClick={() => fetchShipments()}
+          >
+            <RotateCw size={15} /> Try again
+          </button>
         </div>
-        <div className="flex items-center gap-4">
-          {/* add link to create shipment */}
-          <Link to="/app/account/createshipment" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium">
-            + Create Shipment
+      </div>
+    );
+  }
+
+  const openShipments = filteredShipments.filter((s) => !isDelivered(s.status));
+
+  return (
+    <div className="space-y-6 p-4 lg:p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-green-700">Shipments</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-900 lg:text-4xl">All Shipments</h1>
+          <p className="mt-1 text-sm text-gray-500">Track every shipment that is still on its way to the receiver.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={refreshShipments}
+            disabled={refreshing}
+            title="Refresh"
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 disabled:opacity-60"
+          >
+            <RotateCw size={15} className={refreshing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
+          </button>
+          <Link
+            to="/app/account/createshipment"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white shadow-sm shadow-green-900/20 transition-all hover:bg-green-700 hover:shadow-md"
+          >
+            <Plus size={16} /> Create Shipment
           </Link>
         </div>
       </div>
+
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <AlertTriangle size={16} /> Refresh failed: {String(error)}
+        </div>
+      )}
+
+      {/* In-progress overview */}
+      <InProgressSummary
+        shipments={shipments}
+        selectedStatus={selectedStatus}
+        onStatusSelect={handleFilter}
+        staleOnly={staleOnly}
+        onToggleStale={() => setStaleOnly((v) => !v)}
+      />
+
       {/* Toolbar and Filters */}
       <ShipmentToolbar
         searchQuery={searchQuery}
@@ -339,26 +384,46 @@ export default function AllShipmentsMain({ token }) {
         onFacilityChange={handleFacilityChange}
         selectedFacility={selectedFacility}
         selectedStatus={selectedStatus}
-        facilities={facilities}
-        statuses={statuses}
-        onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
+        facilities={facilitiesWithCounts}
+        statuses={openStatuses}
+        onClearFilters={clearFilters}
+        onExport={() => exportToExcel(openShipments, 'In_Progress_Shipments')}
       />
+
+      {staleOnly && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span className="flex items-center gap-2">
+            <AlertTriangle size={16} />
+            Showing shipments open for more than {STALE_AFTER_DAYS} days
+          </span>
+          <button
+            type="button"
+            onClick={() => setStaleOnly(false)}
+            className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold hover:bg-amber-100"
+          >
+            <X size={13} /> Show all
+          </button>
+        </div>
+      )}
 
       {/* Bulk Action Toolbar */}
       {selectedShipments.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="sticky top-2 z-10 flex flex-col items-center justify-between gap-3 rounded-2xl border border-green-200 bg-white/95 p-3 pl-4 shadow-lg shadow-green-900/5 backdrop-blur md:flex-row">
           <div className="flex items-center gap-3">
-            <div className="text-sm font-medium text-gray-700">
-              <span className="font-bold text-green-600">{selectedShipments.length}</span> shipment(s) selected
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-100 text-green-700">
+              <CheckSquare size={18} />
+            </span>
+            <div className="text-sm text-gray-700">
+              <span className="font-bold text-gray-900">{selectedShipments.length}</span> shipment(s) selected
             </div>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
             <select
               value={bulkStatusFilter}
               onChange={(e) => setBulkStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+              className="h-10 flex-1 cursor-pointer rounded-xl border border-gray-200 bg-white px-3 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 md:w-60 md:flex-none"
             >
-              <option value="">Select status to apply...</option>
+              <option value="">Select status to apply…</option>
               {Array.isArray(statuses) && statuses.length > 0 ? (
                 statuses.map((status) => (
                   status.isActive && (
@@ -380,13 +445,13 @@ export default function AllShipmentsMain({ token }) {
             <button
               onClick={() => setBulkModalOpen(true)}
               disabled={!bulkStatusFilter}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+              className="h-10 cursor-pointer rounded-xl bg-green-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Update Status
             </button>
             <button
               onClick={clearSelection}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all font-medium"
+              className="h-10 cursor-pointer rounded-xl px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
             >
               Clear
             </button>
@@ -398,7 +463,7 @@ export default function AllShipmentsMain({ token }) {
       <ShipmentTable
         shipments={filteredShipments}
         onActionClick={openModal}
-        onDeleteClick={(shipment) => openModal(shipment, 'delete')}
+        canDelete={isAdmin}
         selectedShipments={selectedShipments}
         onSelectShipment={handleSelectShipment}
         onSelectAll={handleSelectAll}
@@ -455,8 +520,8 @@ export default function AllShipmentsMain({ token }) {
             <EditShipmentModal
                 shipment={selectedShipment}
                 onClose={closeModal}
-                onUpdate={fetchShipments}
-                facilities={facilities}
+                onUpdate={refreshShipments}
+                facilities={facilitiesWithCounts}
                 onSave={async (updatedShipment) => {
                 try {
                     await axios.put(`${API_BASE_URL}/shipments/${updatedShipment._id}`, updatedShipment, {
@@ -464,9 +529,11 @@ export default function AllShipmentsMain({ token }) {
                         Authorization: `Bearer ${token}`,
                     },
                     });
-                    fetchShipments(); // Refresh data
+                    toast.success('Shipment updated');
+                    refreshShipments(); // Refresh data
                 } catch (error) {
                     console.error('Failed to update shipment:', error);
+                    toast.error(apiError(error, 'Failed to update shipment'));
                 }
                 }}
             />

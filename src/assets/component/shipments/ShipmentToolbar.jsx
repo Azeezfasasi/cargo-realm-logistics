@@ -1,9 +1,37 @@
 import React from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Download, Search } from "lucide-react";
+import { Download, Search, X, Building2, ListFilter, ChevronDown } from "lucide-react";
 
-// The props have been updated to match the parent component
+const FALLBACK_FACILITIES = [
+  "Atlanta", "Indianapolis", "New York", "New jersey", "Maryland", "Dallas", "Houston",
+  "United States of America", "Canada", "Ontario", "Calgary", "Edmonton", "United Kingdom",
+];
+
+const FALLBACK_STATUSES = [
+  ["pending", "Pending"], ["in-transit", "In Transit"], ["delivered", "Delivered"],
+  ["cancelled", "Cancelled"], ["processing", "Processing"], ["out-for-delivery", "Out For Delivery"],
+  ["pickup-scheduled", "Pickup Scheduled"], ["picked-up", "Picked Up"], ["arrived-at-hub", "Arrived at Hub"],
+  ["departed-from-hub", "Departed from Hub"], ["on-hold", "On Hold"], ["customs-clearance", "Customs Clearance"],
+];
+
+function FilterSelect({ icon, value, onChange, children, className = "" }) {
+  const Icon = icon;
+  return (
+    <div className={`relative ${className}`}>
+      <Icon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`h-10 w-full cursor-pointer appearance-none truncate rounded-xl border bg-white pl-9 pr-9 text-sm text-gray-700 transition-colors focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 ${
+          value ? "border-green-300 bg-green-50/50" : "border-gray-200 hover:border-gray-300"
+        }`}
+      >
+        {children}
+      </select>
+      <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+    </div>
+  );
+}
+
 const ShipmentToolbar = ({
   searchQuery,
   onSearch,
@@ -14,90 +42,76 @@ const ShipmentToolbar = ({
   selectedFacility,
   facilities = [],
   statuses = [],
+  onClearFilters,
 }) => {
+  const hasFilters = Boolean(searchQuery || selectedStatus || selectedFacility);
+
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 bg-gray-50 rounded-xl shadow">
-      <div className="flex items-center gap-2 w-full md:w-auto">
-        <Search className="text-gray-500" />
-        <Input
+    <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm lg:flex-row lg:items-center">
+      <div className="relative w-full lg:max-w-sm lg:flex-1">
+        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
           type="text"
-          placeholder="Search by name, ID or destination"
+          placeholder="Search tracking no, sender, receiver, destination…"
           value={searchQuery}
           onChange={(e) => onSearch(e.target.value)}
-          className="w-full md:w-64"
+          className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50/60 pl-9 pr-9 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-green-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20"
         />
+        {searchQuery && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => onSearch("")}
+            className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
-      {/* Facility and Status Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <select
-          value={selectedFacility}
-          onChange={(e) => onFacilityChange(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 text-sm"
-        >
-          <option value="">All Facilities</option>
-          {Array.isArray(facilities) && facilities.length > 0 ? (
-            facilities.map((f) => (
-              <option key={f.name} value={f.name}>
-                {f.name}{f.count != null ? ` (${f.count})` : ''}
-              </option>
-            ))
-          ) : (
-            // Fallback static list if no dynamic facilities provided
-            <>
-              <option value="Atlanta">Atlanta</option>
-              <option value="Indianapolis">Indianapolis</option>
-              <option value="New York">New York</option>
-              <option value="New jersey">New jersey</option>
-              <option value="Maryland">Maryland</option>
-              <option value="Dallas">Dallas</option>
-              <option value="Houston">Houston</option>
-              <option value="United States of America">United States of America</option>
-              <option value="Canada">Canada</option>
-              <option value="Ontario">Ontario</option>
-              <option value="Calgary">Calgary</option>
-              <option value="Edmonton">Edmonton</option>
-              <option value="United Kingdom">United Kingdom</option>
-            </>
-          )}
-        </select>
-
-        <select
-          value={selectedStatus}
-          onChange={(e) => onStatusChange(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 text-sm w-[200px]"
-        >
-          <option value="">All Statuses</option>
-          {Array.isArray(statuses) && statuses.length > 0 ? (
-            statuses.map((status) => (
-              status.isActive && (
-                <option key={status._id} value={status.code || status.name.toLowerCase()}>
-                  {status.name}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:ml-auto">
+        <FilterSelect icon={Building2} value={selectedFacility} onChange={onFacilityChange} className="sm:w-52">
+          <option value="">All facilities</option>
+          {Array.isArray(facilities) && facilities.length > 0
+            ? facilities.map((f) => (
+                <option key={f.name} value={f.name}>
+                  {f.name}{f.count != null ? ` (${f.count})` : ""}
                 </option>
-              )
-            ))
-          ) : (
-            // Fallback static list
-            <>
-              <option value="pending">Pending</option>
-              <option value="in-transit">In Transit</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="processing">Processing</option>
-              <option value="out-for-delivery">Out For Delivery</option>
-              <option value="pickup-scheduled">Pickup Scheduled</option>
-              <option value="picked-up">Picked Up</option>
-              <option value="arrived-at-hub">Arrived at Hub</option>
-              <option value="departed-from-hub">Departed from Hub</option>
-              <option value="on-hold">On Hold</option>
-              <option value="customs-clearance">Customs Clearance</option>
-            </>
-          )}
-        </select>
+              ))
+            : FALLBACK_FACILITIES.map((name) => <option key={name} value={name}>{name}</option>)}
+        </FilterSelect>
 
-        <Button variant="outline" onClick={onExport}>
-          <Download className="mr-2 h-4 w-4" /> Export
-        </Button>
+        <FilterSelect icon={ListFilter} value={selectedStatus} onChange={onStatusChange} className="sm:w-56">
+          <option value="">All statuses</option>
+          {Array.isArray(statuses) && statuses.length > 0
+            ? statuses.map((status) =>
+                status.isActive && (
+                  <option key={status._id} value={status.code || status.name.toLowerCase()}>
+                    {status.name}
+                  </option>
+                )
+              )
+            : FALLBACK_STATUSES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </FilterSelect>
+
+        <div className="flex gap-2">
+          {onClearFilters && hasFilters && (
+            <button
+              type="button"
+              onClick={onClearFilters}
+              className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 sm:flex-none"
+            >
+              <X size={15} /> Clear
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onExport}
+            className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:border-gray-300 hover:bg-gray-50 sm:flex-none"
+          >
+            <Download size={15} /> Export
+          </button>
+        </div>
       </div>
     </div>
   );
