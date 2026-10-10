@@ -12,8 +12,13 @@ import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
 import { FaSpinner } from 'react-icons/fa';
 import DeliveredShipmentTable from '../shipments/DeliveredShipmentTable';
+import { toast } from 'react-hot-toast';
+import { useProfile } from '../../context-api/ProfileContext';
+
+const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
 
 export default function DeliveredShipmentsMain({ token }) {
+  const { isAdmin } = useProfile(); // only admins may delete (enforced by the backend too)
   const [shipments, setShipments] = useState([]);
   const [filteredShipments, setFilteredShipments] = useState([]);
   const [selectedShipment, setSelectedShipment] = useState(null);
@@ -186,17 +191,17 @@ export default function DeliveredShipmentsMain({ token }) {
   };
 
     const handleDeleteShipment = async (id) => {
-    console.log("Trying to delete shipment:", id);
       try {
-        const res = await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
+        await axios.delete(`${API_BASE_URL}/shipments/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("Delete success:", res.data);
+        toast.success('Shipment deleted');
         fetchShipments();
       } catch (err) {
         console.error("Delete failed:", err.response?.data || err.message);
+        toast.error(apiError(err, 'Failed to delete shipment'));
       }
     };
 
@@ -211,10 +216,11 @@ export default function DeliveredShipmentsMain({ token }) {
             },
         }
         );
-        // Optionally show a toast or refetch shipment notes/messages
-        console.log("Reply sent successfully");
+        toast.success('Message sent');
+        fetchShipments();
     } catch (error) {
         console.error("Error sending reply:", error);
+        toast.error(apiError(error, 'Failed to send message'));
     }
     };
 
@@ -228,9 +234,12 @@ export default function DeliveredShipmentsMain({ token }) {
                 Authorization: `Bearer ${token}`,
             },
             });
-            await fetchShipments(); 
+            toast.success('Status updated');
+            await fetchShipments();
         } catch (err) {
             console.error("Failed to update status", err);
+            // Rethrow so ChangeStatusModal shows the error instead of closing as if it worked
+            throw new Error(apiError(err, 'Failed to update status. Please try again.'));
         }
     };
     
@@ -275,7 +284,7 @@ export default function DeliveredShipmentsMain({ token }) {
       <DeliveredShipmentTable
         shipments={filteredShipments}
         onActionClick={openModal}
-        onDeleteClick={(shipment) => openModal(shipment, 'delete')}
+        canDelete={isAdmin}
       />
 
         {/* Modals */}
@@ -304,9 +313,11 @@ export default function DeliveredShipmentsMain({ token }) {
                         Authorization: `Bearer ${token}`,
                     },
                     });
+                    toast.success('Shipment updated');
                     fetchShipments(); // Refresh data
                 } catch (error) {
                     console.error('Failed to update shipment:', error);
+                    toast.error(apiError(error, 'Failed to update shipment'));
                 }
                 }}
             />
