@@ -60,6 +60,34 @@ const STATUS_TONE = {
 export const getStatusTone = (status) =>
   TONES[STATUS_TONE[String(status || '').trim().toLowerCase()]] || TONES.gray;
 
+// Shipments may store a status by its code ("in-transit") or by its name ("In Transit"),
+// depending on which screen set it. This maps any variant to one key per configured status:
+// the same value the status filter dropdown uses (code, else lower-cased name).
+export const makeStatusCanonicalizer = (statuses = []) => {
+  const lookup = new Map();
+  statuses.forEach((st) => {
+    const key = st.code || String(st.name || '').toLowerCase();
+    if (!key) return;
+    [st.code, st.name].forEach((v) => {
+      if (v) lookup.set(String(v).trim().toLowerCase(), key);
+    });
+  });
+  return (status) => {
+    const norm = String(status || '').trim().toLowerCase();
+    return lookup.get(norm) || norm;
+  };
+};
+
+// Display name for a canonical key (falls back to formatting the raw value)
+export const makeStatusLabeler = (statuses = []) => {
+  const names = new Map();
+  statuses.forEach((st) => {
+    const key = st.code || String(st.name || '').toLowerCase();
+    if (key && st.name) names.set(key, st.name);
+  });
+  return (key) => names.get(key) || formatStatus(key);
+};
+
 export const formatNaira = (n) =>
   `₦${(Number(n) || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 

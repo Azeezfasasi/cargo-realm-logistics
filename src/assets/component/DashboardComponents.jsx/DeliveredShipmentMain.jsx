@@ -70,7 +70,7 @@ export default function DeliveredShipmentsMain({ token }) {
     const list = Array.isArray(shipmentsList) ? shipmentsList : [];
     const q = (term || '').toLowerCase();
     return list.filter((s) => {
-      const matchesStatus = !status || s.status === status;
+      const matchesStatus = !status || String(s.status || '').trim().toLowerCase() === String(status).trim().toLowerCase();
       const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
       const matchesFacility = !facility || facilityName === facility;
       const matchesSearch = !q || (

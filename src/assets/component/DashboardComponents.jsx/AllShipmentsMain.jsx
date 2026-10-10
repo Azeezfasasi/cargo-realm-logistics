@@ -3,7 +3,7 @@ import axios from 'axios';
 import ShipmentTable from '../shipments/ShipmentTable';
 import ShipmentToolbar from '../shipments/ShipmentToolbar';
 import InProgressSummary from '../shipments/InProgressSummary';
-import { isDelivered, daysSince, STALE_AFTER_DAYS } from '../shipments/shipmentStatusStyles';
+import { isDelivered, daysSince, STALE_AFTER_DAYS, makeStatusCanonicalizer, makeStatusLabeler } from '../shipments/shipmentStatusStyles';
 import { Plus, RotateCw, AlertTriangle, X, CheckSquare } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useProfile } from '../../context-api/ProfileContext';
@@ -106,11 +106,16 @@ export default function AllShipmentsMain({ token }) {
 
   const refreshShipments = () => fetchShipments({ background: true });
 
+  // Match statuses by code or name, whichever the shipment was saved with
+  const canonicalStatus = useMemo(() => makeStatusCanonicalizer(statuses), [statuses]);
+  const statusLabel = useMemo(() => makeStatusLabeler(statuses), [statuses]);
+
   // Filters run locally on the fetched list (no refetch per keystroke)
   const filteredShipments = useMemo(() => {
+    const wantedStatus = selectedStatus ? canonicalStatus(selectedStatus) : '';
     const q = searchQuery.trim().toLowerCase();
     return shipments.filter((s) => {
-      const matchesStatus = !selectedStatus || s.status === selectedStatus;
+      const matchesStatus = !wantedStatus || canonicalStatus(s.status) === wantedStatus;
       const facilityName = (s.shipmentFacility || s.shipmentfacility || s.facility || '').toString();
       const matchesFacility = !selectedFacility || facilityName === selectedFacility;
       const matchesSearch = !q || [s.trackingNumber, s.senderName, s.recipientName, s.destination, s.status]
@@ -118,7 +123,7 @@ export default function AllShipmentsMain({ token }) {
       const matchesStale = !staleOnly || (!isDelivered(s.status) && daysSince(s.createdAt) > STALE_AFTER_DAYS);
       return matchesStatus && matchesFacility && matchesSearch && matchesStale;
     });
-  }, [shipments, searchQuery, selectedStatus, selectedFacility, staleOnly]);
+  }, [shipments, searchQuery, selectedStatus, selectedFacility, staleOnly, canonicalStatus]);
 
   // Facility dropdown shows how many open shipments each facility has
   const facilitiesWithCounts = useMemo(() => {
@@ -375,8 +380,10 @@ export default function AllShipmentsMain({ token }) {
       {/* In-progress overview */}
       <InProgressSummary
         shipments={shipments}
-        selectedStatus={selectedStatus}
+        selectedStatus={selectedStatus ? canonicalStatus(selectedStatus) : ''}
         onStatusSelect={handleFilter}
+        canonicalStatus={canonicalStatus}
+        statusLabel={statusLabel}
         staleOnly={staleOnly}
         onToggleStale={() => setStaleOnly((v) => !v)}
       />
