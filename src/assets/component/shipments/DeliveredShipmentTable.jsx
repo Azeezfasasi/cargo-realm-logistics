@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Pencil, Mail, Eye, Trash2, RefreshCcw, Receipt, ScrollText, Wallet } from 'lucide-react';
+import { Pencil, Mail, Eye, Trash2, RefreshCcw, Receipt, ScrollText, Wallet, Paperclip } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -59,6 +59,9 @@ export default function DeliveredShipmentTable({ shipments = [], onActionClick =
                 </Button>
                 <Button size="icon" variant="ghost" title="Payments" onClick={() => onActionClick(shipment, 'payments')}>
                   <Wallet size={16} />
+                </Button>
+                <Button size="icon" variant="ghost" title="Documents" onClick={() => onActionClick(shipment, 'documents')}>
+                  <Paperclip size={16} />
                 </Button>
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'edit')}>
                   <Pencil size={16} />

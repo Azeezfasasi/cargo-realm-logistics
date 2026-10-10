@@ -1,5 +1,6 @@
 import React, { useState, useContext, lazy, Suspense } from 'react';
-import { Receipt, ScrollText } from 'lucide-react';
+import { Receipt, ScrollText, Paperclip } from 'lucide-react';
+import DocumentsModal from '../shipments/DocumentsModal';
 import BasicModal from '@/components/ui/BasicModal';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { LuSearch, LuChevronLeft, LuChevronRight, LuEye, LuX } from 'react-icons/lu';
@@ -162,6 +163,7 @@ function MyShipmentsMain() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [documentRequest, setDocumentRequest] = useState(null); // { shipment, type: 'invoice' | 'waybill' }
+  const [filesShipment, setFilesShipment] = useState(null); // shipment whose uploaded documents are open
   const shipmentsPerPage = 10;
   
   const fetchMyShipments = async () => {
@@ -363,6 +365,12 @@ function MyShipmentsMain() {
                         <ScrollText className="w-4 h-4" />
                         Waybill
                       </button>
+                      {shipment.documents?.length > 0 && (
+                        <button onClick={() => setFilesShipment(shipment)} className="flex flex-row items-center gap-1 rounded-md border border-solid border-gray-300 bg-white p-1 text-gray-700 transition-colors hover:bg-gray-50 cursor-pointer">
+                          <Paperclip className="w-4 h-4" />
+                          Files ({shipment.documents.length})
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -382,6 +390,12 @@ function MyShipmentsMain() {
 
       {/* Render the modal when a shipment is selected */}
       <ShipmentDetailsModal shipment={selectedShipment} onClose={closeModal} />
+
+      {filesShipment && (
+        <BasicModal isOpen onClose={() => setFilesShipment(null)}>
+          <DocumentsModal shipment={filesShipment} token={token} readOnly onClose={() => setFilesShipment(null)} />
+        </BasicModal>
+      )}
 
       {documentRequest && (
         <BasicModal isOpen onClose={() => setDocumentRequest(null)}>

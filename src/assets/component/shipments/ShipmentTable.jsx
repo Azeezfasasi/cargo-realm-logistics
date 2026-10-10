@@ -1,20 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { Pencil, Mail, Eye, Trash2, RefreshCcw, QrCode, Receipt, ScrollText, Wallet, ArrowRight, MapPin, Building2, PackageSearch, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Pencil, Mail, Eye, Trash2, RefreshCcw, QrCode, Receipt, ScrollText, Wallet, Paperclip, MoreHorizontal, ArrowRight, MapPin, Building2, PackageSearch, ChevronLeft, ChevronRight } from 'lucide-react';
 import { isDelivered, daysSince, getStatusTone, formatStatus, STALE_AFTER_DAYS, PAYMENT_BADGE } from './shipmentStatusStyles';
 
 const ITEMS_PER_PAGE = 10;
 
-const ACTIONS = [
-  { type: 'qr', label: 'QR code', icon: QrCode, hover: 'hover:bg-indigo-50 hover:text-indigo-600' },
+// Most-used actions stay visible; the rest live in the "More" menu
+const PRIMARY_ACTIONS = [
   { type: 'print', label: 'View / print', icon: Eye, hover: 'hover:bg-violet-50 hover:text-violet-600' },
-  { type: 'invoice', label: 'Invoice', icon: Receipt, hover: 'hover:bg-green-50 hover:text-green-700' },
-  { type: 'waybill', label: 'Waybill', icon: ScrollText, hover: 'hover:bg-teal-50 hover:text-teal-600' },
-  { type: 'payments', label: 'Payments', icon: Wallet, hover: 'hover:bg-amber-50 hover:text-amber-600' },
-  { type: 'edit', label: 'Edit shipment', icon: Pencil, hover: 'hover:bg-sky-50 hover:text-sky-600' },
-  { type: 'reply', label: 'Send email', icon: Mail, hover: 'hover:bg-emerald-50 hover:text-emerald-600' },
   { type: 'status', label: 'Change status', icon: RefreshCcw, hover: 'hover:bg-amber-50 hover:text-amber-600' },
-  { type: 'delete', label: 'Delete', icon: Trash2, hover: 'hover:bg-rose-50 hover:text-rose-600', danger: true },
+  { type: 'edit', label: 'Edit shipment', icon: Pencil, hover: 'hover:bg-sky-50 hover:text-sky-600' },
+  { type: 'payments', label: 'Payments', icon: Wallet, hover: 'hover:bg-green-50 hover:text-green-700' },
 ];
+const MENU_ACTIONS = [
+  { type: 'invoice', label: 'Invoice', icon: Receipt },
+  { type: 'waybill', label: 'Waybill', icon: ScrollText },
+  { type: 'documents', label: 'Documents', icon: Paperclip },
+  { type: 'qr', label: 'QR code', icon: QrCode },
+  { type: 'reply', label: 'Send email', icon: Mail },
+  { type: 'delete', label: 'Delete', icon: Trash2, danger: true },
+];
+
+// Rendered with position: fixed so the table's scroll container can't clip it
+function ActionsMenu({ anchor, actions, onPick, onClose }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const close = (e) => { if (!ref.current?.contains(e.target)) onClose(); };
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onClose, true);
+    window.addEventListener('resize', onClose);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onClose, true);
+      window.removeEventListener('resize', onClose);
+    };
+  }, [onClose]);
+
+  const menuHeight = actions.length * 36 + 8;
+  const openUp = anchor.bottom + menuHeight > window.innerHeight - 8;
+  const style = {
+    position: 'fixed',
+    right: Math.max(8, window.innerWidth - anchor.right),
+    top: openUp ? Math.max(8, anchor.top - menuHeight - 4) : anchor.bottom + 4,
+  };
+
+  return (
+    <div ref={ref} role="menu" style={style} className="z-50 w-44 rounded-xl border border-gray-200 bg-white p-1 shadow-lg">
+      {actions.map(({ type, label, icon, danger }) => {
+        const Icon = icon;
+        return (
+          <button
+            key={type}
+            type="button"
+            role="menuitem"
+            onClick={() => onPick(type)}
+            className={`flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-sm transition-colors ${
+              danger ? 'text-rose-600 hover:bg-rose-50' : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Icon size={15} className={danger ? '' : 'text-gray-400'} /> {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function AgeBadge({ days }) {
   const tone =
@@ -30,7 +82,9 @@ function AgeBadge({ days }) {
 }
 
 export default function ShipmentTable({ shipments, onActionClick, canDelete = true, selectedShipments = [], onSelectShipment, onSelectAll }) {
-  const actions = canDelete ? ACTIONS : ACTIONS.filter((a) => a.type !== 'delete');
+  const menuActions = canDelete ? MENU_ACTIONS : MENU_ACTIONS.filter((a) => a.type !== 'delete');
+  const [menu, setMenu] = useState(null); // { shipment, anchor: DOMRect }
+  const closeMenu = useCallback(() => setMenu(null), []);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Delivered shipments live on the Delivered Shipments page
@@ -162,7 +216,7 @@ export default function ShipmentTable({ shipments, onActionClick, canDelete = tr
                   </td>
                   <td className="px-3 py-4 align-top">
                     <div className="flex items-center justify-end gap-0.5">
-                      {actions.map(({ type, label, icon, hover, danger }) => {
+                      {PRIMARY_ACTIONS.map(({ type, label, icon, hover }) => {
                         const ActionIcon = icon;
                         return (
                           <button
@@ -171,14 +225,28 @@ export default function ShipmentTable({ shipments, onActionClick, canDelete = tr
                             title={label}
                             aria-label={label}
                             onClick={() => onActionClick(shipment, type)}
-                            className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors ${
-                              danger ? 'text-rose-400' : 'text-gray-400'
-                            } ${hover}`}
+                            className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition-colors ${hover}`}
                           >
                             <ActionIcon size={16} />
                           </button>
                         );
                       })}
+                      <button
+                        type="button"
+                        title="More actions"
+                        aria-label="More actions"
+                        aria-haspopup="menu"
+                        aria-expanded={menu?.shipment._id === shipment._id}
+                        onClick={(e) => {
+                          const anchor = e.currentTarget.getBoundingClientRect();
+                          setMenu((m) => (m?.shipment._id === shipment._id ? null : { shipment, anchor }));
+                        }}
+                        className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-700 ${
+                          menu?.shipment._id === shipment._id ? 'bg-gray-100 text-gray-700' : 'text-gray-400'
+                        }`}
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -200,6 +268,19 @@ export default function ShipmentTable({ shipments, onActionClick, canDelete = tr
           </tbody>
         </table>
       </div>
+
+      {menu && (
+        <ActionsMenu
+          anchor={menu.anchor}
+          actions={menuActions}
+          onClose={closeMenu}
+          onPick={(type) => {
+            const { shipment } = menu;
+            setMenu(null);
+            onActionClick(shipment, type);
+          }}
+        />
+      )}
 
       {/* Pagination */}
       <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-100 px-5 py-3 sm:flex-row">

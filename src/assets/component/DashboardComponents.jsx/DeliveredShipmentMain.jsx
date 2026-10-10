@@ -11,6 +11,7 @@ import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
 import PaymentsModal from '../shipments/PaymentsModal';
+import DocumentsModal from '../shipments/DocumentsModal';
 import { FaSpinner } from 'react-icons/fa';
 import DeliveredShipmentTable from '../shipments/DeliveredShipmentTable';
 import { toast } from 'react-hot-toast';
@@ -22,7 +23,7 @@ const ShipmentDocumentModal = lazy(() => import('../shipments/documents/Shipment
 const apiError = (err, fallback) => err?.response?.data?.message || err?.message || fallback;
 
 export default function DeliveredShipmentsMain({ token }) {
-  const { isAdmin } = useProfile(); // only admins may delete (enforced by the backend too)
+  const { isAdmin, currentUser } = useProfile(); // only admins may delete (enforced by the backend too)
   const [shipments, setShipments] = useState([]);
   const [filteredShipments, setFilteredShipments] = useState([]);
   const [selectedShipment, setSelectedShipment] = useState(null);
@@ -352,6 +353,23 @@ export default function DeliveredShipmentsMain({ token }) {
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'print'} onClose={closeModal}>
             <PrintModal shipment={selectedShipment} onClose={closeModal} />
+        </BasicModal>
+        )}
+
+        {selectedShipment && modalType === 'documents' && (
+        <BasicModal isOpen onClose={closeModal}>
+            <DocumentsModal
+                shipment={selectedShipment}
+                token={token}
+                isAdmin={isAdmin}
+                currentUserId={currentUser?._id}
+                onUpdated={(updated) => {
+                  const merge = (list) => list.map((s) => (s._id === updated._id ? { ...s, ...updated } : s));
+                  setShipments(merge);
+                  setFilteredShipments(merge);
+                }}
+                onClose={closeModal}
+            />
         </BasicModal>
         )}
 
