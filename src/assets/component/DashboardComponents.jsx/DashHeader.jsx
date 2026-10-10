@@ -40,6 +40,7 @@ function DashHeader() {
     '/app/account/manage-shipment-status': { key: '2-5', parent: '2' },
     '/app/account/manage-facility': { key: '2-6', parent: '2' },
     '/app/trackshipment': { key: '2-7', parent: '2' },
+    '/app/account/reports': { key: '2-8', parent: '2' },
     '/app/account/contactformresponses': { key: '3', parent: null },
     '/app/account/allposts': { key: '4-1', parent: '4' },
     '/app/account/allblogpost': { key: '4-2', parent: '4' },
@@ -186,6 +187,9 @@ function DashHeader() {
                   )}
                   {(isAdmin || isAgent || isClient || isEmployee) && (
                   <Nav.Item eventKey="2-7" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>
+                  )}
+                  {(isAdmin || isEmployee) && (
+                  <Nav.Item eventKey="2-8" as={Link} to="/app/account/reports">Reports</Nav.Item>
                   )}
                   </Nav.Menu>
                 )}

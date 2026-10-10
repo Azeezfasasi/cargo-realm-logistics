@@ -55,6 +55,7 @@ import ArchivedShipments from "./app/account/ArchivedChipments"
 import ManageMessageSlides from "./app/account/ManageMessageSlides"
 import ManageFacility from "./app/account/ManageFacility"
 import ManageShipmentStatus from "./app/account/ManageShipmentStatus"
+import Reports from "./app/account/Reports"
 import ManageHeroSlides from "./app/account/ManageHeroSlides"
 import ManageOurServices from "./app/account/ManageOurServices"
 import SendTestSMS from "./components/SendTestSMS"
@@ -127,6 +128,7 @@ function App() {
           <Route path="/app/account/manage-message-slides" element={<ManageMessageSlides />} />
           <Route path="/app/account/manage-facility" element={<ManageFacility />} />
           <Route path="/app/account/manage-shipment-status" element={<ManageShipmentStatus />} />
+          <Route path="/app/account/reports" element={<Reports />} />
           <Route path="/app/account/manage-hero-slides" element={<ManageHeroSlides />} />
           <Route path="/app/account/manage-our-services" element={<ManageOurServices />} />
           {/* SMS Components */}
