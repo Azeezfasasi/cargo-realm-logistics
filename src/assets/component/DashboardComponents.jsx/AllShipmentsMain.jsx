@@ -41,6 +41,7 @@ export default function AllShipmentsMain({ token }) {
   const [selectedShipments, setSelectedShipments] = useState([]);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [bulkStatusFilter, setBulkStatusFilter] = useState('');
+  const [bulkLocation, setBulkLocation] = useState('');
    const [bulkLoading, setBulkLoading] = useState(false);
 
   const getTimestamp = (item) => {
@@ -268,7 +269,7 @@ export default function AllShipmentsMain({ token }) {
         // allSettled so one failure doesn't hide which updates succeeded
         const results = await Promise.allSettled(
           selectedShipments.map(shipmentId =>
-            axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: bulkStatusFilter }, {
+            axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: bulkStatusFilter, location: bulkLocation.trim() || undefined }, {
               headers: {
                 Authorization: `Bearer ${authToken}`,
               },
@@ -290,6 +291,7 @@ export default function AllShipmentsMain({ token }) {
         if (failedIds.length === 0) {
           setBulkModalOpen(false);
           setBulkStatusFilter('');
+          setBulkLocation('');
         }
         refreshShipments();
       } finally {
@@ -454,6 +456,13 @@ export default function AllShipmentsMain({ token }) {
                 </>
               )}
             </select>
+            <input
+              type="text"
+              value={bulkLocation}
+              onChange={(e) => setBulkLocation(e.target.value)}
+              placeholder="Location (optional)"
+              className="h-10 flex-1 rounded-xl border border-gray-200 bg-white px-3 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 md:w-48 md:flex-none"
+            />
             <button
               onClick={() => setBulkModalOpen(true)}
               disabled={!bulkStatusFilter}
@@ -486,7 +495,7 @@ export default function AllShipmentsMain({ token }) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Confirm Bulk Status Update</h3>
             <p className="text-gray-600 mb-6">
-              You are about to update the status of <span className="font-bold text-green-600">{selectedShipments.length}</span> shipment(s) to <span className="font-bold">{bulkStatusFilter}</span>.
+              You are about to update the status of <span className="font-bold text-green-600">{selectedShipments.length}</span> shipment(s) to <span className="font-bold">{bulkStatusFilter}</span>{bulkLocation.trim() ? <> at <span className="font-bold">{bulkLocation.trim()}</span></> : null}.
             </p>
             <p className="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
             <div className="flex gap-3">
